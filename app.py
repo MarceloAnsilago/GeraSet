@@ -34,6 +34,8 @@ TIMEFRAMES = [
     "Tempo corrente",
 ]
 TIMES = [f"{hour:02d}:{minute:02d}" for hour in range(24) for minute in range(0, 60, 5)]
+PRICE_OPTIONS = ["Close", "Open", "High", "Low", "Median", "Typical", "Weighted"]
+METHOD_OPTIONS = ["SMA", "EMA", "SMMA", "LWMA"]
 
 
 def render_navbar() -> str:
@@ -173,28 +175,89 @@ def render_indicators() -> None:
     st.title("Indicadores")
     st.caption("Segunda etapa do Canvas UniversalEa.")
 
-    col_indicators, col_parameters = st.columns(2, gap="large")
+    if "indicator_count" not in st.session_state:
+        st.session_state.indicator_count = 1
 
-    with col_indicators:
+    header_left, header_right = st.columns([4, 1])
+    with header_left:
+        st.info("Selecione até quatro indicadores. Apenas Média Móvel pode ser repetida.")
+    with header_right:
+        if st.button("Adicionar indicador", type="primary", width="stretch"):
+            st.session_state.indicator_count = min(4, st.session_state.indicator_count + 1)
+
+    slots = [f"Indicador {index}" for index in range(1, st.session_state.indicator_count + 1)]
+    active_slot = st.radio("Indicador ativo", slots, horizontal=True)
+    active_index = int(active_slot.split()[-1])
+
+    indicator_type = st.selectbox(
+        f"Tipo do {active_slot}",
+        ["Não usar", "Média Móvel", "RSI", "ADX"],
+        key=f"indicator_type_{active_index}",
+    )
+
+    st.divider()
+
+    ma_col, rsi_col, adx_col = st.columns(3, gap="medium")
+
+    with ma_col:
         with st.container(border=True):
-            st.subheader("Indicadores")
-            selected_slot = st.radio(
-                "Selecione o indicador",
-                ["Indicador 1", "Indicador 2", "Indicador 3", "Indicador 4"],
-                horizontal=True,
-            )
-            st.selectbox(
-                f"Tipo - {selected_slot}",
-                ["Não usar", "Média Móvel", "RSI", "ADX"],
+            st.subheader("Média Móvel")
+            st.number_input("Período MA", min_value=1, max_value=100000, value=20, key=f"ma_period_{active_index}")
+            st.selectbox("Método", METHOD_OPTIONS, index=1, key=f"ma_method_{active_index}")
+            st.selectbox("Preço aplicado MA", PRICE_OPTIONS, key=f"ma_price_{active_index}")
+            st.number_input("Shift", min_value=-100000, max_value=100000, value=0, key=f"ma_shift_{active_index}")
+            st.number_input(
+                "Velas de inclinação",
+                min_value=2,
+                max_value=100000,
+                value=3,
+                key=f"ma_slope_{active_index}",
             )
 
-    with col_parameters:
+    with rsi_col:
         with st.container(border=True):
-            st.subheader("Parâmetros")
-            st.number_input("Período", min_value=1, value=14)
-            st.selectbox("Preço aplicado", ["Close", "Open", "High", "Low", "Median", "Typical", "Weighted"])
+            st.subheader("RSI")
+            st.number_input("Período RSI", min_value=1, max_value=100000, value=14, key=f"rsi_period_{active_index}")
+            st.selectbox("Preço aplicado RSI", PRICE_OPTIONS, key=f"rsi_price_{active_index}")
+            st.number_input("Sobrevenda", min_value=0.0, max_value=100.0, value=30.0, key=f"rsi_lower_{active_index}")
+            st.number_input("Sobrecompra", min_value=0.0, max_value=100.0, value=70.0, key=f"rsi_upper_{active_index}")
+            st.caption("Cruzamento no fechamento.")
 
-    st.info("Configure os indicadores antes de seguir para Regras.")
+    with adx_col:
+        with st.container(border=True):
+            st.subheader("ADX")
+            st.number_input("Período ADX", min_value=1, max_value=100000, value=14, key=f"adx_period_{active_index}")
+            st.number_input("ADX mínimo", min_value=0.0, max_value=100.0, value=25.0, key=f"adx_min_{active_index}")
+            st.caption("Compra: +DI > -DI")
+            st.caption("Venda: -DI > +DI")
+
+    st.subheader("Resumo dos indicadores")
+    summary_cols = st.columns(4)
+    for index in range(1, 5):
+        selected_type = st.session_state.get(f"indicator_type_{index}", "Não usar")
+        with summary_cols[index - 1]:
+            with st.container(border=True):
+                st.markdown(f"**Indicador {index}**")
+                st.write(selected_type)
+                if selected_type == "Média Móvel":
+                    st.caption(f"Período: {st.session_state.get(f'ma_period_{index}', 20)}")
+                    st.caption(f"Método: {st.session_state.get(f'ma_method_{index}', 'EMA')}")
+                    st.caption(f"Preço: {st.session_state.get(f'ma_price_{index}', 'Close')}")
+                elif selected_type == "RSI":
+                    st.caption(f"Período: {st.session_state.get(f'rsi_period_{index}', 14)}")
+                    st.caption(f"Compra ↑ {st.session_state.get(f'rsi_lower_{index}', 30.0):.2f}")
+                    st.caption(f"Venda ↓ {st.session_state.get(f'rsi_upper_{index}', 70.0):.2f}")
+                elif selected_type == "ADX":
+                    st.caption(f"Período: {st.session_state.get(f'adx_period_{index}', 14)}")
+                    st.caption(f"ADX > {st.session_state.get(f'adx_min_{index}', 25.0):.2f}")
+                else:
+                    st.caption("Sem parâmetros ativos.")
+
+    footer_left, footer_right = st.columns([4, 1])
+    with footer_left:
+        st.info("Configure os indicadores antes de seguir para Regras.")
+    with footer_right:
+        st.button("Salvar indicadores", type="primary", width="stretch")
 
 
 def render_sets() -> None:
