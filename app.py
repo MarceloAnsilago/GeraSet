@@ -1,9 +1,8 @@
-import pandas as pd
 import streamlit as st
 from streamlit_navigation_bar import st_navbar
 
 
-PAGES = ["Inicio", "Sets", "Relatorios", "Configuracoes"]
+PAGES = ["Pagina Inicial", "Sets", "Relatorios", "Configuracoes"]
 
 
 def render_navbar() -> str:
@@ -34,46 +33,33 @@ def render_navbar() -> str:
 
     page = st_navbar(
         PAGES,
-        selected="Inicio",
+        selected="Pagina Inicial",
         styles=styles,
         options={"show_menu": True, "show_sidebar": False, "use_padding": True},
     )
 
-    return page or "Inicio"
+    return page or "Pagina Inicial"
 
 
 def render_home() -> None:
     st.title("GeraSet")
     st.caption("Organize, acompanhe e gere seus sets em um painel simples.")
 
-    col_create, col_review = st.columns([2, 1])
-    with col_create:
-        st.subheader("Novo set")
-        nome = st.text_input("Nome do set", value="Meu primeiro set")
-        quantidade = st.number_input("Quantidade de itens", min_value=1, max_value=100, value=5)
-        categoria = st.selectbox("Categoria", ["Geral", "Operacional", "Relatorio", "Cadastro"])
+    col_sets, col_reports = st.columns(2, gap="large")
 
-        if st.button("Gerar set", type="primary"):
-            st.success(f"{quantidade} itens criados para {nome} em {categoria}.")
+    with col_sets:
+        with st.container(border=True):
+            st.subheader("Gerar sets")
+            st.write("Crie e organize conjuntos de dados para acompanhar suas rotinas.")
+            st.metric("Sets ativos", "12", "+3")
+            st.button("Novo set", type="primary", width="stretch")
 
-    with col_review:
-        st.subheader("Resumo")
-        st.metric("Sets ativos", "12", "+3")
-        st.metric("Itens gerados", "248", "+31")
-        st.metric("Pendencias", "7", "-2")
-
-    st.divider()
-
-    st.subheader("Sets recentes")
-    dados = pd.DataFrame(
-        {
-            "Set": ["Entrada de veiculos", "Banco de horas", "Receitas", "Fichas inativas"],
-            "Categoria": ["Operacional", "Relatorio", "Geral", "Cadastro"],
-            "Itens": [42, 18, 64, 31],
-            "Status": ["Ativo", "Em revisao", "Ativo", "Pendente"],
-        }
-    )
-    st.dataframe(dados, width="stretch", hide_index=True)
+    with col_reports:
+        with st.container(border=True):
+            st.subheader("Acompanhar resultados")
+            st.write("Veja indicadores, pendencias e resumos dos seus sets cadastrados.")
+            st.metric("Itens gerados", "248", "+31")
+            st.button("Ver relatorios", width="stretch")
 
 
 def render_sets() -> None:
@@ -101,7 +87,7 @@ def main() -> None:
 
     selected_page = render_navbar()
 
-    if selected_page == "Inicio":
+    if selected_page == "Pagina Inicial":
         render_home()
     elif selected_page == "Sets":
         render_sets()
