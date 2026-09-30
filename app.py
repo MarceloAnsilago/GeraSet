@@ -256,7 +256,7 @@ def render_indicators() -> None:
                     if indicator_type == "Média Móvel":
                         render_optimization_row(index, "Período", "ma_period", st.session_state.get(f"ma_period_{index}", 20))
                         render_optimization_row(index, "Shift", "ma_shift", st.session_state.get(f"ma_shift_{index}", 0))
-                        render_optimization_row(index, "Velas de inclinação", "ma_slope", st.session_state.get(f"ma_slope_{index}", 3))
+                        render_optimization_row(index, "Inclinação", "ma_slope", st.session_state.get(f"ma_slope_{index}", 3))
                     elif indicator_type == "RSI":
                         render_optimization_row(index, "Período", "rsi_period", st.session_state.get(f"rsi_period_{index}", 14))
                         render_optimization_row(index, "Sobrevenda", "rsi_lower", st.session_state.get(f"rsi_lower_{index}", 30.0))
