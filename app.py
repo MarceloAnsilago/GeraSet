@@ -22,7 +22,7 @@ def render_navbar() -> str:
             "font-weight": "600",
         },
         "active": {
-            "color": "#38bdf8",
+            "color": "#ffffff",
             "font-weight": "700",
         },
         "hover": {
