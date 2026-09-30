@@ -39,7 +39,8 @@ METHOD_OPTIONS = ["SMA", "EMA", "SMMA", "LWMA"]
 
 
 def render_optimization_row(indicator_index: int, name: str, key_prefix: str, current_value: int | float) -> None:
-    current_col, start_col, step_col, end_col = st.columns(4)
+    st.caption(name)
+    start_col, step_col, end_col = st.columns(3)
     is_integer = isinstance(current_value, int)
     current_kwargs = {"value": int(current_value), "step": 1} if is_integer else {
         "value": float(current_value),
@@ -53,13 +54,6 @@ def render_optimization_row(indicator_index: int, name: str, key_prefix: str, cu
         "format": "%.2f",
     }
 
-    with current_col:
-        st.number_input(
-            f"{name} atual",
-            disabled=True,
-            key=f"opt_{key_prefix}_current_{indicator_index}",
-            **current_kwargs,
-        )
     with start_col:
         st.number_input(
             "Iniciar",
