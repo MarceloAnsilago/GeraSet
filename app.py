@@ -1,44 +1,87 @@
 import streamlit as st
-from streamlit_navigation_bar import st_navbar
 
 
-PAGES = ["Pagina Inicial", "Sets", "Relatorios", "Configuracoes"]
+PAGES = {
+    "inicio": "Pagina Inicial",
+    "sets": "Sets",
+    "relatorios": "Relatorios",
+    "configuracoes": "Configuracoes",
+}
 
 
 def render_navbar() -> str:
-    styles = {
-        "nav": {
-            "background-color": "#0f172a",
-            "height": "4rem",
-            "padding": "0 2rem",
-        },
-        "div": {
-            "max-width": "1180px",
-            "margin": "0 auto",
-        },
-        "span": {
-            "color": "#e5e7eb",
-            "font-size": "0.95rem",
-            "font-weight": "600",
-        },
-        "active": {
-            "color": "#ffffff",
-            "font-weight": "700",
-        },
-        "hover": {
-            "color": "#ffffff",
-            "background-color": "#1e293b",
-        },
-    }
+    current_page = st.query_params.get("page", "inicio")
+    if current_page not in PAGES:
+        current_page = "inicio"
 
-    page = st_navbar(
-        PAGES,
-        selected="Pagina Inicial",
-        styles=styles,
-        options={"show_menu": True, "show_sidebar": False, "use_padding": True},
+    nav_items = "\n".join(
+        f'<a class="nav-link {"active" if slug == current_page else ""}" href="?page={slug}">{label}</a>'
+        for slug, label in PAGES.items()
     )
 
-    return page or "Pagina Inicial"
+    st.markdown(
+        f"""
+        <style>
+            .block-container {{
+                padding-top: 0;
+            }}
+
+            .geraset-navbar {{
+                align-items: center;
+                background: #0f172a;
+                display: flex;
+                gap: 0.5rem;
+                justify-content: center;
+                margin: 0 calc(50% - 50vw) 3rem;
+                min-height: 4rem;
+                padding: 0 2rem;
+            }}
+
+            .geraset-navbar-inner {{
+                align-items: center;
+                display: flex;
+                gap: 0.5rem;
+                max-width: 1180px;
+                width: 100%;
+            }}
+
+            .brand {{
+                color: #ffffff;
+                font-size: 1rem;
+                font-weight: 800;
+                margin-right: 1.25rem;
+            }}
+
+            .nav-link {{
+                border-radius: 0.5rem;
+                color: #dbe4f0 !important;
+                font-weight: 700;
+                padding: 0.65rem 0.95rem;
+                text-decoration: none !important;
+            }}
+
+            .nav-link:hover {{
+                background: #1e293b;
+                color: #ffffff !important;
+            }}
+
+            .nav-link.active {{
+                background: #ffffff;
+                color: #0f172a !important;
+            }}
+        </style>
+
+        <nav class="geraset-navbar">
+            <div class="geraset-navbar-inner">
+                <span class="brand">GeraSet</span>
+                {nav_items}
+            </div>
+        </nav>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    return PAGES[current_page]
 
 
 def render_home() -> None:
