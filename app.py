@@ -38,6 +38,41 @@ PRICE_OPTIONS = ["Close", "Open", "High", "Low", "Median", "Typical", "Weighted"
 METHOD_OPTIONS = ["SMA", "EMA", "SMMA", "LWMA"]
 
 
+def render_optimization_row(indicator_index: int, name: str, key_prefix: str, current_value: int | float) -> None:
+    current_col, start_col, step_col, end_col = st.columns(4)
+    numeric_kwargs = {"value": float(current_value), "step": 1.0, "format": "%.2f"}
+
+    if isinstance(current_value, int):
+        numeric_kwargs = {"value": int(current_value), "step": 1}
+
+    with current_col:
+        st.number_input(
+            f"{name} atual",
+            disabled=True,
+            key=f"opt_{key_prefix}_current_{indicator_index}",
+            **numeric_kwargs,
+        )
+    with start_col:
+        st.number_input(
+            "Iniciar",
+            key=f"opt_{key_prefix}_start_{indicator_index}",
+            **numeric_kwargs,
+        )
+    with step_col:
+        st.number_input(
+            "Passo",
+            min_value=0.01 if isinstance(current_value, float) else 1,
+            key=f"opt_{key_prefix}_step_{indicator_index}",
+            **numeric_kwargs,
+        )
+    with end_col:
+        st.number_input(
+            "Terminar",
+            key=f"opt_{key_prefix}_end_{indicator_index}",
+            **numeric_kwargs,
+        )
+
+
 def render_navbar() -> str:
     current_page = st.query_params.get("page", "inicio")
     if current_page not in PAGES:
@@ -187,26 +222,43 @@ def render_indicators() -> None:
                     ["Não usar", "Média Móvel", "RSI", "ADX"],
                     key=f"indicator_type_{index}",
                 )
+                parameters_tab, optimize_tab = st.tabs(["Parâmetros", "Otimizar"])
 
-                if indicator_type == "Média Móvel":
-                    st.number_input("Período", min_value=1, max_value=100000, value=20, key=f"ma_period_{index}")
-                    st.selectbox("Método", METHOD_OPTIONS, index=1, key=f"ma_method_{index}")
-                    st.selectbox("Preço aplicado", PRICE_OPTIONS, key=f"ma_price_{index}")
-                    st.number_input("Shift", min_value=-100000, max_value=100000, value=0, key=f"ma_shift_{index}")
-                    st.number_input("Velas de inclinação", min_value=2, max_value=100000, value=3, key=f"ma_slope_{index}")
-                elif indicator_type == "RSI":
-                    st.number_input("Período", min_value=1, max_value=100000, value=14, key=f"rsi_period_{index}")
-                    st.selectbox("Preço aplicado", PRICE_OPTIONS, key=f"rsi_price_{index}")
-                    st.number_input("Sobrevenda", min_value=0.0, max_value=100.0, value=30.0, key=f"rsi_lower_{index}")
-                    st.number_input("Sobrecompra", min_value=0.0, max_value=100.0, value=70.0, key=f"rsi_upper_{index}")
-                    st.caption("Cruzamento no fechamento.")
-                elif indicator_type == "ADX":
-                    st.number_input("Período", min_value=1, max_value=100000, value=14, key=f"adx_period_{index}")
-                    st.number_input("ADX mínimo", min_value=0.0, max_value=100.0, value=25.0, key=f"adx_min_{index}")
-                    st.caption("Compra: +DI > -DI")
-                    st.caption("Venda: -DI > +DI")
-                else:
-                    st.caption("Sem parâmetros ativos.")
+                with parameters_tab:
+                    if indicator_type == "Média Móvel":
+                        st.number_input("Período", min_value=1, max_value=100000, value=20, key=f"ma_period_{index}")
+                        st.selectbox("Método", METHOD_OPTIONS, index=1, key=f"ma_method_{index}")
+                        st.selectbox("Preço aplicado", PRICE_OPTIONS, key=f"ma_price_{index}")
+                        st.number_input("Shift", min_value=-100000, max_value=100000, value=0, key=f"ma_shift_{index}")
+                        st.number_input("Velas de inclinação", min_value=2, max_value=100000, value=3, key=f"ma_slope_{index}")
+                    elif indicator_type == "RSI":
+                        st.number_input("Período", min_value=1, max_value=100000, value=14, key=f"rsi_period_{index}")
+                        st.selectbox("Preço aplicado", PRICE_OPTIONS, key=f"rsi_price_{index}")
+                        st.number_input("Sobrevenda", min_value=0.0, max_value=100.0, value=30.0, key=f"rsi_lower_{index}")
+                        st.number_input("Sobrecompra", min_value=0.0, max_value=100.0, value=70.0, key=f"rsi_upper_{index}")
+                        st.caption("Cruzamento no fechamento.")
+                    elif indicator_type == "ADX":
+                        st.number_input("Período", min_value=1, max_value=100000, value=14, key=f"adx_period_{index}")
+                        st.number_input("ADX mínimo", min_value=0.0, max_value=100.0, value=25.0, key=f"adx_min_{index}")
+                        st.caption("Compra: +DI > -DI")
+                        st.caption("Venda: -DI > +DI")
+                    else:
+                        st.caption("Sem parâmetros ativos.")
+
+                with optimize_tab:
+                    if indicator_type == "Média Móvel":
+                        render_optimization_row(index, "Período", "ma_period", st.session_state.get(f"ma_period_{index}", 20))
+                        render_optimization_row(index, "Shift", "ma_shift", st.session_state.get(f"ma_shift_{index}", 0))
+                        render_optimization_row(index, "Velas de inclinação", "ma_slope", st.session_state.get(f"ma_slope_{index}", 3))
+                    elif indicator_type == "RSI":
+                        render_optimization_row(index, "Período", "rsi_period", st.session_state.get(f"rsi_period_{index}", 14))
+                        render_optimization_row(index, "Sobrevenda", "rsi_lower", st.session_state.get(f"rsi_lower_{index}", 30.0))
+                        render_optimization_row(index, "Sobrecompra", "rsi_upper", st.session_state.get(f"rsi_upper_{index}", 70.0))
+                    elif indicator_type == "ADX":
+                        render_optimization_row(index, "Período", "adx_period", st.session_state.get(f"adx_period_{index}", 14))
+                        render_optimization_row(index, "ADX mínimo", "adx_min", st.session_state.get(f"adx_min_{index}", 25.0))
+                    else:
+                        st.caption("Escolha um indicador para configurar a otimização.")
 
     st.subheader("Resumo dos indicadores")
     summary_cols = st.columns(4)
