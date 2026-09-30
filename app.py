@@ -3,6 +3,7 @@ import streamlit as st
 
 PAGES = {
     "inicio": "Pagina Inicial",
+    "indicadores": "Indicadores",
     "sets": "Sets",
     "relatorios": "Relatorios",
     "configuracoes": "Configuracoes",
@@ -164,8 +165,36 @@ def render_home() -> None:
     with status_col:
         st.info("Defina a identificação e as preferências do setup. Próxima etapa: Indicadores")
     with button_col:
-        st.button("Continuar →", type="primary", width="stretch")
+        st.link_button("Continuar →", "?page=indicadores", type="primary", width="stretch")
 
+
+
+def render_indicators() -> None:
+    st.title("Indicadores")
+    st.caption("Segunda etapa do Canvas UniversalEa.")
+
+    col_indicators, col_parameters = st.columns(2, gap="large")
+
+    with col_indicators:
+        with st.container(border=True):
+            st.subheader("Indicadores")
+            selected_slot = st.radio(
+                "Selecione o indicador",
+                ["Indicador 1", "Indicador 2", "Indicador 3", "Indicador 4"],
+                horizontal=True,
+            )
+            st.selectbox(
+                f"Tipo - {selected_slot}",
+                ["Não usar", "Média Móvel", "RSI", "ADX"],
+            )
+
+    with col_parameters:
+        with st.container(border=True):
+            st.subheader("Parâmetros")
+            st.number_input("Período", min_value=1, value=14)
+            st.selectbox("Preço aplicado", ["Close", "Open", "High", "Low", "Median", "Typical", "Weighted"])
+
+    st.info("Configure os indicadores antes de seguir para Regras.")
 
 
 def render_sets() -> None:
@@ -195,6 +224,8 @@ def main() -> None:
 
     if selected_page == "Pagina Inicial":
         render_home()
+    elif selected_page == "Indicadores":
+        render_indicators()
     elif selected_page == "Sets":
         render_sets()
     elif selected_page == "Relatorios":
