@@ -73,7 +73,7 @@ def render_home() -> None:
             "Status": ["Ativo", "Em revisao", "Ativo", "Pendente"],
         }
     )
-    st.dataframe(dados, use_container_width=True, hide_index=True)
+    st.dataframe(dados, width="stretch", hide_index=True)
 
 
 def render_sets() -> None:
