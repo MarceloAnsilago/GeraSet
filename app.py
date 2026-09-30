@@ -1,5 +1,4 @@
 import streamlit as st
-import streamlit.components.v1 as components
 
 
 PAGES = {
@@ -20,29 +19,29 @@ def render_navbar() -> str:
         for slug, label in PAGES.items()
     )
 
-    components.html(
-        f"""
-<!doctype html>
-<html lang="pt-br">
-<head>
-<meta charset="utf-8">
-<style>
-html,
-body {{
-    margin: 0;
-    padding: 0;
+    st.markdown(
+        f"""<style>
+.block-container {{
+    padding-top: 0;
+}}
+
+header[data-testid="stHeader"],
+div[data-testid="stToolbar"],
+div[class="stDeployButton"] {{
+    display: none;
 }}
 
 .geraset-navbar {{
     align-items: center;
     background: #0f172a;
+    box-sizing: border-box;
     display: flex;
     gap: 0.5rem;
     justify-content: center;
+    margin: 0 calc(50% - 50vw) 3rem;
     min-height: 64px;
     padding: 0 2rem;
-    width: 100%;
-    box-sizing: border-box;
+    width: 100vw;
 }}
 
 .geraset-navbar-inner {{
@@ -78,20 +77,8 @@ body {{
     color: #0f172a !important;
 }}
 </style>
-</head>
-<body>
-
-<nav class="geraset-navbar">
-    <div class="geraset-navbar-inner">
-        <span class="brand">GeraSet</span>
-        {nav_items}
-    </div>
-</nav>
-</body>
-</html>
-""",
-        height=64,
-        scrolling=False,
+<nav class="geraset-navbar"><div class="geraset-navbar-inner"><span class="brand">GeraSet</span>{nav_items}</div></nav>""",
+        unsafe_allow_html=True,
     )
 
     return PAGES[current_page]
