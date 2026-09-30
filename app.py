@@ -111,27 +111,6 @@ div[class="stDeployButton"] {{
 
 
 def render_home() -> None:
-    st.html(
-        """
-        <style>
-        .stApp {
-            background: #e6edf5;
-        }
-
-        div[data-testid="stVerticalBlockBorderWrapper"] {
-            background: #ffffff;
-            border-color: #78879d;
-        }
-
-        div[data-testid="stVerticalBlockBorderWrapper"] h3 {
-            font-size: 1rem;
-            letter-spacing: 0;
-            text-transform: uppercase;
-        }
-        </style>
-        """
-    )
-
     st.title("GeraSet")
     st.caption("Primeira etapa do Canvas UniversalEa, recriada em Streamlit.")
 
