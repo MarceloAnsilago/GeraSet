@@ -213,7 +213,29 @@ def render_indicators() -> None:
     for index in range(1, 5):
         selected_type = st.session_state.get(f"indicator_type_{index}", "Não usar")
         with summary_cols[index - 1]:
-            st.metric(f"Indicador {index}", selected_type)
+            with st.container(border=True):
+                st.markdown(f"**Indicador {index}**")
+                st.write(selected_type)
+
+                if selected_type == "Média Móvel":
+                    st.caption(f"Período: {st.session_state.get(f'ma_period_{index}', 20)}")
+                    st.caption(f"Método: {st.session_state.get(f'ma_method_{index}', 'EMA')}")
+                    st.caption(f"Preço: {st.session_state.get(f'ma_price_{index}', 'Close')}")
+                    st.caption(f"Shift: {st.session_state.get(f'ma_shift_{index}', 0)}")
+                    st.caption(f"Inclinação: {st.session_state.get(f'ma_slope_{index}', 3)} velas")
+                elif selected_type == "RSI":
+                    st.caption(f"Período: {st.session_state.get(f'rsi_period_{index}', 14)}")
+                    st.caption(f"Preço: {st.session_state.get(f'rsi_price_{index}', 'Close')}")
+                    st.caption(f"Compra ↑ {st.session_state.get(f'rsi_lower_{index}', 30.0):.2f}")
+                    st.caption(f"Venda ↓ {st.session_state.get(f'rsi_upper_{index}', 70.0):.2f}")
+                    st.caption("Cruzamento no fechamento")
+                elif selected_type == "ADX":
+                    st.caption(f"Período: {st.session_state.get(f'adx_period_{index}', 14)}")
+                    st.caption(f"ADX > {st.session_state.get(f'adx_min_{index}', 25.0):.2f}")
+                    st.caption("Compra: +DI > -DI")
+                    st.caption("Venda: -DI > +DI")
+                else:
+                    st.caption("Sem parâmetros ativos.")
 
     footer_left, footer_right = st.columns([4, 1])
     with footer_left:
