@@ -1,65 +1,45 @@
 import pandas as pd
 import streamlit as st
+from streamlit_navigation_bar import st_navbar
 
 
 PAGES = ["Inicio", "Sets", "Relatorios", "Configuracoes"]
 
 
 def render_navbar() -> str:
-    if "selected_page" not in st.session_state:
-        st.session_state.selected_page = "Inicio"
+    styles = {
+        "nav": {
+            "background-color": "#0f172a",
+            "height": "4rem",
+            "padding": "0 2rem",
+        },
+        "div": {
+            "max-width": "1180px",
+            "margin": "0 auto",
+        },
+        "span": {
+            "color": "#e5e7eb",
+            "font-size": "0.95rem",
+            "font-weight": "600",
+        },
+        "active": {
+            "color": "#38bdf8",
+            "font-weight": "700",
+        },
+        "hover": {
+            "color": "#ffffff",
+            "background-color": "#1e293b",
+        },
+    }
 
-    st.markdown(
-        """
-        <style>
-            [data-testid="stAppViewContainer"] > .main {
-                background: #f8fafc;
-            }
-
-            .block-container {
-                padding-top: 1.25rem;
-            }
-
-            div[data-testid="stHorizontalBlock"]:has(button[kind="secondary"]) {
-                background: #0f172a;
-                border-radius: 0;
-                padding: 0.75rem 1rem;
-                margin: -1.25rem -1rem 1.5rem;
-            }
-
-            div[data-testid="stHorizontalBlock"]:has(button[kind="secondary"]) h3 {
-                color: #ffffff;
-                margin: 0;
-                padding-top: 0.25rem;
-            }
-
-            div[data-testid="stHorizontalBlock"]:has(button[kind="secondary"]) button {
-                background: transparent;
-                border: 0;
-                color: #e5e7eb;
-                font-weight: 700;
-                min-height: 2.5rem;
-            }
-
-            div[data-testid="stHorizontalBlock"]:has(button[kind="secondary"]) button:hover {
-                background: #1e293b;
-                color: #ffffff;
-            }
-        </style>
-        """,
-        unsafe_allow_html=True,
+    page = st_navbar(
+        PAGES,
+        selected="Inicio",
+        styles=styles,
+        options={"show_menu": True, "show_sidebar": False, "use_padding": True},
     )
 
-    nav_columns = st.columns([1.4, 1, 1, 1, 1, 4])
-    with nav_columns[0]:
-        st.markdown("### GeraSet")
-
-    for index, page in enumerate(PAGES, start=1):
-        with nav_columns[index]:
-            if st.button(page, key=f"nav_{page}", use_container_width=True):
-                st.session_state.selected_page = page
-
-    return st.session_state.selected_page
+    return page or "Inicio"
 
 
 def render_home() -> None:
