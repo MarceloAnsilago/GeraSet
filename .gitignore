@@ -8,7 +8,9 @@ __pycache__/
 .env.*
 !.env.example
 .streamlit/secrets.toml
-streamlit.*.log
+streamlit*.log
+navbar-check.png
+check-navbar.cjs
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
