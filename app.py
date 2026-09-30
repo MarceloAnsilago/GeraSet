@@ -1,3 +1,5 @@
+from textwrap import dedent
+
 import streamlit as st
 
 
@@ -20,8 +22,9 @@ def render_navbar() -> str:
     )
 
     st.markdown(
-        f"""
-        <style>
+        dedent(
+            f"""
+            <style>
             .block-container {{
                 padding-top: 0;
             }}
@@ -69,15 +72,16 @@ def render_navbar() -> str:
                 background: #ffffff;
                 color: #0f172a !important;
             }}
-        </style>
+            </style>
 
-        <nav class="geraset-navbar">
-            <div class="geraset-navbar-inner">
-                <span class="brand">GeraSet</span>
-                {nav_items}
-            </div>
-        </nav>
-        """,
+            <nav class="geraset-navbar">
+                <div class="geraset-navbar-inner">
+                    <span class="brand">GeraSet</span>
+                    {nav_items}
+                </div>
+            </nav>
+            """
+        ).strip(),
         unsafe_allow_html=True,
     )
 
