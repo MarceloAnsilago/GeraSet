@@ -8,6 +8,32 @@ PAGES = {
     "configuracoes": "Configuracoes",
 }
 
+TIMEFRAMES = [
+    "M1",
+    "M2",
+    "M3",
+    "M4",
+    "M5",
+    "M6",
+    "M10",
+    "M12",
+    "M15",
+    "M20",
+    "M30",
+    "H1",
+    "H2",
+    "H3",
+    "H4",
+    "H6",
+    "H8",
+    "H12",
+    "D1",
+    "W1",
+    "MN1",
+    "Tempo corrente",
+]
+TIMES = [f"{hour:02d}:{minute:02d}" for hour in range(24) for minute in range(0, 60, 5)]
+
 
 def render_navbar() -> str:
     current_page = st.query_params.get("page", "inicio")
@@ -85,24 +111,82 @@ div[class="stDeployButton"] {{
 
 
 def render_home() -> None:
+    st.html(
+        """
+        <style>
+        .stApp {
+            background: #e6edf5;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"] {
+            background: #ffffff;
+            border-color: #78879d;
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"] h3 {
+            font-size: 1rem;
+            letter-spacing: 0;
+            text-transform: uppercase;
+        }
+        </style>
+        """
+    )
+
     st.title("GeraSet")
-    st.caption("Organize, acompanhe e gere seus sets em um painel simples.")
+    st.caption("Primeira etapa do Canvas UniversalEa, recriada em Streamlit.")
 
-    col_sets, col_reports = st.columns(2, gap="large")
+    col_identity, col_market, col_schedule = st.columns(3, gap="medium")
 
-    with col_sets:
+    with col_identity:
         with st.container(border=True):
-            st.subheader("Gerar sets")
-            st.write("Crie e organize conjuntos de dados para acompanhar suas rotinas.")
-            st.metric("Sets ativos", "12", "+3")
-            st.button("Novo set", type="primary", width="stretch")
+            st.subheader("Identificação")
+            st.text_input("Nome do setup (opcional)", value="Meu setup", max_chars=48)
+            st.text_input("Magic Number (automático)", value="1", disabled=True)
+            st.caption("Magic Number identifica as ordens deste setup.")
 
-    with col_reports:
+            action_left, action_right = st.columns(2)
+            with action_left:
+                st.button("Salvar set", width="stretch")
+            with action_right:
+                st.button("Carregar set", width="stretch")
+
+    with col_market:
         with st.container(border=True):
-            st.subheader("Acompanhar resultados")
-            st.write("Veja indicadores, pendencias e resumos dos seus sets cadastrados.")
-            st.metric("Itens gerados", "248", "+31")
-            st.button("Ver relatorios", width="stretch")
+            st.subheader("Mercado e operação")
+            market_col, mode_col = st.columns(2)
+            with market_col:
+                st.selectbox("Mercado", ["Forex", "B3"])
+            with mode_col:
+                st.selectbox("Modalidade", ["Day trade", "Swing trade"])
+
+            timeframe_col, lot_col = st.columns(2)
+            with timeframe_col:
+                st.selectbox("Timeframe", TIMEFRAMES, index=len(TIMEFRAMES) - 1)
+            with lot_col:
+                st.text_input("Lote", value="0.01")
+
+            st.selectbox("Direção permitida", ["Compra e venda", "Somente compra", "Somente venda"])
+            st.caption("Lote: mín. 0.01 · Passo 0.01")
+
+    with col_schedule:
+        with st.container(border=True):
+            st.subheader("Horários")
+            start_col, end_col = st.columns(2)
+            with start_col:
+                st.selectbox("Início entradas", TIMES, index=0)
+            with end_col:
+                st.selectbox("Encerramento entradas", TIMES, index=len(TIMES) - 1)
+
+            st.caption("Posições: conforme a modalidade.")
+            st.caption("Day trade: encerrar no dia.")
+            st.caption("Horário do servidor da corretora · HH:MM")
+
+    status_col, button_col = st.columns([4, 1])
+    with status_col:
+        st.info("Defina a identificação e as preferências do setup. Próxima etapa: Indicadores")
+    with button_col:
+        st.button("Continuar →", type="primary", width="stretch")
+
 
 
 def render_sets() -> None:
