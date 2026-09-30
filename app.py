@@ -40,36 +40,43 @@ METHOD_OPTIONS = ["SMA", "EMA", "SMMA", "LWMA"]
 
 def render_optimization_row(indicator_index: int, name: str, key_prefix: str, current_value: int | float) -> None:
     current_col, start_col, step_col, end_col = st.columns(4)
-    numeric_kwargs = {"value": float(current_value), "step": 1.0, "format": "%.2f"}
-
-    if isinstance(current_value, int):
-        numeric_kwargs = {"value": int(current_value), "step": 1}
+    is_integer = isinstance(current_value, int)
+    current_kwargs = {"value": int(current_value), "step": 1} if is_integer else {
+        "value": float(current_value),
+        "step": 1.0,
+        "format": "%.2f",
+    }
+    step_kwargs = {"value": 1, "step": 1, "min_value": 1} if is_integer else {
+        "value": 0.01,
+        "step": 0.01,
+        "min_value": 0.01,
+        "format": "%.2f",
+    }
 
     with current_col:
         st.number_input(
             f"{name} atual",
             disabled=True,
             key=f"opt_{key_prefix}_current_{indicator_index}",
-            **numeric_kwargs,
+            **current_kwargs,
         )
     with start_col:
         st.number_input(
             "Iniciar",
             key=f"opt_{key_prefix}_start_{indicator_index}",
-            **numeric_kwargs,
+            **current_kwargs,
         )
     with step_col:
         st.number_input(
             "Passo",
-            min_value=0.01 if isinstance(current_value, float) else 1,
             key=f"opt_{key_prefix}_step_{indicator_index}",
-            **numeric_kwargs,
+            **step_kwargs,
         )
     with end_col:
         st.number_input(
             "Terminar",
             key=f"opt_{key_prefix}_end_{indicator_index}",
-            **numeric_kwargs,
+            **current_kwargs,
         )
 
 
