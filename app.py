@@ -102,6 +102,10 @@ div[class="stDeployButton"] {{
     display: none;
 }}
 
+div[data-testid="stHorizontalBlock"] label {{
+    min-height: 2.5rem;
+}}
+
 .geraset-navbar {{
     align-items: center;
     background: #0f172a;
