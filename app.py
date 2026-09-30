@@ -1,5 +1,3 @@
-from textwrap import dedent
-
 import streamlit as st
 
 
@@ -16,73 +14,70 @@ def render_navbar() -> str:
     if current_page not in PAGES:
         current_page = "inicio"
 
-    nav_items = "\n".join(
+    nav_items = "".join(
         f'<a class="nav-link {"active" if slug == current_page else ""}" href="?page={slug}">{label}</a>'
         for slug, label in PAGES.items()
     )
 
-    st.markdown(
-        dedent(
-            f"""
-            <style>
-            .block-container {{
-                padding-top: 0;
-            }}
+    st.html(
+        f"""
+<style>
+.block-container {{
+    padding-top: 0;
+}}
 
-            .geraset-navbar {{
-                align-items: center;
-                background: #0f172a;
-                display: flex;
-                gap: 0.5rem;
-                justify-content: center;
-                margin: 0 calc(50% - 50vw) 3rem;
-                min-height: 4rem;
-                padding: 0 2rem;
-            }}
+.geraset-navbar {{
+    align-items: center;
+    background: #0f172a;
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    margin: 0 calc(50% - 50vw) 3rem;
+    min-height: 4rem;
+    padding: 0 2rem;
+}}
 
-            .geraset-navbar-inner {{
-                align-items: center;
-                display: flex;
-                gap: 0.5rem;
-                max-width: 1180px;
-                width: 100%;
-            }}
+.geraset-navbar-inner {{
+    align-items: center;
+    display: flex;
+    gap: 0.5rem;
+    max-width: 1180px;
+    width: 100%;
+}}
 
-            .brand {{
-                color: #ffffff;
-                font-size: 1rem;
-                font-weight: 800;
-                margin-right: 1.25rem;
-            }}
+.brand {{
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 800;
+    margin-right: 1.25rem;
+}}
 
-            .nav-link {{
-                border-radius: 0.5rem;
-                color: #dbe4f0 !important;
-                font-weight: 700;
-                padding: 0.65rem 0.95rem;
-                text-decoration: none !important;
-            }}
+.nav-link {{
+    border-radius: 0.5rem;
+    color: #dbe4f0 !important;
+    font-weight: 700;
+    padding: 0.65rem 0.95rem;
+    text-decoration: none !important;
+}}
 
-            .nav-link:hover {{
-                background: #1e293b;
-                color: #ffffff !important;
-            }}
+.nav-link:hover {{
+    background: #1e293b;
+    color: #ffffff !important;
+}}
 
-            .nav-link.active {{
-                background: #ffffff;
-                color: #0f172a !important;
-            }}
-            </style>
+.nav-link.active {{
+    background: #ffffff;
+    color: #0f172a !important;
+}}
+</style>
 
-            <nav class="geraset-navbar">
-                <div class="geraset-navbar-inner">
-                    <span class="brand">GeraSet</span>
-                    {nav_items}
-                </div>
-            </nav>
-            """
-        ).strip(),
-        unsafe_allow_html=True,
+<nav class="geraset-navbar">
+    <div class="geraset-navbar-inner">
+        <span class="brand">GeraSet</span>
+        {nav_items}
+    </div>
+</nav>
+"""
     )
 
     return PAGES[current_page]
