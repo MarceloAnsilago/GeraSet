@@ -1,6 +1,8 @@
 :root {
     --bg: #ffffff;
     --surface: #ffffff;
+    --card-gradient: linear-gradient(145deg, #ffffff 0%, #fbfcff 56%, #fff8f1 100%);
+    --summary-gradient: linear-gradient(145deg, #ffffff 0%, #f8fbff 100%);
     --soft: #f4f4f5;
     --line: #d8d8d8;
     --line-dark: #c8c8c8;
@@ -194,7 +196,7 @@ h3 {
 }
 
 .card {
-    background: var(--surface);
+    background: var(--card-gradient);
     border: 1px solid var(--line);
     border-radius: 4px;
     box-shadow: var(--shadow);
@@ -516,7 +518,7 @@ input:disabled {
 }
 
 .rules-summary {
-    background: #fff;
+    background: var(--summary-gradient);
     border: 1px solid var(--line);
     border-radius: 4px;
     box-shadow: var(--shadow);
