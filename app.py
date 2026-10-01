@@ -631,6 +631,12 @@ def render_review() -> None:
     st.title("Revisão")
     st.caption("Confira a configuração antes de salvar ou ativar o set.")
 
+    top_left, top_right = st.columns([4, 1])
+    with top_left:
+        st.info("Carregue um set salvo ou confira a configuração atual.")
+    with top_right:
+        st.button("Carregar set", type="primary", width="stretch")
+
     setup_col, rules_col = st.columns(2, gap="medium")
     with setup_col:
         with st.container(border=True):
@@ -711,7 +717,6 @@ def render_review() -> None:
         with st.container(border=True):
             st.subheader("Ações")
             st.button("Salvar set", type="primary", width="stretch")
-            st.button("Carregar set", width="stretch")
             st.button("Exportar set", width="stretch")
 
     footer_left, footer_save, footer_next = st.columns([3, 1, 1])
