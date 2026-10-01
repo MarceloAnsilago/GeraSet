@@ -185,40 +185,75 @@
             </section>
 
             <h2>Regras de entrada e saida</h2>
-            <section class="grid-3">
-                <div class="card">
+            <section class="grid-3 rules-grid">
+                <div class="card rules-card">
                     <h2>Ordem</h2>
                     <label>Tipo de ordem</label>
                     <select><option>A mercado</option><option>Pendente</option></select>
-                    <label>Posicionar em</label>
-                    <select><option>Maxima</option><option>Minima</option><option>Abertura</option><option>Fechamento</option></select>
-                    <label>Vela</label>
-                    <input type="number" value="1">
+                    <div class="row">
+                        <div>
+                            <label>Posicionar em</label>
+                            <select><option>Maxima</option><option>Minima</option><option>Abertura</option><option>Fechamento</option></select>
+                        </div>
+                        <div>
+                            <label>Vela</label>
+                            <input type="number" value="1">
+                        </div>
+                    </div>
+                    <p class="muted">Vela 1 representa a ultima vela fechada.</p>
                 </div>
-                <div class="card">
+                <div class="card rules-card">
                     <h2>Filtro de candle</h2>
                     <label>Condicao</label>
                     <select><option>Desativado</option><option>Candles</option><option>Pavios</option></select>
-                    <label>Configurar candle</label>
-                    <select>{% for item in candle_options %}<option>{{ item }}</option>{% endfor %}</select>
-                    <label>Unidade dos tamanhos</label>
-                    <select>{% for item in target_units %}<option>{{ item }}</option>{% endfor %}</select>
                     <div class="row">
-                        <div><label>Candle: min.</label><input value="0.00"></div>
-                        <div><label>Candle: max.</label><input value="0.00"></div>
+                        <div>
+                            <label>Configurar candle</label>
+                            <select>{% for item in candle_options %}<option>{{ item }}</option>{% endfor %}</select>
+                        </div>
+                        <div>
+                            <label>Unidade</label>
+                            <select>{% for item in target_units %}<option>{{ item }}</option>{% endfor %}</select>
+                        </div>
                     </div>
+                    <label>Medir candle</label>
+                    <select><option>Corpo</option><option>Total maxima - minima</option></select>
+                    <div class="row">
+                        <div><label>Candle min.</label><input value="0.00"></div>
+                        <div><label>Candle max.</label><input value="0.00"></div>
+                    </div>
+                    <div class="row">
+                        <div><label>Pavio sup. min.</label><input value="0.00"></div>
+                        <div><label>Pavio inf. min.</label><input value="0.00"></div>
+                    </div>
+                    <p class="muted">Zero desativa somente aquele limite.</p>
                 </div>
-                <div class="card">
+                <div class="card rules-card">
                     <h2>Alvos</h2>
                     <label>Unidade dos alvos</label>
                     <select>{% for item in target_units %}<option>{{ item }}</option>{% endfor %}</select>
-                    <label>Stop loss</label>
-                    <input value="0.00">
-                    <label>+ Vezes</label>
-                    <input value="1.00">
+                    <div class="row">
+                        <div><label>Stop loss</label><input value="0.00"></div>
+                        <div><label>+ Vezes</label><input value="1.00"></div>
+                    </div>
+                    <div class="row">
+                        <div><label>Candle</label><select><option>Ultimo</option><option>Penultimo</option><option>Antepenultimo</option></select></div>
+                        <div><label>Tamanho</label><select><option>Total com pavios</option><option>Corpo</option></select></div>
+                    </div>
                     <label>Take Profit</label>
                     <select><option>Vezes o stop</option><option>Distancia fixa</option></select>
+                    <div class="row">
+                        <div><label>Vezes o stop</label><input value="2.00"></div>
+                        <div><label>Distancia fixa</label><input value="0.00"></div>
+                    </div>
+                    <p class="muted">Distancia e vezes 0 desligam o alvo.</p>
                 </div>
+            </section>
+            <section class="rules-summary">
+                <div><span>Ordem</span><strong>A mercado</strong></div>
+                <div><span>Filtro</span><strong>Desativado</strong></div>
+                <div><span>Stop</span><strong>0,00 pontos</strong></div>
+                <div><span>Take</span><strong>2x o stop</strong></div>
             </section>
             <div class="button-row">
                 <span class="info">Configure os indicadores e as regras antes de seguir para Gestao.</span>

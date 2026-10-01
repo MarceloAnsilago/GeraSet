@@ -497,6 +497,52 @@ input:disabled {
     padding: 0.52rem 0;
 }
 
+.rules-grid {
+    align-items: start;
+}
+
+.rules-card h2 {
+    margin-bottom: 1.1rem;
+}
+
+.rules-card .muted {
+    border-top: 1px solid var(--line);
+    margin: 1rem 0 0;
+    padding-top: 0.8rem;
+}
+
+.rules-summary {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    box-shadow: var(--shadow);
+    display: grid;
+    gap: 0;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin: -0.25rem 0 1.5rem;
+}
+
+.rules-summary div {
+    border-right: 1px solid var(--line);
+    padding: 0.9rem 1rem;
+}
+
+.rules-summary div:last-child {
+    border-right: 0;
+}
+
+.rules-summary span {
+    color: var(--muted);
+    display: block;
+    font-size: 0.78rem;
+    margin-bottom: 0.25rem;
+}
+
+.rules-summary strong {
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
 @media (max-width: 1260px) {
     .page {
         padding-left: 1.5rem;
@@ -535,8 +581,18 @@ input:disabled {
     .grid-2,
     .grid-3,
     .grid-4,
-    .top-action {
+    .top-action,
+    .rules-summary {
         grid-template-columns: 1fr;
+    }
+
+    .rules-summary div {
+        border-bottom: 1px solid var(--line);
+        border-right: 0;
+    }
+
+    .rules-summary div:last-child {
+        border-bottom: 0;
     }
 
     .button-row {
