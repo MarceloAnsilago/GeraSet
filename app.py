@@ -38,6 +38,13 @@ TIMES = [f"{hour:02d}:{minute:02d}" for hour in range(24) for minute in range(0,
 PRICE_OPTIONS = ["Close", "Open", "High", "Low", "Median", "Typical", "Weighted"]
 METHOD_OPTIONS = ["SMA", "EMA", "SMMA", "LWMA"]
 MANAGEMENT_MODES = ["Desativado", "Pontos", "Porcentagem"]
+CANDLE_FILTER_MODES = ["Desativado", "Candles", "Pavios"]
+CANDLE_OPTIONS = ["Candle 1 (último fechado)", "Candle 2", "Candle 3"]
+TARGET_UNITS = ["Pontos", "Porcentagem"]
+
+
+def selected_candle_number(label: str) -> int:
+    return CANDLE_OPTIONS.index(label) + 1
 
 
 def render_optimization_row(indicator_index: int, name: str, key_prefix: str, current_value: int | float) -> None:
@@ -110,6 +117,165 @@ def management_summary(title: str, mode: str, fields: list[str], values: list[fl
     details = " · ".join(f"{field}: {value:.2f}" for field, value in zip(fields, values))
     unit = "%" if mode == "Porcentagem" else "pontos"
     return f"{title}: {details} {unit}"
+
+
+def render_rule_value(label: str, key: str, unit: str) -> float:
+    max_value = 100.0 if unit == "Porcentagem" else 100000000.0
+    return st.number_input(
+        label,
+        min_value=0.0,
+        max_value=max_value,
+        value=0.0,
+        step=1.0,
+        format="%.2f",
+        key=key,
+    )
+
+
+def render_rules_section() -> None:
+    st.subheader("Regras de entrada e saída")
+    order_col, filter_col, targets_col = st.columns(3, gap="medium")
+
+    with order_col:
+        with st.container(border=True):
+            st.subheader("Ordem")
+            order_mode = st.selectbox("Tipo de ordem", ["A mercado", "Pendente"], key="rule_order_mode")
+
+            if order_mode == "Pendente":
+                st.selectbox(
+                    "Posicionar em",
+                    ["Máxima", "Mínima", "Abertura", "Fechamento"],
+                    key="rule_pending_reference",
+                )
+                st.number_input(
+                    "Vela (1 = última fechada)",
+                    min_value=1,
+                    max_value=100000,
+                    value=1,
+                    step=1,
+                    key="rule_pending_bar",
+                )
+
+            st.caption("Defina como a entrada será criada.")
+
+    with filter_col:
+        with st.container(border=True):
+            st.subheader("Filtro de candle")
+            condition = st.selectbox("Condição", CANDLE_FILTER_MODES, key="candle_filter_condition")
+
+            if condition == "Desativado":
+                st.caption("Sem filtro de tamanho ativo.")
+            else:
+                candle = st.selectbox("Configurar candle", CANDLE_OPTIONS, key="candle_filter_candle")
+                candle_number = selected_candle_number(candle)
+                unit = st.selectbox("Unidade dos tamanhos", TARGET_UNITS, key=f"candle_filter_unit_{candle_number}")
+                unit_label = "%" if unit == "Porcentagem" else "pontos"
+
+                if condition == "Candles":
+                    st.selectbox(
+                        "Medir tamanho do candle",
+                        ["Corpo", "Total (máxima - mínima)"],
+                        key=f"candle_filter_measure_{candle_number}",
+                    )
+                    min_col, max_col = st.columns(2)
+                    with min_col:
+                        render_rule_value(
+                            "Candle: mín.",
+                            f"candle_filter_body_min_{candle_number}_{unit}",
+                            unit,
+                        )
+                    with max_col:
+                        render_rule_value(
+                            "Candle: máx.",
+                            f"candle_filter_body_max_{candle_number}_{unit}",
+                            unit,
+                        )
+                else:
+                    upper_min_col, upper_max_col = st.columns(2)
+                    with upper_min_col:
+                        render_rule_value(
+                            "Pavio sup.: mín.",
+                            f"candle_filter_upper_min_{candle_number}_{unit}",
+                            unit,
+                        )
+                    with upper_max_col:
+                        render_rule_value(
+                            "Pavio sup.: máx.",
+                            f"candle_filter_upper_max_{candle_number}_{unit}",
+                            unit,
+                        )
+
+                    lower_min_col, lower_max_col = st.columns(2)
+                    with lower_min_col:
+                        render_rule_value(
+                            "Pavio inf.: mín.",
+                            f"candle_filter_lower_min_{candle_number}_{unit}",
+                            unit,
+                        )
+                    with lower_max_col:
+                        render_rule_value(
+                            "Pavio inf.: máx.",
+                            f"candle_filter_lower_max_{candle_number}_{unit}",
+                            unit,
+                        )
+
+                st.caption(f"Em {unit_label}. 0 = sem restrição.")
+
+    with targets_col:
+        with st.container(border=True):
+            st.subheader("Alvos")
+            target_unit = st.selectbox("Unidade dos alvos", TARGET_UNITS, key="rule_target_unit")
+            st.number_input(
+                f"Stop loss ({target_unit.lower()})",
+                min_value=0.0,
+                max_value=100000000.0,
+                value=0.0,
+                step=1.0,
+                format="%.2f",
+                key=f"rule_stop_loss_{target_unit}",
+            )
+            st.number_input(
+                "+ Vezes",
+                min_value=0.0,
+                max_value=100000000.0,
+                value=1.0,
+                step=0.5,
+                format="%.2f",
+                key="rule_stop_multiplier",
+            )
+            st.selectbox("Candle", ["Último", "Penúltimo", "Antepenúltimo"], key="rule_stop_candle")
+            st.selectbox("Tamanho do candle", ["Total (com pavios)", "Corpo"], key="rule_stop_measure")
+
+            st.divider()
+            st.markdown("**Take Profit**")
+            take_mode = st.selectbox(
+                "Calcular por",
+                ["Vezes o stop", "Distância fixa"],
+                key="rule_take_mode",
+            )
+
+            if take_mode == "Vezes o stop":
+                st.number_input(
+                    "Vezes o stop",
+                    min_value=0.0,
+                    max_value=100000000.0,
+                    value=2.0,
+                    step=0.5,
+                    format="%.2f",
+                    key="rule_take_multiplier",
+                )
+            else:
+                st.number_input(
+                    f"Distância ({target_unit.lower()})",
+                    min_value=0.0,
+                    max_value=100000000.0,
+                    value=0.0,
+                    step=1.0,
+                    format="%.2f",
+                    key=f"rule_take_distance_{target_unit}",
+                )
+
+            st.caption("Distância e vezes 0 desligam o alvo.")
 
 
 def render_navbar() -> str:
@@ -332,9 +498,11 @@ def render_indicators() -> None:
                 else:
                     st.caption("Sem parâmetros ativos.")
 
+    render_rules_section()
+
     footer_left, footer_right = st.columns([4, 1])
     with footer_left:
-        st.info("Configure os indicadores antes de seguir para Gestão.")
+        st.info("Configure os indicadores e as regras antes de seguir para Gestão.")
     with footer_right:
         st.link_button("Continuar →", "?page=gestao", type="primary", width="stretch")
 
