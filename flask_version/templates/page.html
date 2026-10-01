@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>GeraSet Flask</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-main">
+            <span class="brand">GeraSet</span>
+            {% for slug, label in pages.items() %}
+                <a class="nav-link {{ 'active' if active_page == slug else '' }}" href="{{ url_for('page', page=slug) }}">{{ label }}</a>
+            {% endfor %}
+        </div>
+        <div class="nav-review">
+            <a class="nav-link {{ 'active' if active_page == 'revisao' else '' }}" href="{{ url_for('page', page='revisao') }}">Revisao e Sets</a>
+        </div>
+    </nav>
+
+    <main class="page">
+        {% if active_page == 'inicio' %}
+            <h1>GeraSet</h1>
+            <p class="caption">Primeira etapa do Canvas UniversalEa, recriada em Flask.</p>
+            <section class="grid-3">
+                <div class="card">
+                    <h2>Identificacao</h2>
+                    <label>Nome do setup</label>
+                    <input name="setup_name" value="{{ data.setup_name }}">
+                    <label>Magic Number</label>
+                    <input value="{{ data.setup_magic }}" disabled>
+                    <p class="muted">Magic Number identifica as ordens deste setup.</p>
+                    <div class="row">
+                        <a class="btn" href="{{ url_for('page', page='revisao') }}">Salvar set</a>
+                        <a class="btn" href="{{ url_for('page', page='revisao') }}">Carregar set</a>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2>Mercado e operacao</h2>
+                    <div class="row">
+                        <div>
+                            <label>Mercado</label>
+                            <select><option>Forex</option><option>B3</option></select>
+                        </div>
+                        <div>
+                            <label>Modalidade</label>
+                            <select><option>Day trade</option><option>Swing trade</option></select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div>
+                            <label>Timeframe</label>
+                            <select>{% for item in timeframes %}<option {{ 'selected' if item == 'Tempo corrente' else '' }}>{{ item }}</option>{% endfor %}</select>
+                        </div>
+                        <div>
+                            <label>Lote</label>
+                            <input value="{{ data.setup_lot }}">
+                        </div>
+                    </div>
+                    <label>Direcao permitida</label>
+                    <select><option>Compra e venda</option><option>Somente compra</option><option>Somente venda</option></select>
+                    <p class="muted">Lote: min. 0.01 - Passo 0.01</p>
+                </div>
+                <div class="card">
+                    <h2>Horarios</h2>
+                    <div class="row">
+                        <div>
+                            <label>Inicio entradas</label>
+                            <select>{% for item in times %}<option>{{ item }}</option>{% endfor %}</select>
+                        </div>
+                        <div>
+                            <label>Encerramento entradas</label>
+                            <select>{% for item in times %}<option {{ 'selected' if item == '23:55' else '' }}>{{ item }}</option>{% endfor %}</select>
+                        </div>
+                    </div>
+                    <p class="muted">Posicoes: conforme a modalidade.</p>
+                    <p class="muted">Horario do servidor da corretora - HH:MM</p>
+                </div>
+            </section>
+            <div class="button-row">
+                <span class="info">Defina a identificacao e as preferencias do setup. Proxima etapa: Indicadores</span>
+                <a class="btn btn-primary" href="{{ url_for('page', page='indicadores') }}">Continuar</a>
+            </div>
+
+        {% elif active_page == 'indicadores' %}
+            <h1>Indicadores</h1>
+            <p class="caption">Segunda etapa do Canvas UniversalEa.</p>
+            <div class="info">Configure os quatro indicadores. Apenas Media Movel pode ser repetida.</div>
+            <section class="grid-4">
+                {% for index in range(1, 5) %}
+                    <div class="card">
+                        <h2>Indicador {{ index }}</h2>
+                        <label>Tipo</label>
+                        <select>
+                            <option>Media Movel</option>
+                            <option>RSI</option>
+                            <option>ADX</option>
+                            <option>Nao usar</option>
+                        </select>
+                        <h3>Parametros</h3>
+                        <label>Periodo</label>
+                        <input type="number" value="{{ 20 if index > 2 else 14 }}">
+                        <label>Preco aplicado</label>
+                        <select>{% for item in price_options %}<option>{{ item }}</option>{% endfor %}</select>
+                        <label>Metodo</label>
+                        <select>{% for item in method_options %}<option {{ 'selected' if item == 'EMA' else '' }}>{{ item }}</option>{% endfor %}</select>
+                        <h3>Otimizar</h3>
+                        <div class="grid-3">
+                            <input value="Atual">
+                            <input value="Passo">
+                            <input value="Terminar">
+                        </div>
+                    </div>
+                {% endfor %}
+            </section>
+
+            <h2>Resumo dos indicadores</h2>
+            <section class="grid-4">
+                {% for index in range(1, 5) %}
+                    <div class="card">
+                        <strong>Indicador {{ index }}</strong>
+                        <p>{{ 'Media Movel' if index in [1, 4] else ('RSI' if index == 2 else 'ADX') }}</p>
+                        <p class="muted">Parametros principais configurados.</p>
+                    </div>
+                {% endfor %}
+            </section>
+
+            <h2>Regras de entrada e saida</h2>
+            <section class="grid-3">
+                <div class="card">
+                    <h2>Ordem</h2>
+                    <label>Tipo de ordem</label>
+                    <select><option>A mercado</option><option>Pendente</option></select>
+                    <label>Posicionar em</label>
+                    <select><option>Maxima</option><option>Minima</option><option>Abertura</option><option>Fechamento</option></select>
+                    <label>Vela</label>
+                    <input type="number" value="1">
+                </div>
+                <div class="card">
+                    <h2>Filtro de candle</h2>
+                    <label>Condicao</label>
+                    <select><option>Desativado</option><option>Candles</option><option>Pavios</option></select>
+                    <label>Configurar candle</label>
+                    <select>{% for item in candle_options %}<option>{{ item }}</option>{% endfor %}</select>
+                    <label>Unidade dos tamanhos</label>
+                    <select>{% for item in target_units %}<option>{{ item }}</option>{% endfor %}</select>
+                    <div class="row">
+                        <div><label>Candle: min.</label><input value="0.00"></div>
+                        <div><label>Candle: max.</label><input value="0.00"></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2>Alvos</h2>
+                    <label>Unidade dos alvos</label>
+                    <select>{% for item in target_units %}<option>{{ item }}</option>{% endfor %}</select>
+                    <label>Stop loss</label>
+                    <input value="0.00">
+                    <label>+ Vezes</label>
+                    <input value="1.00">
+                    <label>Take Profit</label>
+                    <select><option>Vezes o stop</option><option>Distancia fixa</option></select>
+                </div>
+            </section>
+            <div class="button-row">
+                <span class="info">Configure os indicadores e as regras antes de seguir para Gestao.</span>
+                <a class="btn btn-primary" href="{{ url_for('page', page='gestao') }}">Continuar</a>
+            </div>
+
+        {% elif active_page == 'gestao' %}
+            <h1>Gestao</h1>
+            <p class="caption">Configure o breakeven, trailing stop e stop movel da estrategia.</p>
+            <section class="grid-3">
+                {% for title in ['Breakeven', 'Trailing stop', 'Stop movel'] %}
+                    <div class="card">
+                        <h2>{{ title }}</h2>
+                        <label>Modo</label>
+                        <select>{% for item in management_modes %}<option>{{ item }}</option>{% endfor %}</select>
+                        <label>Ativar apos</label>
+                        <input value="0.00">
+                        <label>Distancia do preco</label>
+                        <input value="0.00">
+                        <label>Passo de ajuste</label>
+                        <input value="0.00">
+                        <p class="muted">Valores em pontos.</p>
+                    </div>
+                {% endfor %}
+            </section>
+            <h2>Resumo do stop movel</h2>
+            <div class="card">
+                <p>Breakeven: Desativado</p>
+                <p>Trailing stop: Desativado</p>
+                <p>Stop movel: Desativado</p>
+            </div>
+            <div class="button-row">
+                <a class="btn" href="{{ url_for('page', page='indicadores') }}">Indicadores</a>
+                <a class="btn btn-primary" href="{{ url_for('page', page='revisao') }}">Continuar</a>
+            </div>
+
+        {% elif active_page == 'revisao' %}
+            <h1>Revisao e Sets</h1>
+            <p class="caption">Confira a configuracao antes de salvar ou ativar o set.</p>
+            <div class="top-action">
+                <div class="info">Carregue um set salvo ou confira a configuracao atual.</div>
+                <a class="btn btn-primary" href="#">Carregar set</a>
+            </div>
+            <section class="grid-2">
+                <div class="card">
+                    <h2>Setup</h2>
+                    <p><strong>Nome:</strong> {{ data.setup_name }}</p>
+                    <p><strong>Mercado:</strong> {{ data.setup_market }}</p>
+                    <p><strong>Timeframe:</strong> {{ data.setup_timeframe }}</p>
+                    <p><strong>Lote:</strong> {{ data.setup_lot }}</p>
+                </div>
+                <div class="card">
+                    <h2>Regras</h2>
+                    <p>Ordem: A mercado</p>
+                    <p>Filtro de candle: Desativado</p>
+                    <p>Alvos: pontos</p>
+                </div>
+            </section>
+            <h2>Indicadores</h2>
+            <section class="grid-4">
+                {% for index in range(1, 5) %}
+                    <div class="card"><strong>Indicador {{ index }}</strong><p class="muted">Resumo dos parametros.</p></div>
+                {% endfor %}
+            </section>
+            <h2>Gestao</h2>
+            <section class="grid-3">
+                <div class="card">Breakeven: Desativado</div>
+                <div class="card">Trailing stop: Desativado</div>
+                <div class="card">Stop movel: Desativado</div>
+            </section>
+            <h2>Sets</h2>
+            <section class="grid-2">
+                <div class="card">
+                    <h2>Set atual</h2>
+                    <p>{{ data.setup_name }}</p>
+                    <p class="muted">A revisao acima compoe o set que sera salvo.</p>
+                </div>
+                <div class="card">
+                    <h2>Acoes</h2>
+                    <a class="btn btn-primary" href="#">Salvar set</a>
+                    <a class="btn" href="#">Exportar set</a>
+                </div>
+            </section>
+            <div class="button-row">
+                <a class="btn" href="{{ url_for('page', page='gestao') }}">Gestao</a>
+                <a class="btn btn-primary" href="{{ url_for('page', page='ativacao') }}">Continuar</a>
+            </div>
+
+        {% elif active_page == 'ativacao' %}
+            <h1>Ativacao</h1>
+            <p class="caption">Ultima etapa do fluxo.</p>
+            <div class="card">
+                <h2>Controle do set</h2>
+                <div class="info">A ativacao real ainda sera conectada ao motor.</div>
+                <label><input type="checkbox" style="width:auto; min-height:0;"> Set ativo</label>
+                <p>Status: Pausado</p>
+            </div>
+            <div class="button-row">
+                <a class="btn" href="{{ url_for('page', page='revisao') }}">Revisao</a>
+                <a class="btn btn-primary" href="#">Aplicar</a>
+            </div>
+
+        {% elif active_page == 'relatorios' %}
+            <h1>Relatorios</h1>
+            <div class="info">Aqui ficarao os indicadores e exportacoes do GeraSet.</div>
+
+        {% elif active_page == 'configuracoes' %}
+            <h1>Configuracoes</h1>
+            <div class="info">Aqui ficarao as preferencias do projeto.</div>
+        {% endif %}
+    </main>
+</body>
+</html>
