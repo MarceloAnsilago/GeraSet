@@ -110,7 +110,7 @@ body::before {
 
 .page {
     margin: 0 auto;
-    max-width: 1180px;
+    max-width: 1320px;
     padding: 1.2rem 0 3rem;
 }
 
@@ -188,12 +188,22 @@ h3 {
     grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+.indicator-grid {
+    gap: 1.25rem;
+    grid-template-columns: repeat(4, minmax(290px, 1fr));
+}
+
 .card {
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: 4px;
     box-shadow: var(--shadow);
     padding: 1.45rem;
+}
+
+.indicator-card {
+    min-width: 0;
+    padding: 1.55rem;
 }
 
 .card h2:first-child {
@@ -240,6 +250,23 @@ select:focus {
 
 input:disabled {
     color: var(--muted);
+}
+
+.optimize-grid {
+    display: grid;
+    gap: 0.45rem 0.7rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.optimize-grid label {
+    font-size: 0.8rem;
+    margin: 0;
+}
+
+.optimize-grid input {
+    min-height: 40px;
+    padding-left: 0.65rem;
+    padding-right: 0.65rem;
 }
 
 .button-row {
@@ -369,7 +396,8 @@ input:disabled {
 }
 
 @media (max-width: 1100px) {
-    .grid-4 {
+    .grid-4,
+    .indicator-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }

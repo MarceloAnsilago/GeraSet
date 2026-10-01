@@ -87,9 +87,9 @@
             <h1>Indicadores</h1>
             <p class="caption">Segunda etapa do Canvas UniversalEa.</p>
             <div class="info">Configure os quatro indicadores. Apenas Media Movel pode ser repetida.</div>
-            <section class="grid-4">
+            <section class="grid-4 indicator-grid">
                 {% for index in range(1, 5) %}
-                    <div class="card">
+                    <div class="card indicator-card">
                         <h2>Indicador {{ index }}</h2>
                         <label>Tipo</label>
                         <select>
@@ -106,10 +106,13 @@
                         <label>Metodo</label>
                         <select>{% for item in method_options %}<option {{ 'selected' if item == 'EMA' else '' }}>{{ item }}</option>{% endfor %}</select>
                         <h3>Otimizar</h3>
-                        <div class="grid-3">
-                            <input value="Atual">
-                            <input value="Passo">
-                            <input value="Terminar">
+                        <div class="optimize-grid">
+                            <label>Iniciar</label>
+                            <label>Passo</label>
+                            <label>Terminar</label>
+                            <input value="{{ 20 if index > 2 else 14 }}">
+                            <input value="1">
+                            <input value="{{ 20 if index > 2 else 14 }}">
                         </div>
                     </div>
                 {% endfor %}
