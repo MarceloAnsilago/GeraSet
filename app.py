@@ -4,6 +4,7 @@ import streamlit as st
 PAGES = {
     "inicio": "Pagina Inicial",
     "indicadores": "Indicadores",
+    "gestao": "Gestão",
     "sets": "Sets",
     "relatorios": "Relatorios",
     "configuracoes": "Configuracoes",
@@ -36,6 +37,7 @@ TIMEFRAMES = [
 TIMES = [f"{hour:02d}:{minute:02d}" for hour in range(24) for minute in range(0, 60, 5)]
 PRICE_OPTIONS = ["Close", "Open", "High", "Low", "Median", "Typical", "Weighted"]
 METHOD_OPTIONS = ["SMA", "EMA", "SMMA", "LWMA"]
+MANAGEMENT_MODES = ["Desativado", "Pontos", "Porcentagem"]
 
 
 def render_optimization_row(indicator_index: int, name: str, key_prefix: str, current_value: int | float) -> None:
@@ -72,6 +74,42 @@ def render_optimization_row(indicator_index: int, name: str, key_prefix: str, cu
             key=f"opt_{key_prefix}_end_{indicator_index}",
             **current_kwargs,
         )
+
+
+def render_management_value(label: str, key: str, disabled: bool) -> float:
+    return st.number_input(
+        label,
+        min_value=0.0,
+        max_value=100000000.0,
+        value=0.0,
+        step=1.0,
+        format="%.2f",
+        disabled=disabled,
+        key=key,
+    )
+
+
+def render_management_card(card_id: str, title: str, fields: list[str]) -> tuple[str, list[float]]:
+    with st.container(border=True):
+        st.subheader(title)
+        mode = st.selectbox("Modo", MANAGEMENT_MODES, key=f"{card_id}_mode")
+        disabled = mode == "Desativado"
+        values = [
+            render_management_value(field, f"{card_id}_{position}", disabled)
+            for position, field in enumerate(fields)
+        ]
+        unit = "%" if mode == "Porcentagem" else "pontos"
+        st.caption(f"Valores em {unit}.")
+        return mode, values
+
+
+def management_summary(title: str, mode: str, fields: list[str], values: list[float]) -> str:
+    if mode == "Desativado":
+        return f"{title}: Desativado"
+
+    details = " · ".join(f"{field}: {value:.2f}" for field, value in zip(fields, values))
+    unit = "%" if mode == "Porcentagem" else "pontos"
+    return f"{title}: {details} {unit}"
 
 
 def render_navbar() -> str:
@@ -296,9 +334,55 @@ def render_indicators() -> None:
 
     footer_left, footer_right = st.columns([4, 1])
     with footer_left:
-        st.info("Configure os indicadores antes de seguir para Regras.")
+        st.info("Configure os indicadores antes de seguir para Gestão.")
     with footer_right:
-        st.button("Salvar indicadores", type="primary", width="stretch")
+        st.link_button("Continuar →", "?page=gestao", type="primary", width="stretch")
+
+
+def render_management() -> None:
+    st.title("Gestão")
+    st.caption("Configure o breakeven, trailing stop e stop móvel da estratégia.")
+
+    breakeven_fields = ["Ativar após", "Proteção na entrada"]
+    trailing_fields = ["Ativar após", "Distância do preço", "Passo de ajuste"]
+    moving_fields = ["Ativar após", "Distância do preço", "Passo de ajuste"]
+
+    be_col, trailing_col, moving_col = st.columns(3, gap="medium")
+
+    with be_col:
+        breakeven_mode, breakeven_values = render_management_card(
+            "breakeven",
+            "Breakeven",
+            breakeven_fields,
+        )
+
+    with trailing_col:
+        trailing_mode, trailing_values = render_management_card(
+            "trailing",
+            "Trailing stop",
+            trailing_fields,
+        )
+
+    with moving_col:
+        moving_mode, moving_values = render_management_card(
+            "moving_stop",
+            "Stop móvel",
+            moving_fields,
+        )
+
+    st.subheader("Resumo do stop móvel")
+    with st.container(border=True):
+        st.write(management_summary("Breakeven", breakeven_mode, breakeven_fields, breakeven_values))
+        st.write(management_summary("Trailing stop", trailing_mode, trailing_fields, trailing_values))
+        st.write(management_summary("Stop móvel", moving_mode, moving_fields, moving_values))
+
+    footer_left, footer_middle, footer_right = st.columns([3, 1, 1])
+    with footer_left:
+        st.info("Próxima etapa: Revisão")
+    with footer_middle:
+        st.link_button("← Indicadores", "?page=indicadores", width="stretch")
+    with footer_right:
+        st.button("Salvar gestão", type="primary", width="stretch")
 
 
 def render_sets() -> None:
@@ -330,6 +414,8 @@ def main() -> None:
         render_home()
     elif selected_page == "Indicadores":
         render_indicators()
+    elif selected_page == "Gestão":
+        render_management()
     elif selected_page == "Sets":
         render_sets()
     elif selected_page == "Relatorios":
