@@ -189,8 +189,8 @@
                 <div class="card rules-card">
                     <h2>Ordem</h2>
                     <label>Tipo de ordem</label>
-                    <select><option>A mercado</option><option>Pendente</option></select>
-                    <div class="row">
+                    <select data-rule-order><option>A mercado</option><option>Pendente</option></select>
+                    <div class="row" data-pending-fields>
                         <div>
                             <label>Posicionar em</label>
                             <select><option>Maxima</option><option>Minima</option><option>Abertura</option><option>Fechamento</option></select>
@@ -200,13 +200,13 @@
                             <input type="number" value="1">
                         </div>
                     </div>
-                    <p class="muted">Vela 1 representa a ultima vela fechada.</p>
+                    <p class="muted" data-pending-fields>Vela 1 representa a ultima vela fechada.</p>
                 </div>
                 <div class="card rules-card">
                     <h2>Filtro de candle</h2>
                     <label>Condicao</label>
-                    <select><option>Desativado</option><option>Candles</option><option>Pavios</option></select>
-                    <div class="row">
+                    <select data-candle-condition><option>Desativado</option><option>Candles</option><option>Pavios</option></select>
+                    <div class="row" data-candle-common>
                         <div>
                             <label>Configurar candle</label>
                             <select>{% for item in candle_options %}<option>{{ item }}</option>{% endfor %}</select>
@@ -216,17 +216,19 @@
                             <select>{% for item in target_units %}<option>{{ item }}</option>{% endfor %}</select>
                         </div>
                     </div>
+                    <div data-candle-size>
                     <label>Medir candle</label>
                     <select><option>Corpo</option><option>Total maxima - minima</option></select>
                     <div class="row">
                         <div><label>Candle min.</label><input value="0.00"></div>
                         <div><label>Candle max.</label><input value="0.00"></div>
                     </div>
-                    <div class="row">
+                    </div>
+                    <div class="row" data-candle-wicks>
                         <div><label>Pavio sup. min.</label><input value="0.00"></div>
                         <div><label>Pavio inf. min.</label><input value="0.00"></div>
                     </div>
-                    <p class="muted">Zero desativa somente aquele limite.</p>
+                    <p class="muted" data-candle-common>Zero desativa somente aquele limite.</p>
                 </div>
                 <div class="card rules-card">
                     <h2>Alvos</h2>
@@ -241,10 +243,10 @@
                         <div><label>Tamanho</label><select><option>Total com pavios</option><option>Corpo</option></select></div>
                     </div>
                     <label>Take Profit</label>
-                    <select><option>Vezes o stop</option><option>Distancia fixa</option></select>
+                    <select data-take-mode><option>Vezes o stop</option><option>Distancia fixa</option></select>
                     <div class="row">
-                        <div><label>Vezes o stop</label><input value="2.00"></div>
-                        <div><label>Distancia fixa</label><input value="0.00"></div>
+                        <div data-take-multiplier><label>Vezes o stop</label><input value="2.00"></div>
+                        <div data-take-distance><label>Distancia fixa</label><input value="0.00"></div>
                     </div>
                     <p class="muted">Distancia e vezes 0 desligam o alvo.</p>
                 </div>
@@ -365,5 +367,6 @@
             <div class="info">Aqui ficarao as preferencias do projeto.</div>
         {% endif %}
     </main>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>

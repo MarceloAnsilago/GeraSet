@@ -511,6 +511,10 @@ input:disabled {
     padding-top: 0.8rem;
 }
 
+.is-hidden {
+    display: none !important;
+}
+
 .rules-summary {
     background: #fff;
     border: 1px solid var(--line);
