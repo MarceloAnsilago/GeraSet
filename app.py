@@ -5,6 +5,8 @@ PAGES = {
     "inicio": "Pagina Inicial",
     "indicadores": "Indicadores",
     "gestao": "Gestão",
+    "revisao": "Revisao",
+    "ativacao": "Ativacao",
     "sets": "Sets",
     "relatorios": "Relatorios",
     "configuracoes": "Configuracoes",
@@ -117,6 +119,79 @@ def management_summary(title: str, mode: str, fields: list[str], values: list[fl
     details = " · ".join(f"{field}: {value:.2f}" for field, value in zip(fields, values))
     unit = "%" if mode == "Porcentagem" else "pontos"
     return f"{title}: {details} {unit}"
+
+
+def state_value(key: str, default: object) -> object:
+    return st.session_state.get(key, default)
+
+
+def write_review_row(label: str, value: object) -> None:
+    st.caption(label)
+    st.write(value)
+
+
+def indicator_review_lines(index: int) -> list[str]:
+    selected_type = str(state_value(f"indicator_type_{index}", "Não usar"))
+
+    if selected_type == "Média Móvel":
+        return [
+            selected_type,
+            f"Período: {state_value(f'ma_period_{index}', 20)}",
+            f"Método: {state_value(f'ma_method_{index}', 'EMA')}",
+            f"Preço: {state_value(f'ma_price_{index}', 'Close')}",
+            f"Shift: {state_value(f'ma_shift_{index}', 0)}",
+            f"Inclinação: {state_value(f'ma_slope_{index}', 3)} velas",
+        ]
+
+    if selected_type == "RSI":
+        return [
+            selected_type,
+            f"Período: {state_value(f'rsi_period_{index}', 14)}",
+            f"Preço: {state_value(f'rsi_price_{index}', 'Close')}",
+            f"Sobrevenda: {float(state_value(f'rsi_lower_{index}', 30.0)):.2f}",
+            f"Sobrecompra: {float(state_value(f'rsi_upper_{index}', 70.0)):.2f}",
+        ]
+
+    if selected_type == "ADX":
+        return [
+            selected_type,
+            f"Período: {state_value(f'adx_period_{index}', 14)}",
+            f"ADX mínimo: {float(state_value(f'adx_min_{index}', 25.0)):.2f}",
+            "Compra: +DI > -DI",
+            "Venda: -DI > +DI",
+        ]
+
+    return ["Não usar", "Sem parâmetros ativos."]
+
+
+def candle_filter_review_lines() -> list[str]:
+    condition = str(state_value("candle_filter_condition", "Desativado"))
+    if condition == "Desativado":
+        return ["Filtro de candle: Desativado"]
+
+    candle = str(state_value("candle_filter_candle", CANDLE_OPTIONS[0]))
+    candle_number = selected_candle_number(candle)
+    unit = str(state_value(f"candle_filter_unit_{candle_number}", "Pontos"))
+
+    lines = [f"Condição: {condition}", f"Candle: {candle}", f"Unidade: {unit}"]
+    if condition == "Candles":
+        lines.extend(
+            [
+                f"Medida: {state_value(f'candle_filter_measure_{candle_number}', 'Corpo')}",
+                f"Mínimo: {float(state_value(f'candle_filter_body_min_{candle_number}_{unit}', 0.0)):.2f}",
+                f"Máximo: {float(state_value(f'candle_filter_body_max_{candle_number}_{unit}', 0.0)):.2f}",
+            ]
+        )
+    else:
+        lines.extend(
+            [
+                f"Pavio superior mín.: {float(state_value(f'candle_filter_upper_min_{candle_number}_{unit}', 0.0)):.2f}",
+                f"Pavio superior máx.: {float(state_value(f'candle_filter_upper_max_{candle_number}_{unit}', 0.0)):.2f}",
+                f"Pavio inferior mín.: {float(state_value(f'candle_filter_lower_min_{candle_number}_{unit}', 0.0)):.2f}",
+                f"Pavio inferior máx.: {float(state_value(f'candle_filter_lower_max_{candle_number}_{unit}', 0.0)):.2f}",
+            ]
+        )
+    return lines
 
 
 def render_rule_value(label: str, key: str, unit: str) -> float:
@@ -366,8 +441,8 @@ def render_home() -> None:
     with col_identity:
         with st.container(border=True):
             st.subheader("Identificação")
-            st.text_input("Nome do setup (opcional)", value="Meu setup", max_chars=48)
-            st.text_input("Magic Number (automático)", value="1", disabled=True)
+            st.text_input("Nome do setup (opcional)", value="Meu setup", max_chars=48, key="setup_name")
+            st.text_input("Magic Number (automático)", value="1", disabled=True, key="setup_magic")
             st.caption("Magic Number identifica as ordens deste setup.")
 
             action_left, action_right = st.columns(2)
@@ -381,17 +456,17 @@ def render_home() -> None:
             st.subheader("Mercado e operação")
             market_col, mode_col = st.columns(2)
             with market_col:
-                st.selectbox("Mercado", ["Forex", "B3"])
+                st.selectbox("Mercado", ["Forex", "B3"], key="setup_market")
             with mode_col:
-                st.selectbox("Modalidade", ["Day trade", "Swing trade"])
+                st.selectbox("Modalidade", ["Day trade", "Swing trade"], key="setup_mode")
 
             timeframe_col, lot_col = st.columns(2)
             with timeframe_col:
-                st.selectbox("Timeframe", TIMEFRAMES, index=len(TIMEFRAMES) - 1)
+                st.selectbox("Timeframe", TIMEFRAMES, index=len(TIMEFRAMES) - 1, key="setup_timeframe")
             with lot_col:
-                st.text_input("Lote", value="0.01")
+                st.text_input("Lote", value="0.01", key="setup_lot")
 
-            st.selectbox("Direção permitida", ["Compra e venda", "Somente compra", "Somente venda"])
+            st.selectbox("Direção permitida", ["Compra e venda", "Somente compra", "Somente venda"], key="setup_direction")
             st.caption("Lote: mín. 0.01 · Passo 0.01")
 
     with col_schedule:
@@ -399,9 +474,9 @@ def render_home() -> None:
             st.subheader("Horários")
             start_col, end_col = st.columns(2)
             with start_col:
-                st.selectbox("Início entradas", TIMES, index=0)
+                st.selectbox("Início entradas", TIMES, index=0, key="setup_entry_start")
             with end_col:
-                st.selectbox("Encerramento entradas", TIMES, index=len(TIMES) - 1)
+                st.selectbox("Encerramento entradas", TIMES, index=len(TIMES) - 1, key="setup_entry_end")
 
             st.caption("Posições: conforme a modalidade.")
             st.caption("Day trade: encerrar no dia.")
@@ -550,7 +625,105 @@ def render_management() -> None:
     with footer_middle:
         st.link_button("← Indicadores", "?page=indicadores", width="stretch")
     with footer_right:
-        st.button("Salvar gestão", type="primary", width="stretch")
+        st.link_button("Continuar →", "?page=revisao", type="primary", width="stretch")
+
+
+def render_review() -> None:
+    st.title("Revisão")
+    st.caption("Confira a configuração antes de salvar ou ativar o set.")
+
+    setup_col, rules_col = st.columns(2, gap="medium")
+    with setup_col:
+        with st.container(border=True):
+            st.subheader("Setup")
+            write_review_row("Nome", state_value("setup_name", "Meu setup"))
+            write_review_row("Magic Number", state_value("setup_magic", "1"))
+            write_review_row("Mercado", state_value("setup_market", "Forex"))
+            write_review_row("Modalidade", state_value("setup_mode", "Day trade"))
+            write_review_row("Timeframe", state_value("setup_timeframe", "Tempo corrente"))
+            write_review_row("Lote", state_value("setup_lot", "0.01"))
+            write_review_row("Direção", state_value("setup_direction", "Compra e venda"))
+            write_review_row(
+                "Janela de entrada",
+                f"{state_value('setup_entry_start', '00:00')} até {state_value('setup_entry_end', '23:55')}",
+            )
+
+    with rules_col:
+        with st.container(border=True):
+            st.subheader("Regras")
+            order_mode = state_value("rule_order_mode", "A mercado")
+            st.write(f"Ordem: {order_mode}")
+            if order_mode == "Pendente":
+                st.caption(f"Posicionar em: {state_value('rule_pending_reference', 'Máxima')}")
+                st.caption(f"Vela: {state_value('rule_pending_bar', 1)}")
+
+            st.divider()
+            for line in candle_filter_review_lines():
+                st.caption(line)
+
+            st.divider()
+            target_unit = str(state_value("rule_target_unit", "Pontos"))
+            take_mode = str(state_value("rule_take_mode", "Vezes o stop"))
+            st.write("Alvos")
+            st.caption(f"Unidade: {target_unit}")
+            st.caption(f"Stop loss: {float(state_value(f'rule_stop_loss_{target_unit}', 0.0)):.2f}")
+            st.caption(f"+ Vezes: {float(state_value('rule_stop_multiplier', 1.0)):.2f}")
+            st.caption(f"Candle: {state_value('rule_stop_candle', 'Último')}")
+            st.caption(f"Tamanho: {state_value('rule_stop_measure', 'Total (com pavios)')}")
+            st.caption(f"Take Profit: {take_mode}")
+            if take_mode == "Vezes o stop":
+                st.caption(f"Vezes o stop: {float(state_value('rule_take_multiplier', 2.0)):.2f}")
+            else:
+                st.caption(f"Distância: {float(state_value(f'rule_take_distance_{target_unit}', 0.0)):.2f}")
+
+    st.subheader("Indicadores")
+    indicator_cols = st.columns(4, gap="medium")
+    for index in range(1, 5):
+        with indicator_cols[index - 1]:
+            with st.container(border=True):
+                st.markdown(f"**Indicador {index}**")
+                for line in indicator_review_lines(index):
+                    st.caption(line)
+
+    st.subheader("Gestão")
+    management_cols = st.columns(3, gap="medium")
+    management_cards = [
+        ("Breakeven", "breakeven", ["Ativar após", "Proteção na entrada"]),
+        ("Trailing stop", "trailing", ["Ativar após", "Distância do preço", "Passo de ajuste"]),
+        ("Stop móvel", "moving_stop", ["Ativar após", "Distância do preço", "Passo de ajuste"]),
+    ]
+    for column, (title, key, fields) in zip(management_cols, management_cards):
+        with column:
+            with st.container(border=True):
+                mode = str(state_value(f"{key}_mode", "Desativado"))
+                values = [float(state_value(f"{key}_{position}", 0.0)) for position, _ in enumerate(fields)]
+                st.write(management_summary(title, mode, fields, values))
+
+    footer_left, footer_save, footer_next = st.columns([3, 1, 1])
+    with footer_left:
+        st.link_button("← Gestão", "?page=gestao", width="stretch")
+    with footer_save:
+        if st.button("Salvar set", type="secondary", width="stretch"):
+            st.success("Set conferido e pronto para salvar.")
+    with footer_next:
+        st.link_button("Continuar →", "?page=ativacao", type="primary", width="stretch")
+
+
+def render_activation() -> None:
+    st.title("Ativação")
+    st.caption("Última etapa do fluxo.")
+
+    with st.container(border=True):
+        st.subheader("Controle do set")
+        st.info("A ativação real ainda será conectada ao motor. Por enquanto, esta página fecha o fluxo visual.")
+        active = st.toggle("Set ativo", value=False)
+        st.write("Status:", "Ativo" if active else "Pausado")
+
+    footer_left, footer_right = st.columns([4, 1])
+    with footer_left:
+        st.link_button("← Revisão", "?page=revisao", width="stretch")
+    with footer_right:
+        st.button("Aplicar", type="primary", width="stretch")
 
 
 def render_sets() -> None:
@@ -584,6 +757,10 @@ def main() -> None:
         render_indicators()
     elif selected_page == "Gestão":
         render_management()
+    elif selected_page == "Revisao":
+        render_review()
+    elif selected_page == "Ativacao":
+        render_activation()
     elif selected_page == "Sets":
         render_sets()
     elif selected_page == "Relatorios":
