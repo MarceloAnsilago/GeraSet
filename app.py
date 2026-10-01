@@ -357,8 +357,16 @@ def render_navbar() -> str:
     if current_page not in PAGES:
         current_page = "inicio"
 
+    def nav_class(slug: str) -> str:
+        classes = ["nav-link"]
+        if slug == current_page:
+            classes.append("active")
+        if slug == "revisao":
+            classes.append("nav-link-review")
+        return " ".join(classes)
+
     nav_items = "".join(
-        f'<a class="nav-link {"active" if slug == current_page else ""}" href="?page={slug}" target="_parent">{label}</a>'
+        f'<a class="{nav_class(slug)}" href="?page={slug}" target="_parent">{label}</a>'
         for slug, label in PAGES.items()
     )
 
@@ -412,6 +420,10 @@ div[data-testid="stHorizontalBlock"] label {{
     font-weight: 700;
     padding: 0.65rem 0.95rem;
     text-decoration: none !important;
+}}
+
+.nav-link-review {{
+    margin-left: auto;
 }}
 
 .nav-link:hover {{
