@@ -274,9 +274,9 @@ h3 {
 label {
     color: var(--text);
     display: block;
-    font-size: 0.86rem;
+    font-size: 0.82rem;
     font-weight: 500;
-    margin: 0.9rem 0 0.35rem;
+    margin: 0.68rem 0 0.25rem;
 }
 
 input,
@@ -285,8 +285,8 @@ select {
     border: 1px solid transparent;
     border-radius: 4px;
     color: var(--text);
-    min-height: 42px;
-    padding: 0.65rem 0.7rem;
+    min-height: 34px;
+    padding: 0.42rem 0.62rem;
     transition: border-color 140ms ease, background 140ms ease;
     width: 100%;
 }
@@ -309,23 +309,23 @@ input:disabled {
 
 .optimize-grid {
     display: grid;
-    gap: 0.45rem 0.7rem;
+    gap: 0.35rem 0.6rem;
     grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .optimize-grid label {
-    font-size: 0.8rem;
+    font-size: 0.76rem;
     margin: 0;
 }
 
 .optimize-grid input {
-    min-height: 40px;
-    padding-left: 0.65rem;
-    padding-right: 0.65rem;
+    min-height: 32px;
+    padding-left: 0.55rem;
+    padding-right: 0.55rem;
 }
 
 .optimize-grid-secondary {
-    margin-top: 0.85rem;
+    margin-top: 0.65rem;
 }
 
 .button-row {
