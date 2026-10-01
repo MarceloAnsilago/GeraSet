@@ -114,21 +114,38 @@
                                 <select>{% for item in method_options %}<option {{ 'selected' if item == 'EMA' else '' }}>{{ item }}</option>{% endfor %}</select>
                             </div>
                             <div class="tab-panel tab-panel-optimize">
-                                <div class="optimize-grid">
-                                    <label>Iniciar</label>
-                                    <label>Passo</label>
-                                    <label>Terminar</label>
-                                    <input value="{{ 20 if index > 2 else 14 }}">
-                                    <input value="1">
-                                    <input value="{{ 20 if index > 2 else 14 }}">
+                                <div class="optimize-row">
+                                    <div class="optimize-name">Periodo</div>
+                                    <div class="optimize-grid">
+                                        <label>Iniciar</label>
+                                        <label>Passo</label>
+                                        <label>Terminar</label>
+                                        <input value="{{ 20 if index > 2 else 14 }}">
+                                        <input value="1">
+                                        <input value="{{ 20 if index > 2 else 14 }}">
+                                    </div>
                                 </div>
-                                <div class="optimize-grid optimize-grid-secondary">
-                                    <label>Iniciar</label>
-                                    <label>Passo</label>
-                                    <label>Terminar</label>
-                                    <input value="0">
-                                    <input value="1">
-                                    <input value="0">
+                                <div class="optimize-row">
+                                    <div class="optimize-name">Shift</div>
+                                    <div class="optimize-grid">
+                                        <label>Iniciar</label>
+                                        <label>Passo</label>
+                                        <label>Terminar</label>
+                                        <input value="0">
+                                        <input value="1">
+                                        <input value="0">
+                                    </div>
+                                </div>
+                                <div class="optimize-row">
+                                    <div class="optimize-name">Inclinacao</div>
+                                    <div class="optimize-grid">
+                                        <label>Iniciar</label>
+                                        <label>Passo</label>
+                                        <label>Terminar</label>
+                                        <input value="3">
+                                        <input value="1">
+                                        <input value="3">
+                                    </div>
                                 </div>
                             </div>
                         </div>

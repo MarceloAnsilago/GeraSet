@@ -313,6 +313,27 @@ input:disabled {
     grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.optimize-row {
+    border-bottom: 1px solid var(--line);
+    padding: 0.55rem 0 0.7rem;
+}
+
+.optimize-row:first-child {
+    padding-top: 0;
+}
+
+.optimize-row:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+}
+
+.optimize-name {
+    color: var(--text);
+    font-size: 0.84rem;
+    font-weight: 600;
+    margin-bottom: 0.45rem;
+}
+
 .optimize-grid label {
     font-size: 0.76rem;
     margin: 0;
@@ -322,10 +343,6 @@ input:disabled {
     min-height: 32px;
     padding-left: 0.55rem;
     padding-right: 0.55rem;
-}
-
-.optimize-grid-secondary {
-    margin-top: 0.65rem;
 }
 
 .button-row {
