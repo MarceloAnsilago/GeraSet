@@ -5,9 +5,8 @@ PAGES = {
     "inicio": "Pagina Inicial",
     "indicadores": "Indicadores",
     "gestao": "Gestão",
-    "revisao": "Revisao",
+    "revisao": "Revisao e Sets",
     "ativacao": "Ativacao",
-    "sets": "Sets",
     "relatorios": "Relatorios",
     "configuracoes": "Configuracoes",
 }
@@ -699,11 +698,27 @@ def render_review() -> None:
                 values = [float(state_value(f"{key}_{position}", 0.0)) for position, _ in enumerate(fields)]
                 st.write(management_summary(title, mode, fields, values))
 
+    st.subheader("Sets")
+    set_list_col, set_actions_col = st.columns([2, 1], gap="medium")
+    with set_list_col:
+        with st.container(border=True):
+            st.subheader("Set atual")
+            st.write(state_value("setup_name", "Meu setup"))
+            st.caption("A revisão acima compõe o set que será salvo.")
+            st.caption("Histórico e arquivos serão conectados na próxima etapa de persistência.")
+
+    with set_actions_col:
+        with st.container(border=True):
+            st.subheader("Ações")
+            st.button("Salvar set", type="primary", width="stretch")
+            st.button("Carregar set", width="stretch")
+            st.button("Exportar set", width="stretch")
+
     footer_left, footer_save, footer_next = st.columns([3, 1, 1])
     with footer_left:
         st.link_button("← Gestão", "?page=gestao", width="stretch")
     with footer_save:
-        if st.button("Salvar set", type="secondary", width="stretch"):
+        if st.button("Conferido", type="secondary", width="stretch"):
             st.success("Set conferido e pronto para salvar.")
     with footer_next:
         st.link_button("Continuar →", "?page=ativacao", type="primary", width="stretch")
@@ -724,11 +739,6 @@ def render_activation() -> None:
         st.link_button("← Revisão", "?page=revisao", width="stretch")
     with footer_right:
         st.button("Aplicar", type="primary", width="stretch")
-
-
-def render_sets() -> None:
-    st.title("Sets")
-    st.info("Aqui ficara a lista completa de sets cadastrados.")
 
 
 def render_reports() -> None:
@@ -757,12 +767,10 @@ def main() -> None:
         render_indicators()
     elif selected_page == "Gestão":
         render_management()
-    elif selected_page == "Revisao":
+    elif selected_page == "Revisao e Sets":
         render_review()
     elif selected_page == "Ativacao":
         render_activation()
-    elif selected_page == "Sets":
-        render_sets()
     elif selected_page == "Relatorios":
         render_reports()
     elif selected_page == "Configuracoes":
