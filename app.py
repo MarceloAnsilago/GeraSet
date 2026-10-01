@@ -361,13 +361,16 @@ def render_navbar() -> str:
         classes = ["nav-link"]
         if slug == current_page:
             classes.append("active")
-        if slug == "revisao":
-            classes.append("nav-link-review")
         return " ".join(classes)
 
     nav_items = "".join(
         f'<a class="{nav_class(slug)}" href="?page={slug}" target="_parent">{label}</a>'
         for slug, label in PAGES.items()
+        if slug != "revisao"
+    )
+    review_item = (
+        f'<a class="{nav_class("revisao")}" href="?page=revisao" target="_parent">'
+        f'{PAGES["revisao"]}</a>'
     )
 
     st.markdown(
@@ -403,8 +406,20 @@ div[data-testid="stHorizontalBlock"] label {{
     align-items: center;
     display: flex;
     gap: 0.5rem;
-    max-width: 1180px;
+    max-width: 1420px;
     width: 100%;
+}}
+
+.nav-main {{
+    align-items: center;
+    display: flex;
+    gap: 0.5rem;
+}}
+
+.nav-review-slot {{
+    align-items: center;
+    display: flex;
+    margin-left: auto;
 }}
 
 .brand {{
@@ -422,10 +437,6 @@ div[data-testid="stHorizontalBlock"] label {{
     text-decoration: none !important;
 }}
 
-.nav-link-review {{
-    margin-left: auto;
-}}
-
 .nav-link:hover {{
     background: #1e293b;
     color: #ffffff !important;
@@ -436,7 +447,7 @@ div[data-testid="stHorizontalBlock"] label {{
     color: #0f172a !important;
 }}
 </style>
-<nav class="geraset-navbar"><div class="geraset-navbar-inner"><span class="brand">GeraSet</span>{nav_items}</div></nav>""",
+<nav class="geraset-navbar"><div class="geraset-navbar-inner"><div class="nav-main"><span class="brand">GeraSet</span>{nav_items}</div><div class="nav-review-slot">{review_item}</div></div></nav>""",
         unsafe_allow_html=True,
     )
 
