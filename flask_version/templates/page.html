@@ -98,21 +98,39 @@
                             <option>ADX</option>
                             <option>Nao usar</option>
                         </select>
-                        <h3>Parametros</h3>
-                        <label>Periodo</label>
-                        <input type="number" value="{{ 20 if index > 2 else 14 }}">
-                        <label>Preco aplicado</label>
-                        <select>{% for item in price_options %}<option>{{ item }}</option>{% endfor %}</select>
-                        <label>Metodo</label>
-                        <select>{% for item in method_options %}<option {{ 'selected' if item == 'EMA' else '' }}>{{ item }}</option>{% endfor %}</select>
-                        <h3>Otimizar</h3>
-                        <div class="optimize-grid">
-                            <label>Iniciar</label>
-                            <label>Passo</label>
-                            <label>Terminar</label>
-                            <input value="{{ 20 if index > 2 else 14 }}">
-                            <input value="1">
-                            <input value="{{ 20 if index > 2 else 14 }}">
+                        <div class="tabs">
+                            <input class="tab-radio" id="params-{{ index }}" name="indicator-tabs-{{ index }}" type="radio" checked>
+                            <input class="tab-radio" id="optimize-{{ index }}" name="indicator-tabs-{{ index }}" type="radio">
+                            <div class="tab-list">
+                                <label class="tab-button" for="params-{{ index }}">Parametros</label>
+                                <label class="tab-button" for="optimize-{{ index }}">Otimizar</label>
+                            </div>
+                            <div class="tab-panel tab-panel-params">
+                                <label>Periodo</label>
+                                <input type="number" value="{{ 20 if index > 2 else 14 }}">
+                                <label>Preco aplicado</label>
+                                <select>{% for item in price_options %}<option>{{ item }}</option>{% endfor %}</select>
+                                <label>Metodo</label>
+                                <select>{% for item in method_options %}<option {{ 'selected' if item == 'EMA' else '' }}>{{ item }}</option>{% endfor %}</select>
+                            </div>
+                            <div class="tab-panel tab-panel-optimize">
+                                <div class="optimize-grid">
+                                    <label>Iniciar</label>
+                                    <label>Passo</label>
+                                    <label>Terminar</label>
+                                    <input value="{{ 20 if index > 2 else 14 }}">
+                                    <input value="1">
+                                    <input value="{{ 20 if index > 2 else 14 }}">
+                                </div>
+                                <div class="optimize-grid optimize-grid-secondary">
+                                    <label>Iniciar</label>
+                                    <label>Passo</label>
+                                    <label>Terminar</label>
+                                    <input value="0">
+                                    <input value="1">
+                                    <input value="0">
+                                </div>
+                            </div>
                         </div>
                     </div>
                 {% endfor %}
