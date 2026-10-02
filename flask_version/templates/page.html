@@ -115,11 +115,11 @@
                                     <div data-indicator-kind="{{ kind }}" class="is-hidden">
                                         {% for title, default, minimum in numbers %}
                                             <label for="param-{{ index }}-{{ kind }}-{{ loop.index }}">{{ title }}</label>
-                                            <input id="param-{{ index }}-{{ kind }}-{{ loop.index }}" type="number" value="{{ default }}" min="{{ minimum }}" max="{{ 100 if title in ['Sobrevenda', 'Sobrecompra', 'ADX minimo'] else 100000 }}" step="{{ '0.01' if title in ['Sobrevenda', 'Sobrecompra', 'ADX minimo'] else '1' }}">
+                                            <input data-param-label="{{ title }}" id="param-{{ index }}-{{ kind }}-{{ loop.index }}" type="number" value="{{ default }}" min="{{ minimum }}" max="{{ 100 if title in ['Sobrevenda', 'Sobrecompra', 'ADX minimo'] else 100000 }}" step="{{ '0.01' if title in ['Sobrevenda', 'Sobrecompra', 'ADX minimo'] else '1' }}">
                                         {% endfor %}
                                         {% for title, options, default in combos %}
                                             <label for="combo-{{ index }}-{{ kind }}-{{ loop.index }}">{{ title }}</label>
-                                            <select id="combo-{{ index }}-{{ kind }}-{{ loop.index }}">{% for item in options %}<option {{ 'selected' if item == default else '' }}>{{ item }}</option>{% endfor %}</select>
+                                            <select data-param-label="{{ title }}" id="combo-{{ index }}-{{ kind }}-{{ loop.index }}">{% for item in options %}<option {{ 'selected' if item == default else '' }}>{{ item }}</option>{% endfor %}</select>
                                         {% endfor %}
                                         {% if kind == 'RSI' %}
                                             <p class="caption">Acima: compra ao cruzar acima da sobrevenda; venda ao cruzar acima da sobrecompra.<br>Abaixo: compra ao cruzar abaixo da sobrevenda; venda ao cruzar abaixo da sobrecompra.<br>Acima e abaixo: compra acima da sobrevenda; venda abaixo da sobrecompra.<br>Invertido: venda abaixo da sobrevenda; compra acima da sobrecompra, para continuar a tendencia.</p>
@@ -164,32 +164,15 @@
             <h2>Resumo dos indicadores</h2>
             <section class="grid-4 summary-grid">
                 {% for index in range(1, 5) %}
-                    {% set indicator_type = 'Nao usar' %}
                     <div class="card summary-card" data-indicator-summary="{{ index }}">
                         <div class="summary-header">
                             <span class="summary-index">Indicador {{ index }}</span>
                             <span class="summary-status">Inativo</span>
                         </div>
                         <strong data-indicator-summary-type>Não usar</strong>
-                        {% if indicator_type == 'Media Movel' %}
-                            <p>Periodo: {{ 20 if index == 4 else 14 }}</p>
-                            <p>Metodo: EMA</p>
-                            <p>Preco: Close</p>
-                            <p>Shift: 0</p>
-                            <p>Inclinacao: 3 velas</p>
-                        {% elif indicator_type == 'RSI' %}
-                            <p>Periodo: 14</p>
-                            <p>Preco: Close</p>
-                            <p>Compra: cruzamento acima de 30,00</p>
-                            <p>Venda: cruzamento abaixo de 70,00</p>
-                        {% elif indicator_type == 'ADX' %}
-                            <p>Periodo: 14</p>
-                            <p>ADX minimo: 25,00</p>
-                            <p>Compra: +DI maior que -DI</p>
-                            <p>Venda: -DI maior que +DI</p>
-                        {% else %}
-                            <p data-indicator-summary-empty>Sem parâmetros ativos.</p>
-                        {% endif %}
+                        <div data-indicator-summary-values aria-live="polite">
+                            <p>Sem par?metros ativos.</p>
+                        </div>
                     </div>
                 {% endfor %}
             </section>

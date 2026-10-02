@@ -49,6 +49,29 @@ function bindRulesVisibility() {
 
 document.addEventListener("DOMContentLoaded", bindRulesVisibility);
 
+function updateIndicatorSummary(select, fields, summary) {
+    const values = summary.querySelector("[data-indicator-summary-values]");
+    values.replaceChildren();
+    const addLine = (text) => {
+        const line = document.createElement("p");
+        line.textContent = text;
+        values.appendChild(line);
+    };
+    if (select.value === "Nao usar") {
+        addLine("Sem parâmetros ativos.");
+        return;
+    }
+    fields.querySelectorAll(".tab-panel-params [data-indicator-kind]").forEach((group) => {
+        if (group.dataset.indicatorKind !== select.value) return;
+        group.querySelectorAll("[data-param-label]").forEach((control) => {
+            const value = control.tagName === "SELECT"
+                ? control.selectedOptions[0].textContent
+                : control.value;
+            addLine(`${control.dataset.paramLabel}: ${value === "" ? "—" : value}`);
+        });
+    });
+}
+
 function bindIndicatorsVisibility() {
     document.querySelectorAll("[data-indicator-type]").forEach((select) => {
         const fields = select.closest(".indicator-card").querySelector("[data-indicator-fields]");
@@ -65,9 +88,12 @@ function bindIndicatorsVisibility() {
             });
             summary.querySelector(".summary-status").textContent = active ? "Ativo" : "Inativo";
             summary.querySelector("[data-indicator-summary-type]").textContent = select.selectedOptions[0].textContent;
-            setVisible([summary.querySelector("[data-indicator-summary-empty]")], !active);
+            updateIndicatorSummary(select, fields, summary);
         };
         select.addEventListener("change", update);
+        const parameters = fields.querySelector(".tab-panel-params");
+        parameters.addEventListener("input", () => updateIndicatorSummary(select, fields, summary));
+        parameters.addEventListener("change", () => updateIndicatorSummary(select, fields, summary));
         update();
     });
 }
