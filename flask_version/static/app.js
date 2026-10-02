@@ -48,3 +48,21 @@ function bindRulesVisibility() {
 }
 
 document.addEventListener("DOMContentLoaded", bindRulesVisibility);
+
+function bindIndicatorsVisibility() {
+    document.querySelectorAll("[data-indicator-type]").forEach((select) => {
+        const fields = select.closest(".indicator-card").querySelector("[data-indicator-fields]");
+        const summary = document.querySelector(`[data-indicator-summary="${select.dataset.indicatorType}"]`);
+        const update = () => {
+            const active = select.value !== "Nao usar";
+            setVisible([fields], active);
+            summary.querySelector(".summary-status").textContent = active ? "Ativo" : "Inativo";
+            summary.querySelector("[data-indicator-summary-type]").textContent = select.selectedOptions[0].textContent;
+            setVisible([summary.querySelector("[data-indicator-summary-empty]")], !active);
+        };
+        select.addEventListener("change", update);
+        update();
+    });
+}
+
+document.addEventListener("DOMContentLoaded", bindIndicatorsVisibility);
