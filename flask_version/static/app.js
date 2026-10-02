@@ -109,3 +109,35 @@ function bindIndicatorsVisibility() {
 }
 
 document.addEventListener("DOMContentLoaded", bindIndicatorsVisibility);
+
+function bindRulesSummary() {
+    const rules = document.querySelector("[data-rules-parameters]");
+    const summary = document.querySelector("[data-rules-summary]");
+    if (!rules || !summary) return;
+    const outputs = summary.querySelectorAll("[data-indicator-summary-values]");
+    const cards = rules.querySelectorAll(".rules-card");
+    const update = () => {
+        outputs.forEach((output) => output.replaceChildren());
+        cards.forEach((card, index) => {
+            card.querySelectorAll("input:not(.tab-radio), select").forEach((control) => {
+                if (control.closest(".tab-panel-optimize, .is-hidden")) return;
+                const label = control.previousElementSibling;
+                if (!label || label.tagName !== "LABEL") return;
+                const title = label.textContent.trim();
+                const value = control.tagName === "SELECT"
+                    ? control.selectedOptions[0].textContent
+                    : control.value || "—";
+                const take = index === 2 && ["Take Profit", "Vezes o stop", "Distancia fixa"].includes(title);
+                const output = outputs[take ? 3 : index];
+                const line = document.createElement("p");
+                line.textContent = `${title}: ${value}`;
+                output.appendChild(line);
+            });
+        });
+    };
+    rules.addEventListener("input", update);
+    rules.addEventListener("change", update);
+    update();
+}
+
+document.addEventListener("DOMContentLoaded", bindRulesSummary);

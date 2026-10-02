@@ -197,7 +197,7 @@
             <h1>Gestao</h1>
             <p class="caption">Configure as regras de entrada e saida, alvos e gestao dos stops.</p>
             <h2>Regras de entrada e saida</h2>
-            <section class="grid-3 rules-grid">
+            <section class="grid-3 rules-grid" data-rules-parameters>
                 <div class="card rules-card">
                     <h2>Ordem</h2>
                     <label>Tipo de ordem</label>
@@ -384,11 +384,14 @@
                     </div>
                 </div>
             </section>
-            <section class="rules-summary">
-                <div><span>Ordem</span><strong>A mercado</strong></div>
-                <div><span>Filtro</span><strong>Desativado</strong></div>
-                <div><span>Stop</span><strong>0,00 pontos</strong></div>
-                <div><span>Take</span><strong>2x o stop</strong></div>
+            <h2>Resumo das regras de entrada e saida</h2>
+            <section class="grid-4 summary-grid" data-rules-summary>
+                {% for title in ['Ordem', 'Filtro de candle', 'Stop loss', 'Take Profit'] %}
+                    <div class="card summary-card">
+                        <strong>{{ title }}</strong>
+                        <div data-indicator-summary-values aria-live="polite"></div>
+                    </div>
+                {% endfor %}
             </section>
             <h2>Gestao dos stops</h2>
             <section class="grid-3">
