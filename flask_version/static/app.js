@@ -41,6 +41,12 @@ function bindRulesVisibility() {
             const usesMultiplier = takeMode.value === "Vezes o stop";
             setVisible(takeMultiplier, usesMultiplier);
             setVisible(takeDistance, !usesMultiplier);
+            [...takeMultiplier, ...takeDistance].forEach((group) => {
+                const hidden = group.classList.contains("is-hidden");
+                group.querySelectorAll("input, select").forEach((control) => {
+                    control.disabled = hidden;
+                });
+            });
         };
         takeMode.addEventListener("change", updateTakeProfit);
         updateTakeProfit();
