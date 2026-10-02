@@ -105,67 +105,52 @@
                                 <label class="tab-button" for="params-{{ index }}">Parametros</label>
                                 <label class="tab-button" for="optimize-{{ index }}">Otimizar</label>
                             </div>
+                            {% set schemas = [
+                                ('Media Movel', [('Periodo', 20, 1), ('Shift', 0, -100000), ('Velas de inclinacao', 3, 2)], [('Preco aplicado', price_options, 'Close'), ('Metodo', method_options, 'EMA')]),
+                                ('RSI', [('Periodo', 14, 1), ('Sobrevenda', 30, 0), ('Sobrecompra', 70, 0)], [('Preco aplicado', price_options, 'Close')]),
+                                ('ADX', [('Periodo', 14, 1), ('ADX minimo', 25, 0)], [])
+                            ] %}
                             <div class="tab-panel tab-panel-params">
-                                <label>Periodo</label>
-                                <input type="number" value="{{ 20 if index > 2 else 14 }}">
-                                <label>Preco aplicado</label>
-                                <select>{% for item in price_options %}<option>{{ item }}</option>{% endfor %}</select>
-                                <label>Metodo</label>
-                                <select>{% for item in method_options %}<option {{ 'selected' if item == 'EMA' else '' }}>{{ item }}</option>{% endfor %}</select>
-                                <label>Shift</label>
-                                <input type="number" value="0" min="-100000" max="100000">
-                                <label>Velas de inclinacao</label>
-                                <input type="number" value="3" min="2" max="100000">
-                            </div>
-                            <div class="tab-panel tab-panel-optimize">
-                                {% for title, options, default in [('Preco aplicado', price_options, 'Close'), ('Metodo', method_options, 'EMA')] %}
-                                    <div class="optimize-row">
-                                        <div class="optimize-name">{{ title }}</div>
-                                        <div class="optimize-grid optimize-grid-select">
-                                            <label for="opt-select-{{ index }}-{{ loop.index }}-start">Iniciar</label>
-                                            <label for="opt-select-{{ index }}-{{ loop.index }}-end">Terminar</label>
-                                            <select id="opt-select-{{ index }}-{{ loop.index }}-start" name="opt-select-{{ index }}-{{ loop.index }}-start">
-                                                {% for item in options %}<option {{ 'selected' if item == default else '' }}>{{ item }}</option>{% endfor %}
-                                            </select>
-                                            <select id="opt-select-{{ index }}-{{ loop.index }}-end" name="opt-select-{{ index }}-{{ loop.index }}-end">
-                                                {% for item in options %}<option {{ 'selected' if item == default else '' }}>{{ item }}</option>{% endfor %}
-                                            </select>
-                                        </div>
+                                {% for kind, numbers, combos in schemas %}
+                                    <div data-indicator-kind="{{ kind }}" class="is-hidden">
+                                        {% for title, default, minimum in numbers %}
+                                            <label for="param-{{ index }}-{{ kind }}-{{ loop.index }}">{{ title }}</label>
+                                            <input id="param-{{ index }}-{{ kind }}-{{ loop.index }}" type="number" value="{{ default }}" min="{{ minimum }}" max="{{ 100 if title in ['Sobrevenda', 'Sobrecompra', 'ADX minimo'] else 100000 }}" step="{{ '0.01' if title in ['Sobrevenda', 'Sobrecompra', 'ADX minimo'] else '1' }}">
+                                        {% endfor %}
+                                        {% for title, options, default in combos %}
+                                            <label for="combo-{{ index }}-{{ kind }}-{{ loop.index }}">{{ title }}</label>
+                                            <select id="combo-{{ index }}-{{ kind }}-{{ loop.index }}">{% for item in options %}<option {{ 'selected' if item == default else '' }}>{{ item }}</option>{% endfor %}</select>
+                                        {% endfor %}
+                                        {% if kind == 'RSI' %}<p class="caption">Cruzamento no fechamento.</p>{% endif %}
+                                        {% if kind == 'ADX' %}<p class="caption">Compra: +DI &gt; -DI<br>Venda: -DI &gt; +DI</p>{% endif %}
                                     </div>
                                 {% endfor %}
-                                <div class="optimize-row">
-                                    <div class="optimize-name">Periodo</div>
-                                    <div class="optimize-grid">
-                                        <label>Iniciar</label>
-                                        <label>Passo</label>
-                                        <label>Terminar</label>
-                                        <input value="{{ 20 if index > 2 else 14 }}">
-                                        <input value="1">
-                                        <input value="{{ 20 if index > 2 else 14 }}">
+                            </div>
+                            <div class="tab-panel tab-panel-optimize">
+                                {% for kind, numbers, combos in schemas %}
+                                    <div data-indicator-kind="{{ kind }}" class="is-hidden">
+                                        {% for title, default, minimum in numbers %}
+                                            <div class="optimize-row">
+                                                <div class="optimize-name">{{ title }}</div>
+                                                <div class="optimize-grid">
+                                                    {% for label in ['Iniciar', 'Passo', 'Terminar'] %}<label for="opt-{{ index }}-{{ kind }}-{{ loop.index }}-{{ title }}">{{ label }}</label>{% endfor %}
+                                                    {% for value in [default, 1, default] %}<input id="opt-{{ index }}-{{ kind }}-{{ loop.index }}-{{ title }}" type="number" value="{{ value }}" min="{{ 0.01 if loop.index == 2 else minimum }}" step="{{ '0.01' if title in ['Sobrevenda', 'Sobrecompra', 'ADX minimo'] else '1' }}">{% endfor %}
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                        {% for title, options, default in combos %}
+                                            <div class="optimize-row">
+                                                <div class="optimize-name">{{ title }}</div>
+                                                <div class="optimize-grid optimize-grid-select">
+                                                    {% for label in ['Iniciar', 'Terminar'] %}<label for="opt-combo-{{ index }}-{{ kind }}-{{ loop.index }}-{{ title }}">{{ label }}</label>{% endfor %}
+                                                    {% for bound in ['start', 'end'] %}
+                                                        <select id="opt-combo-{{ index }}-{{ kind }}-{{ loop.index }}-{{ title }}" name="opt-combo-{{ index }}-{{ kind }}-{{ title }}-{{ bound }}">{% for item in options %}<option {{ 'selected' if item == default else '' }}>{{ item }}</option>{% endfor %}</select>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                        {% endfor %}
                                     </div>
-                                </div>
-                                <div class="optimize-row">
-                                    <div class="optimize-name">Shift</div>
-                                    <div class="optimize-grid">
-                                        <label>Iniciar</label>
-                                        <label>Passo</label>
-                                        <label>Terminar</label>
-                                        <input value="0">
-                                        <input value="1">
-                                        <input value="0">
-                                    </div>
-                                </div>
-                                <div class="optimize-row">
-                                    <div class="optimize-name">Inclinacao</div>
-                                    <div class="optimize-grid">
-                                        <label>Iniciar</label>
-                                        <label>Passo</label>
-                                        <label>Terminar</label>
-                                        <input value="3">
-                                        <input value="1">
-                                        <input value="3">
-                                    </div>
-                                </div>
+                                {% endfor %}
                             </div>
                         </div>
                     </div>

@@ -56,6 +56,13 @@ function bindIndicatorsVisibility() {
         const update = () => {
             const active = select.value !== "Nao usar";
             setVisible([fields], active);
+            fields.querySelectorAll("[data-indicator-kind]").forEach((group) => {
+                const selected = group.dataset.indicatorKind === select.value;
+                setVisible([group], selected);
+                group.querySelectorAll("input, select").forEach((control) => {
+                    control.disabled = !selected;
+                });
+            });
             summary.querySelector(".summary-status").textContent = active ? "Ativo" : "Inativo";
             summary.querySelector("[data-indicator-summary-type]").textContent = select.selectedOptions[0].textContent;
             setVisible([summary.querySelector("[data-indicator-summary-empty]")], !active);
