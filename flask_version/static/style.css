@@ -216,6 +216,19 @@ h3 {
     text-align: left;
 }
 
+[data-indicator-summary-values] > p {
+    margin: 0;
+    padding: 0.75rem 0;
+}
+
+[data-indicator-summary-values] > p + p {
+    border-top: 1px solid var(--line);
+}
+
+[data-indicator-summary-values] > p:last-child {
+    padding-bottom: 0;
+}
+
 .indicator-card [data-indicator-kind] > label:first-child {
     margin-top: 0;
 }
