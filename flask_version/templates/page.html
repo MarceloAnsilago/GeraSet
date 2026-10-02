@@ -245,6 +245,14 @@
                     <h2>Filtro de candle</h2>
                     <label>Condicao</label>
                     <select data-candle-condition><option>Desativado</option><option>Candles</option><option>Pavios</option></select>
+                    <div class="tabs is-hidden" data-candle-common>
+                        <input class="tab-radio" id="candle-params" name="candle-tabs" type="radio" checked>
+                        <input class="tab-radio" id="candle-optimize" name="candle-tabs" type="radio">
+                        <div class="tab-list">
+                            <label class="tab-button" for="candle-params">Parametros</label>
+                            <label class="tab-button" for="candle-optimize">Otimizar</label>
+                        </div>
+                        <div class="tab-panel tab-panel-params">
                     <div class="row" data-candle-common>
                         <div>
                             <label>Configurar candle</label>
@@ -268,6 +276,44 @@
                         <div><label>Pavio inf. min.</label><input value="0.00"></div>
                     </div>
                     <p class="muted" data-candle-common>Zero desativa somente aquele limite.</p>
+                        </div>
+                        <div class="tab-panel tab-panel-optimize">
+                            {% for key, title, options, visibility in [
+                                ('reference', 'Configurar candle', candle_options, 'data-candle-common'),
+                                ('unit', 'Unidade', target_units, 'data-candle-common'),
+                                ('measure', 'Medir candle', ['Corpo', 'Total maxima - minima'], 'data-candle-size')
+                            ] %}
+                                <div class="optimize-row" {{ visibility }}>
+                                    <div class="optimize-name">{{ title }}</div>
+                                    <div class="optimize-grid optimize-grid-select">
+                                        <label for="candle-{{ key }}-start">Iniciar</label>
+                                        <label for="candle-{{ key }}-end">Terminar</label>
+                                        {% for bound in ['start', 'end'] %}
+                                            <select id="candle-{{ key }}-{{ bound }}" name="candle-{{ key }}-{{ bound }}">{% for item in options %}<option>{{ item }}</option>{% endfor %}</select>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                            {% for key, title, visibility in [
+                                ('min', 'Candle min.', 'data-candle-size'),
+                                ('max', 'Candle max.', 'data-candle-size'),
+                                ('upper-wick', 'Pavio sup. min.', 'data-candle-wicks'),
+                                ('lower-wick', 'Pavio inf. min.', 'data-candle-wicks')
+                            ] %}
+                                <div class="optimize-row" {{ visibility }}>
+                                    <div class="optimize-name">{{ title }}</div>
+                                    <div class="optimize-grid">
+                                        <label for="candle-{{ key }}-start">Iniciar</label>
+                                        <label for="candle-{{ key }}-step">Passo</label>
+                                        <label for="candle-{{ key }}-end">Terminar</label>
+                                        {% for bound in ['start', 'step', 'end'] %}
+                                            <input id="candle-{{ key }}-{{ bound }}" name="candle-{{ key }}-{{ bound }}" type="number" value="{{ '0.01' if bound == 'step' else '0.00' }}" min="{{ '0.01' if bound == 'step' else '0' }}" step="0.01">
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
                 <div class="card rules-card">
                     <h2>Alvos</h2>
