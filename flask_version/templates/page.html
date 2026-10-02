@@ -373,7 +373,7 @@
                                 ('take-multiplier', 'Vezes o stop', '2.00'),
                                 ('take-distance', 'Distancia fixa', '0.00')
                             ] %}
-                                <div class="optimize-row">
+                                <div class="optimize-row" {{ 'data-take-multiplier' if key == 'take-multiplier' else ('data-take-distance' if key == 'take-distance' else '') }}>
                                     <div class="optimize-name">{{ title }}</div>
                                     <div class="optimize-grid">
                                         <label for="target-{{ key }}-start">Iniciar</label>
@@ -385,7 +385,7 @@
                                     </div>
                                 </div>
                             {% endfor %}
-                            <p class="muted">Vezes o stop e Distancia fixa seguem o tipo de Take Profit escolhido na otimizacao. Zero desliga o alvo.</p>
+                            <p class="muted">O campo de Take Profit segue o tipo escolhido em Parametros. Zero desliga o alvo.</p>
                         </div>
                     </div>
                 </div>
