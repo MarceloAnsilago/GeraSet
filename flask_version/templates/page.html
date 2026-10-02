@@ -188,6 +188,14 @@
                 {% endfor %}
             </section>
 
+            <div class="button-row">
+                <span class="info">Configure os indicadores antes de seguir para Gestao.</span>
+                <a class="btn btn-primary" href="{{ url_for('page', page='gestao') }}">Continuar</a>
+            </div>
+
+        {% elif active_page == 'gestao' %}
+            <h1>Gestao</h1>
+            <p class="caption">Configure as regras de entrada e saida, alvos e gestao dos stops.</p>
             <h2>Regras de entrada e saida</h2>
             <section class="grid-3 rules-grid">
                 <div class="card rules-card">
@@ -388,14 +396,7 @@
                 <div><span>Stop</span><strong>0,00 pontos</strong></div>
                 <div><span>Take</span><strong>2x o stop</strong></div>
             </section>
-            <div class="button-row">
-                <span class="info">Configure os indicadores e as regras antes de seguir para Gestao.</span>
-                <a class="btn btn-primary" href="{{ url_for('page', page='gestao') }}">Continuar</a>
-            </div>
-
-        {% elif active_page == 'gestao' %}
-            <h1>Gestao</h1>
-            <p class="caption">Configure o breakeven, trailing stop e stop movel da estrategia.</p>
+            <h2>Gestao dos stops</h2>
             <section class="grid-3">
                 {% for title in ['Breakeven', 'Trailing stop', 'Stop movel'] %}
                     <div class="card">
