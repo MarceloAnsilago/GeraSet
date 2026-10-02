@@ -98,6 +98,13 @@
                             <option>RSI</option>
                             <option>ADX</option>
                         </select>
+                        <fieldset class="indicator-usage" data-indicator-usage>
+                            <legend>Usar como:</legend>
+                            <div class="indicator-usage-options">
+                                <label><input type="radio" name="indicator-usage-{{ index }}" value="Entrada" checked> Entrada</label>
+                                <label><input type="radio" name="indicator-usage-{{ index }}" value="Saida"> Saída</label>
+                            </div>
+                        </fieldset>
                         <div class="tabs is-hidden" data-indicator-fields>
                             <input class="tab-radio" id="params-{{ index }}" name="indicator-tabs-{{ index }}" type="radio" checked>
                             <input class="tab-radio" id="optimize-{{ index }}" name="indicator-tabs-{{ index }}" type="radio">

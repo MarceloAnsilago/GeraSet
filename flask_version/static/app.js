@@ -61,6 +61,8 @@ function updateIndicatorSummary(select, fields, summary) {
         addLine("Sem parâmetros ativos.");
         return;
     }
+    const usage = select.closest(".indicator-card").querySelector("[data-indicator-usage] input:checked");
+    addLine(`Usar como: ${usage.value === "Saida" ? "Saída" : "Entrada"}`);
     fields.querySelectorAll(".tab-panel-params [data-indicator-kind]").forEach((group) => {
         if (group.dataset.indicatorKind !== select.value) return;
         group.querySelectorAll("[data-param-label]").forEach((control) => {
@@ -91,6 +93,8 @@ function bindIndicatorsVisibility() {
             updateIndicatorSummary(select, fields, summary);
         };
         select.addEventListener("change", update);
+        select.closest(".indicator-card").querySelector("[data-indicator-usage]")
+            .addEventListener("change", () => updateIndicatorSummary(select, fields, summary));
         const parameters = fields.querySelector(".tab-panel-params");
         parameters.addEventListener("input", () => updateIndicatorSummary(select, fields, summary));
         parameters.addEventListener("change", () => updateIndicatorSummary(select, fields, summary));
