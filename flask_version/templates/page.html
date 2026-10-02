@@ -261,15 +261,11 @@
                             <label class="tab-button" for="candle-optimize">Otimizar</label>
                         </div>
                         <div class="tab-panel tab-panel-params">
-                    <div class="row" data-candle-common>
-                        <div>
-                            <label>Configurar candle</label>
-                            <select>{% for item in candle_options %}<option>{{ item }}</option>{% endfor %}</select>
-                        </div>
-                        <div>
+                    <div data-candle-common>
                             <label>Unidade</label>
                             <select>{% for item in target_units %}<option>{{ item }}</option>{% endfor %}</select>
-                        </div>
+                            <label>Configurar candle</label>
+                            <select>{% for item in candle_options %}<option>{{ item }}</option>{% endfor %}</select>
                     </div>
                     <div data-candle-size>
                     <label>Medir candle</label>
