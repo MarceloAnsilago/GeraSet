@@ -191,6 +191,7 @@ h3 {
 }
 
 .indicator-grid {
+    align-items: start;
     gap: 1.25rem;
     grid-template-columns: repeat(4, minmax(290px, 1fr));
 }
@@ -206,6 +207,17 @@ h3 {
 .indicator-card {
     min-width: 0;
     padding: 1.55rem;
+}
+
+.indicator-card .caption {
+    margin: 0.75rem 0 0;
+    font-size: 0.84rem;
+    line-height: 1.5;
+    text-align: left;
+}
+
+.indicator-card [data-indicator-kind] > label:first-child {
+    margin-top: 0;
 }
 
 .tabs {
