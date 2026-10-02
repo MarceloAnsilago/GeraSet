@@ -112,8 +112,27 @@
                                 <select>{% for item in price_options %}<option>{{ item }}</option>{% endfor %}</select>
                                 <label>Metodo</label>
                                 <select>{% for item in method_options %}<option {{ 'selected' if item == 'EMA' else '' }}>{{ item }}</option>{% endfor %}</select>
+                                <label>Shift</label>
+                                <input type="number" value="0" min="-100000" max="100000">
+                                <label>Velas de inclinacao</label>
+                                <input type="number" value="3" min="2" max="100000">
                             </div>
                             <div class="tab-panel tab-panel-optimize">
+                                {% for title, options, default in [('Preco aplicado', price_options, 'Close'), ('Metodo', method_options, 'EMA')] %}
+                                    <div class="optimize-row">
+                                        <div class="optimize-name">{{ title }}</div>
+                                        <div class="optimize-grid optimize-grid-select">
+                                            <label for="opt-select-{{ index }}-{{ loop.index }}-start">Iniciar</label>
+                                            <label for="opt-select-{{ index }}-{{ loop.index }}-end">Terminar</label>
+                                            <select id="opt-select-{{ index }}-{{ loop.index }}-start" name="opt-select-{{ index }}-{{ loop.index }}-start">
+                                                {% for item in options %}<option {{ 'selected' if item == default else '' }}>{{ item }}</option>{% endfor %}
+                                            </select>
+                                            <select id="opt-select-{{ index }}-{{ loop.index }}-end" name="opt-select-{{ index }}-{{ loop.index }}-end">
+                                                {% for item in options %}<option {{ 'selected' if item == default else '' }}>{{ item }}</option>{% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                {% endfor %}
                                 <div class="optimize-row">
                                     <div class="optimize-name">Periodo</div>
                                     <div class="optimize-grid">
