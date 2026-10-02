@@ -66,18 +66,23 @@ body::before {
     white-space: nowrap;
 }
 
-.brand::before {
+.brand-mark {
     align-items: center;
     border: 1px solid #c89b5a;
     border-radius: 999px;
     color: #9a6a24;
-    content: "GS";
     display: inline-flex;
     font-size: 0.68rem;
     font-weight: 700;
+    gap: 0.2rem;
     height: 30px;
     justify-content: center;
-    width: 30px;
+    padding: 0 0.4rem;
+}
+
+.brand-mark svg {
+    width: 18px;
+    height: 18px;
 }
 
 .nav-link {

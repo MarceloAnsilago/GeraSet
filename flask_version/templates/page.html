@@ -9,7 +9,15 @@
 <body>
     <nav class="navbar">
         <div class="nav-main">
-            <span class="brand">GeraSet</span>
+            <span class="brand">
+                <span class="brand-mark" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 19h16M6 15l4-5 4 3 5-8M15 5h4v4"/>
+                    </svg>
+                    <span>GS</span>
+                </span>
+                GeraSet
+            </span>
             {% for slug, label in pages.items() %}
                 <a class="nav-link {{ 'active' if active_page == slug else '' }}" href="{{ url_for('page', page=slug) }}">{{ label }}</a>
             {% endfor %}
@@ -31,10 +39,6 @@
                     <label>Magic Number</label>
                     <input value="{{ data.setup_magic }}" disabled>
                     <p class="muted">Magic Number identifica as ordens deste setup.</p>
-                    <div class="row">
-                        <a class="btn" href="{{ url_for('page', page='revisao') }}">Salvar set</a>
-                        <a class="btn" href="{{ url_for('page', page='revisao') }}">Carregar set</a>
-                    </div>
                 </div>
                 <div class="card">
                     <h2>Mercado e operacao</h2>
