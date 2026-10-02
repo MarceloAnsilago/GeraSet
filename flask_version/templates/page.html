@@ -280,7 +280,6 @@
                         <div class="tab-panel tab-panel-optimize">
                             {% for key, title, options, visibility in [
                                 ('reference', 'Configurar candle', candle_options, 'data-candle-common'),
-                                ('unit', 'Unidade', target_units, 'data-candle-common'),
                                 ('measure', 'Medir candle', ['Corpo', 'Total maxima - minima'], 'data-candle-size')
                             ] %}
                                 <div class="optimize-row" {{ visibility }}>
@@ -345,7 +344,6 @@
                         </div>
                         <div class="tab-panel tab-panel-optimize">
                             {% for key, title, options, default in [
-                                ('unit', 'Unidade dos alvos', target_units, 'Pontos'),
                                 ('candle', 'Candle', ['Ultimo', 'Penultimo', 'Antepenultimo'], 'Ultimo'),
                                 ('size', 'Tamanho', ['Total com pavios', 'Corpo'], 'Total com pavios'),
                                 ('take-mode', 'Take Profit', ['Vezes o stop', 'Distancia fixa'], 'Vezes o stop')
