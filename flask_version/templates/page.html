@@ -194,17 +194,52 @@
                     <h2>Ordem</h2>
                     <label>Tipo de ordem</label>
                     <select data-rule-order><option>A mercado</option><option>Pendente</option></select>
-                    <div class="row" data-pending-fields>
+                    <div class="tabs is-hidden" data-pending-fields>
+                        <input class="tab-radio" id="pending-params" name="pending-tabs" type="radio" checked>
+                        <input class="tab-radio" id="pending-optimize" name="pending-tabs" type="radio">
+                        <div class="tab-list">
+                            <label class="tab-button" for="pending-params">Parametros</label>
+                            <label class="tab-button" for="pending-optimize">Otimizar</label>
+                        </div>
+                        <div class="tab-panel tab-panel-params">
+                        <div class="row">
                         <div>
                             <label>Posicionar em</label>
                             <select><option>Maxima</option><option>Minima</option><option>Abertura</option><option>Fechamento</option></select>
                         </div>
                         <div>
                             <label>Vela</label>
-                            <input type="number" value="1">
+                            <input type="number" value="1" min="1" step="1">
                         </div>
                     </div>
-                    <p class="muted" data-pending-fields>Vela 1 representa a ultima vela fechada.</p>
+                        <p class="muted">Vela 1 representa a ultima vela fechada.</p>
+                        </div>
+                        <div class="tab-panel tab-panel-optimize">
+                            <div class="optimize-row">
+                                <div class="optimize-name">Posicionar em</div>
+                                <div class="optimize-grid optimize-grid-select">
+                                    <label for="pending-reference-start">Iniciar</label>
+                                    <label for="pending-reference-end">Terminar</label>
+                                    {% for bound in ['start', 'end'] %}
+                                        <select id="pending-reference-{{ bound }}" name="pending-reference-{{ bound }}">
+                                            {% for item in ['Maxima', 'Minima', 'Abertura', 'Fechamento'] %}<option>{{ item }}</option>{% endfor %}
+                                        </select>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="optimize-row">
+                                <div class="optimize-name">Vela</div>
+                                <div class="optimize-grid">
+                                    <label for="pending-bar-start">Iniciar</label>
+                                    <label for="pending-bar-step">Passo</label>
+                                    <label for="pending-bar-end">Terminar</label>
+                                    {% for bound in ['start', 'step', 'end'] %}
+                                        <input id="pending-bar-{{ bound }}" name="pending-bar-{{ bound }}" type="number" value="1" min="1" step="1">
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="card rules-card">
                     <h2>Filtro de candle</h2>
