@@ -317,6 +317,14 @@
                 </div>
                 <div class="card rules-card">
                     <h2>Alvos</h2>
+                    <div class="tabs">
+                        <input class="tab-radio" id="targets-params" name="targets-tabs" type="radio" checked>
+                        <input class="tab-radio" id="targets-optimize" name="targets-tabs" type="radio">
+                        <div class="tab-list">
+                            <label class="tab-button" for="targets-params">Parametros</label>
+                            <label class="tab-button" for="targets-optimize">Otimizar</label>
+                        </div>
+                        <div class="tab-panel tab-panel-params">
                     <label>Unidade dos alvos</label>
                     <select>{% for item in target_units %}<option>{{ item }}</option>{% endfor %}</select>
                     <div class="row">
@@ -334,6 +342,46 @@
                         <div data-take-distance><label>Distancia fixa</label><input value="0.00"></div>
                     </div>
                     <p class="muted">Distancia e vezes 0 desligam o alvo.</p>
+                        </div>
+                        <div class="tab-panel tab-panel-optimize">
+                            {% for key, title, options, default in [
+                                ('unit', 'Unidade dos alvos', target_units, 'Pontos'),
+                                ('candle', 'Candle', ['Ultimo', 'Penultimo', 'Antepenultimo'], 'Ultimo'),
+                                ('size', 'Tamanho', ['Total com pavios', 'Corpo'], 'Total com pavios'),
+                                ('take-mode', 'Take Profit', ['Vezes o stop', 'Distancia fixa'], 'Vezes o stop')
+                            ] %}
+                                <div class="optimize-row">
+                                    <div class="optimize-name">{{ title }}</div>
+                                    <div class="optimize-grid optimize-grid-select">
+                                        <label for="target-{{ key }}-start">Iniciar</label>
+                                        <label for="target-{{ key }}-end">Terminar</label>
+                                        {% for bound in ['start', 'end'] %}
+                                            <select id="target-{{ key }}-{{ bound }}" name="target-{{ key }}-{{ bound }}">{% for item in options %}<option {{ 'selected' if item == default else '' }}>{{ item }}</option>{% endfor %}</select>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                            {% for key, title, default in [
+                                ('stop', 'Stop loss', '0.00'),
+                                ('stop-multiplier', '+ Vezes', '1.00'),
+                                ('take-multiplier', 'Vezes o stop', '2.00'),
+                                ('take-distance', 'Distancia fixa', '0.00')
+                            ] %}
+                                <div class="optimize-row">
+                                    <div class="optimize-name">{{ title }}</div>
+                                    <div class="optimize-grid">
+                                        <label for="target-{{ key }}-start">Iniciar</label>
+                                        <label for="target-{{ key }}-step">Passo</label>
+                                        <label for="target-{{ key }}-end">Terminar</label>
+                                        {% for bound in ['start', 'step', 'end'] %}
+                                            <input id="target-{{ key }}-{{ bound }}" name="target-{{ key }}-{{ bound }}" type="number" value="{{ '0.01' if bound == 'step' else default }}" min="{{ '0.01' if bound == 'step' else '0' }}" step="0.01">
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                            <p class="muted">Vezes o stop e Distancia fixa seguem o tipo de Take Profit escolhido na otimizacao. Zero desliga o alvo.</p>
+                        </div>
+                    </div>
                 </div>
             </section>
             <section class="rules-summary">
