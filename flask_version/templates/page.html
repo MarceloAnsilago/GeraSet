@@ -108,7 +108,7 @@
                             {% set schemas = [
                                 ('Media Movel', [('Periodo', 20, 1), ('Shift', 0, -100000), ('Velas de inclinacao', 3, 2)], [('Preco aplicado', price_options, 'Close'), ('Metodo', method_options, 'EMA'), ('Sinal', ['Fechou acima', 'Fechou abaixo', 'Toque'], 'Fechou acima')]),
                                 ('RSI', [('Periodo', 14, 1), ('Sobrevenda', 30, 0), ('Sobrecompra', 70, 0)], [('Preco aplicado', price_options, 'Close'), ('Sinal', ['Cruzar acima dos niveis', 'Cruzar abaixo dos niveis', 'Cruzar acima e abaixo', 'Invertido (continuar tendencia)'], 'Cruzar acima e abaixo')]),
-                                ('ADX', [('Periodo', 14, 1), ('ADX minimo', 25, 0)], [])
+                                ('ADX', [('Periodo', 14, 1), ('ADX minimo', 25, 0)], [('Sinal', ['Cruzamento +DI e -DI', 'Cruzamento +DI e -DI com ADX minimo', 'Direcao dos DIs com ADX minimo', 'ADX cruza acima do minimo', 'ADX crescente com direcao dos DIs'], 'Cruzamento +DI e -DI com ADX minimo')])
                             ] %}
                             <div class="tab-panel tab-panel-params">
                                 {% for kind, numbers, combos in schemas %}
@@ -124,7 +124,9 @@
                                         {% if kind == 'RSI' %}
                                             <p class="caption">Acima: compra ao cruzar acima da sobrevenda; venda ao cruzar acima da sobrecompra.<br>Abaixo: compra ao cruzar abaixo da sobrevenda; venda ao cruzar abaixo da sobrecompra.<br>Acima e abaixo: compra acima da sobrevenda; venda abaixo da sobrecompra.<br>Invertido: venda abaixo da sobrevenda; compra acima da sobrecompra, para continuar a tendencia.</p>
                                         {% endif %}
-                                        {% if kind == 'ADX' %}<p class="caption">Compra: +DI &gt; -DI<br>Venda: -DI &gt; +DI</p>{% endif %}
+                                        {% if kind == 'ADX' %}
+                                            <p class="caption">Cruzamento: compra quando +DI cruza acima de -DI; venda quando -DI cruza acima de +DI.<br>Com ADX minimo: exige ADX acima do limite configurado.<br>Direcao: compra com +DI &gt; -DI; venda com -DI &gt; +DI, com ADX acima do minimo.<br>ADX cruza acima: sinal ao superar o minimo, na direcao dos DIs.<br>ADX crescente: exige ADX maior que na vela anterior e acima do minimo, na direcao dos DIs.</p>
+                                        {% endif %}
                                     </div>
                                 {% endfor %}
                             </div>
