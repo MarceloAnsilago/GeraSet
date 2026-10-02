@@ -106,7 +106,7 @@
                                 <label class="tab-button" for="optimize-{{ index }}">Otimizar</label>
                             </div>
                             {% set schemas = [
-                                ('Media Movel', [('Periodo', 20, 1), ('Shift', 0, -100000), ('Velas de inclinacao', 3, 2)], [('Preco aplicado', price_options, 'Close'), ('Metodo', method_options, 'EMA')]),
+                                ('Media Movel', [('Periodo', 20, 1), ('Shift', 0, -100000), ('Velas de inclinacao', 3, 2)], [('Preco aplicado', price_options, 'Close'), ('Metodo', method_options, 'EMA'), ('Sinal', ['Fechou acima', 'Fechou abaixo', 'Toque'], 'Fechou acima')]),
                                 ('RSI', [('Periodo', 14, 1), ('Sobrevenda', 30, 0), ('Sobrecompra', 70, 0)], [('Preco aplicado', price_options, 'Close')]),
                                 ('ADX', [('Periodo', 14, 1), ('ADX minimo', 25, 0)], [])
                             ] %}
