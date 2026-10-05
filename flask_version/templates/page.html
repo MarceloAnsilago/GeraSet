@@ -27,7 +27,7 @@
         </div>
     </nav>
 
-    <main class="page">
+    <main class="page" data-page="{{ active_page }}">
         {% if active_page == 'inicio' %}
             <h1>GeraSet</h1>
             <p class="caption">Primeira etapa do Canvas UniversalEa, recriada em Flask.</p>
@@ -505,38 +505,21 @@
                 <div class="info">Carregue um set salvo ou confira a configuração atual.</div>
                 <a class="btn btn-primary" href="#">Carregar set</a>
             </div>
-            <section class="grid-2">
-                <div class="card">
-                    <h2>Setup</h2>
-                    <p><strong>Nome:</strong> {{ data.setup_name }}</p>
-                    <p><strong>Mercado:</strong> {{ data.setup_market }}</p>
-                    <p><strong>Timeframe:</strong> {{ data.setup_timeframe }}</p>
-                    <p><strong>Lote:</strong> {{ data.setup_lot }}</p>
+            <div class="tabs">
+                <input class="tab-radio" id="review-params" name="review-tabs" type="radio" checked>
+                <input class="tab-radio" id="review-optimize" name="review-tabs" type="radio">
+                <div class="tab-list">
+                    <label class="tab-button" for="review-params">Parâmetros</label>
+                    <label class="tab-button" for="review-optimize">Otimizar</label>
                 </div>
-                <div class="card">
-                    <h2>Regras</h2>
-                    <p>Ordem: A mercado</p>
-                    <p>Filtro de candle: Desativado</p>
-                    <p>Alvos: pontos</p>
-                </div>
-            </section>
-            <h2>Indicadores</h2>
-            <section class="grid-4">
-                {% for index in range(1, 5) %}
-                    <div class="card"><strong>Indicador {{ index }}</strong><p class="muted">Resumo dos parâmetros.</p></div>
-                {% endfor %}
-            </section>
-            <h2>Gestão</h2>
-            <section class="grid-3">
-                <div class="card">Breakeven: Desativado</div>
-                <div class="card">Trailing stop: Desativado</div>
-                <div class="card">Stop móvel: Desativado</div>
-            </section>
+                <div class="tab-panel tab-panel-params" data-review-params aria-live="polite"></div>
+                <div class="tab-panel tab-panel-optimize" data-review-optimize aria-live="polite"></div>
+            </div>
             <h2>Sets</h2>
             <section class="grid-2">
                 <div class="card">
                     <h2>Set atual</h2>
-                    <p>{{ data.setup_name }}</p>
+                    <p data-review-setup-name>{{ data.setup_name }}</p>
                     <p class="muted">A revisão acima compõe o set que será salvo.</p>
                 </div>
                 <div class="card">

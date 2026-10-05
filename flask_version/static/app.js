@@ -1,3 +1,32 @@
+const setupStorageKey = "geraset-flask-cards-v1";
+
+function readSetupState() {
+    try { return JSON.parse(localStorage.getItem(setupStorageKey)) || {}; }
+    catch { return {}; }
+}
+
+function setupControls(root) {
+    return Array.from(root.querySelectorAll(".card input:not(.tab-radio), .card select"));
+}
+
+function restoreSetup(root, page) {
+    const saved = readSetupState()[page] || [];
+    setupControls(root).forEach((control, index) => {
+        const value = saved[index];
+        if (!value) return;
+        if (control.type === "radio" || control.type === "checkbox") control.checked = value.checked;
+        else if (control.tagName !== "SELECT" || Array.from(control.options).some(option => option.value === value.value)) {
+            control.value = value.value;
+        }
+    });
+}
+
+// Restore before visibility, summaries and generated values are initialized.
+document.addEventListener("DOMContentLoaded", () => {
+    const root = document.querySelector("[data-page]");
+    if (root) restoreSetup(root, root.dataset.page);
+});
+
 function magicNumberFromName(name) {
     const text = name.trim();
     if (!text) return "";
@@ -187,3 +216,107 @@ function bindRulesSummary() {
 }
 
 document.addEventListener("DOMContentLoaded", bindRulesSummary);
+
+function relevantReviewControl(control, card) {
+    if (control.type === "radio" && !control.checked) return false;
+    const kind = control.closest("[data-indicator-kind]");
+    const indicator = card.querySelector("[data-indicator-type]");
+    if (kind && kind.dataset.indicatorKind !== indicator.value) return false;
+    if (control.closest("[data-pending-fields]") && card.querySelector("[data-rule-order]").value !== "Pendente") return false;
+    const condition = card.querySelector("[data-candle-condition]");
+    if (condition) {
+        if (control.closest("[data-candle-common]") && condition.value === "Desativado") return false;
+        if (control.closest("[data-candle-size]") && condition.value !== "Candles") return false;
+        if (control.closest("[data-candle-wicks]") && condition.value !== "Pavios") return false;
+    }
+    const take = card.querySelector("[data-take-mode]");
+    if (take) {
+        if (control.closest("[data-take-multiplier]") && take.value !== "Vezes o stop") return false;
+        if (control.closest("[data-take-distance]") && take.value === "Vezes o stop") return false;
+    }
+    return true;
+}
+
+function reviewLine(control, card) {
+    const row = control.closest(".optimize-row");
+    const label = control.previousElementSibling;
+    let title = control.dataset.paramLabel || (label?.tagName === "LABEL" ? label.textContent.trim() : "");
+    if (control.type === "radio") title = "Usar como";
+    if (row) {
+        const name = row.querySelector(".optimize-name");
+        const controls = Array.from(row.querySelectorAll("input, select"));
+        const labels = row.querySelectorAll("label");
+        title = `${name.textContent.trim()} — ${labels[controls.indexOf(control)]?.textContent.trim() || ""}`;
+    }
+    const unitLabel = row?.querySelector("[data-unit-label]") || (label?.hasAttribute("data-unit-label") ? label : null);
+    if (unitLabel) {
+        const unit = card.querySelector("[data-unit-selector]");
+        title = row ? `${unitLabel.dataset.unitLabel} — ${row.querySelectorAll("label")[Array.from(row.querySelectorAll("input, select")).indexOf(control)].textContent.trim()}` : unitLabel.dataset.unitLabel;
+        title += unit?.value === "Porcentagem" ? " (% porcentagem)" : " (pontos)";
+    }
+    return {title, value: control.tagName === "SELECT" ? control.selectedOptions[0]?.textContent : control.value};
+}
+
+async function renderSetupReview() {
+    const parameters = document.querySelector("[data-review-params]");
+    const optimize = document.querySelector("[data-review-optimize]");
+    if (!parameters || !optimize) return;
+    try {
+        for (const page of ["inicio", "indicadores", "gestao"]) {
+            const response = await fetch(`/${page}`);
+            if (!response.ok) throw new Error("Falha ao carregar os cards");
+            const root = new DOMParser().parseFromString(await response.text(), "text/html");
+            restoreSetup(root, page);
+            const name = root.querySelector("[data-setup-name]");
+            if (name) {
+                root.querySelector("[data-setup-magic]").value = magicNumberFromName(name.value);
+                document.querySelector("[data-review-setup-name]").textContent = name.value;
+            }
+            root.querySelectorAll(".card").forEach((card) => {
+                const heading = card.querySelector("h2");
+                if (!heading || !card.querySelector("input, select")) return;
+                for (const [panel, optimization] of [[parameters, false], [optimize, true]]) {
+                    const section = document.createElement("section");
+                    section.className = "card";
+                    const title = document.createElement("h2");
+                    title.textContent = heading.textContent;
+                    section.appendChild(title);
+                    const controls = Array.from(card.querySelectorAll("input:not(.tab-radio), select"));
+                    controls.filter(control => {
+                        const isOptimization = Boolean(control.closest(".tab-panel-optimize"));
+                        // Show fixed context (type, usage, mode, unit) alongside optimization ranges.
+                        const fixedContext = !control.closest(".tabs") || control.matches("[data-unit-selector], [data-take-mode]");
+                        return (isOptimization === optimization || (optimization && fixedContext)) && relevantReviewControl(control, card);
+                    }).forEach(control => {
+                        const entry = reviewLine(control, card);
+                        if (!entry.title) return;
+                        const line = document.createElement("p");
+                        const label = document.createElement("strong");
+                        label.textContent = `${entry.title}: `;
+                        line.append(label, document.createTextNode(entry.value || "—"));
+                        section.appendChild(line);
+                    });
+                    if (section.children.length > 1) panel.appendChild(section);
+                }
+            });
+        }
+    } catch {
+        parameters.textContent = "Não foi possível carregar a revisão. Atualize a página para tentar novamente.";
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const root = document.querySelector("[data-page]");
+    if (!root) return;
+    if (["inicio", "indicadores", "gestao"].includes(root.dataset.page)) {
+        const save = () => {
+            const state = readSetupState();
+            state[root.dataset.page] = setupControls(root).map(control => ({value: control.value, checked: control.checked}));
+            localStorage.setItem(setupStorageKey, JSON.stringify(state));
+        };
+        root.addEventListener("input", save);
+        root.addEventListener("change", save);
+        save();
+    }
+    renderSetupReview();
+});
