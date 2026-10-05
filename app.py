@@ -595,11 +595,9 @@ def render_indicators() -> None:
                 else:
                     st.caption("Sem parâmetros ativos.")
 
-    render_rules_section()
-
     footer_left, footer_right = st.columns([4, 1])
     with footer_left:
-        st.info("Configure os indicadores e as regras antes de seguir para Gestão.")
+        st.info("Configure os indicadores antes de seguir para Gestão.")
     with footer_right:
         st.link_button("Continuar →", "?page=gestao", type="primary", width="stretch")
 
