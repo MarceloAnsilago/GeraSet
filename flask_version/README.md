@@ -1,6 +1,6 @@
 # GeraSet Flask
 
-Versao Flask separada do app Streamlit.
+Versão Flask separada do app Streamlit.
 
 ## Rodar
 
@@ -16,4 +16,4 @@ Depois abra:
 http://localhost:5000
 ```
 
-Para remover esta versao, apague somente a pasta `flask_version`.
+Para remover esta versão, apague somente a pasta `flask_version`.

@@ -2,13 +2,13 @@ import streamlit as st
 
 
 PAGES = {
-    "inicio": "Pagina Inicial",
+    "inicio": "Página Inicial",
     "indicadores": "Indicadores",
     "gestao": "Gestão",
-    "revisao": "Revisao e Sets",
-    "ativacao": "Ativacao",
-    "relatorios": "Relatorios",
-    "configuracoes": "Configuracoes",
+    "revisao": "Revisão e Sets",
+    "ativacao": "Ativação",
+    "relatorios": "Relatórios",
+    "configuracoes": "Configurações",
 }
 
 TIMEFRAMES = [
@@ -770,13 +770,13 @@ def render_activation() -> None:
 
 
 def render_reports() -> None:
-    st.title("Relatorios")
-    st.info("Aqui ficarao os indicadores e exportacoes do GeraSet.")
+    st.title("Relatórios")
+    st.info("Aqui ficarão os indicadores e exportações do GeraSet.")
 
 
 def render_settings() -> None:
-    st.title("Configuracoes")
-    st.info("Aqui ficarao as preferencias do projeto.")
+    st.title("Configurações")
+    st.info("Aqui ficarão as preferências do projeto.")
 
 
 def main() -> None:
@@ -789,19 +789,19 @@ def main() -> None:
 
     selected_page = render_navbar()
 
-    if selected_page == "Pagina Inicial":
+    if selected_page == "Página Inicial":
         render_home()
     elif selected_page == "Indicadores":
         render_indicators()
     elif selected_page == "Gestão":
         render_management()
-    elif selected_page == "Revisao e Sets":
+    elif selected_page == "Revisão e Sets":
         render_review()
-    elif selected_page == "Ativacao":
+    elif selected_page == "Ativação":
         render_activation()
-    elif selected_page == "Relatorios":
+    elif selected_page == "Relatórios":
         render_reports()
-    elif selected_page == "Configuracoes":
+    elif selected_page == "Configurações":
         render_settings()
 
 

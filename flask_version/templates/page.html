@@ -23,7 +23,7 @@
             {% endfor %}
         </div>
         <div class="nav-review">
-            <a class="nav-link {{ 'active' if active_page == 'revisao' else '' }}" href="{{ url_for('page', page='revisao') }}">Revisao e Sets</a>
+            <a class="nav-link {{ 'active' if active_page == 'revisao' else '' }}" href="{{ url_for('page', page='revisao') }}">Revisão e Sets</a>
         </div>
     </nav>
 
@@ -33,7 +33,7 @@
             <p class="caption">Primeira etapa do Canvas UniversalEa, recriada em Flask.</p>
             <section class="grid-3">
                 <div class="card">
-                    <h2>Identificacao</h2>
+                    <h2>Identificação</h2>
                     <label>Nome do setup</label>
                     <input name="setup_name" value="{{ data.setup_name }}">
                     <label>Magic Number</label>
@@ -41,7 +41,7 @@
                     <p class="muted">Magic Number identifica as ordens deste setup.</p>
                 </div>
                 <div class="card">
-                    <h2>Mercado e operacao</h2>
+                    <h2>Mercado e operação</h2>
                     <div class="row">
                         <div>
                             <label>Mercado</label>
@@ -62,15 +62,15 @@
                             <input value="{{ data.setup_lot }}">
                         </div>
                     </div>
-                    <label>Direcao permitida</label>
+                    <label>Direção permitida</label>
                     <select><option>Compra e venda</option><option>Somente compra</option><option>Somente venda</option></select>
-                    <p class="muted">Lote: min. 0.01 - Passo 0.01</p>
+                    <p class="muted">Lote: mín. 0.01 - Passo 0.01</p>
                 </div>
                 <div class="card">
-                    <h2>Horarios</h2>
+                    <h2>Horários</h2>
                     <div class="row">
                         <div>
-                            <label>Inicio entradas</label>
+                            <label>Início entradas</label>
                             <select>{% for item in times %}<option>{{ item }}</option>{% endfor %}</select>
                         </div>
                         <div>
@@ -78,27 +78,27 @@
                             <select>{% for item in times %}<option {{ 'selected' if item == '23:55' else '' }}>{{ item }}</option>{% endfor %}</select>
                         </div>
                     </div>
-                    <p class="muted">Posicoes: conforme a modalidade.</p>
-                    <p class="muted">Horario do servidor da corretora - HH:MM</p>
+                    <p class="muted">Posições: conforme a modalidade.</p>
+                    <p class="muted">Horário do servidor da corretora - HH:MM</p>
                 </div>
             </section>
             <div class="button-row">
-                <span class="info">Defina a identificacao e as preferencias do setup. Proxima etapa: Indicadores</span>
+                <span class="info">Defina a identificação e as preferências do setup. Próxima etapa: Indicadores</span>
                 <a class="btn btn-primary" href="{{ url_for('page', page='indicadores') }}">Continuar</a>
             </div>
 
         {% elif active_page == 'indicadores' %}
             <h1>Indicadores</h1>
             <p class="caption">Segunda etapa do Canvas UniversalEa.</p>
-            <div class="info">Configure os quatro indicadores. Apenas Media Movel pode ser repetida.</div>
+            <div class="info">Configure os quatro indicadores. Apenas Média Móvel pode ser repetida.</div>
             <section class="grid-4 indicator-grid">
                 {% for index in range(1, 5) %}
                     <div class="card indicator-card">
                         <h2>Indicador {{ index }}</h2>
                         <label>Tipo</label>
                         <select data-indicator-type="{{ index }}">
-                            <option value="Nao usar" selected>Não usar</option>
-                            <option>Media Movel</option>
+                            <option value="Não usar" selected>Não usar</option>
+                            <option>Média Móvel</option>
                             <option>RSI</option>
                             <option>ADX</option>
                         </select>
@@ -106,37 +106,37 @@
                             <legend>Usar como:</legend>
                             <div class="indicator-usage-options">
                                 <label><input type="radio" name="indicator-usage-{{ index }}" value="Entrada" checked> Entrada</label>
-                                <label><input type="radio" name="indicator-usage-{{ index }}" value="Saida"> Saída</label>
+                                <label><input type="radio" name="indicator-usage-{{ index }}" value="Saída"> Saída</label>
                             </div>
                         </fieldset>
                         <div class="tabs is-hidden" data-indicator-fields>
                             <input class="tab-radio" id="params-{{ index }}" name="indicator-tabs-{{ index }}" type="radio" checked>
                             <input class="tab-radio" id="optimize-{{ index }}" name="indicator-tabs-{{ index }}" type="radio">
                             <div class="tab-list">
-                                <label class="tab-button" for="params-{{ index }}">Parametros</label>
+                                <label class="tab-button" for="params-{{ index }}">Parâmetros</label>
                                 <label class="tab-button" for="optimize-{{ index }}">Otimizar</label>
                             </div>
                             {% set schemas = [
-                                ('Media Movel', [('Periodo', 20, 1), ('Shift', 0, -100000), ('Velas de inclinacao', 3, 2)], [('Preco aplicado', price_options, 'Close'), ('Metodo', method_options, 'EMA'), ('Sinal', ['Fechou acima', 'Fechou abaixo', 'Toque'], 'Fechou acima')]),
-                                ('RSI', [('Periodo', 14, 1), ('Sobrevenda', 30, 0), ('Sobrecompra', 70, 0)], [('Preco aplicado', price_options, 'Close'), ('Sinal', ['Cruzar acima dos niveis', 'Cruzar abaixo dos niveis', 'Cruzar acima e abaixo', 'Invertido (continuar tendencia)'], 'Cruzar acima e abaixo')]),
-                                ('ADX', [('Periodo', 14, 1), ('ADX minimo', 25, 0)], [('Sinal', ['Cruzamento +DI e -DI', 'Cruzamento +DI e -DI com ADX minimo', 'Direcao dos DIs com ADX minimo', 'ADX cruza acima do minimo', 'ADX crescente com direcao dos DIs'], 'Cruzamento +DI e -DI com ADX minimo')])
+                                ('Média Móvel', [('Período', 20, 1), ('Shift', 0, -100000), ('Velas de inclinação', 3, 2)], [('Preço aplicado', price_options, 'Close'), ('Método', method_options, 'EMA'), ('Sinal', ['Fechou acima', 'Fechou abaixo', 'Toque'], 'Fechou acima')]),
+                                ('RSI', [('Período', 14, 1), ('Sobrevenda', 30, 0), ('Sobrecompra', 70, 0)], [('Preço aplicado', price_options, 'Close'), ('Sinal', ['Cruzar acima dos níveis', 'Cruzar abaixo dos níveis', 'Cruzar acima e abaixo', 'Invertido (continuar tendência)'], 'Cruzar acima e abaixo')]),
+                                ('ADX', [('Período', 14, 1), ('ADX mínimo', 25, 0)], [('Sinal', ['Cruzamento +DI e -DI', 'Cruzamento +DI e -DI com ADX mínimo', 'Direção dos DIs com ADX mínimo', 'ADX cruza acima do mínimo', 'ADX crescente com direção dos DIs'], 'Cruzamento +DI e -DI com ADX mínimo')])
                             ] %}
                             <div class="tab-panel tab-panel-params">
                                 {% for kind, numbers, combos in schemas %}
                                     <div data-indicator-kind="{{ kind }}" class="is-hidden">
                                         {% for title, default, minimum in numbers %}
                                             <label for="param-{{ index }}-{{ kind }}-{{ loop.index }}">{{ title }}</label>
-                                            <input data-param-label="{{ title }}" id="param-{{ index }}-{{ kind }}-{{ loop.index }}" type="number" value="{{ default }}" min="{{ minimum }}" max="{{ 100 if title in ['Sobrevenda', 'Sobrecompra', 'ADX minimo'] else 100000 }}" step="{{ '0.01' if title in ['Sobrevenda', 'Sobrecompra', 'ADX minimo'] else '1' }}">
+                                            <input data-param-label="{{ title }}" id="param-{{ index }}-{{ kind }}-{{ loop.index }}" type="number" value="{{ default }}" min="{{ minimum }}" max="{{ 100 if title in ['Sobrevenda', 'Sobrecompra', 'ADX mínimo'] else 100000 }}" step="{{ '0.01' if title in ['Sobrevenda', 'Sobrecompra', 'ADX mínimo'] else '1' }}">
                                         {% endfor %}
                                         {% for title, options, default in combos %}
                                             <label for="combo-{{ index }}-{{ kind }}-{{ loop.index }}">{{ title }}</label>
                                             <select data-param-label="{{ title }}" id="combo-{{ index }}-{{ kind }}-{{ loop.index }}">{% for item in options %}<option {{ 'selected' if item == default else '' }}>{{ item }}</option>{% endfor %}</select>
                                         {% endfor %}
                                         {% if kind == 'RSI' %}
-                                            <p class="caption">Acima: compra ao cruzar acima da sobrevenda; venda ao cruzar acima da sobrecompra.<br>Abaixo: compra ao cruzar abaixo da sobrevenda; venda ao cruzar abaixo da sobrecompra.<br>Acima e abaixo: compra acima da sobrevenda; venda abaixo da sobrecompra.<br>Invertido: venda abaixo da sobrevenda; compra acima da sobrecompra, para continuar a tendencia.</p>
+                                            <p class="caption">Acima: compra ao cruzar acima da sobrevenda; venda ao cruzar acima da sobrecompra.<br>Abaixo: compra ao cruzar abaixo da sobrevenda; venda ao cruzar abaixo da sobrecompra.<br>Acima e abaixo: compra acima da sobrevenda; venda abaixo da sobrecompra.<br>Invertido: venda abaixo da sobrevenda; compra acima da sobrecompra, para continuar a tendência.</p>
                                         {% endif %}
                                         {% if kind == 'ADX' %}
-                                            <p class="caption">Cruzamento: compra quando +DI cruza acima de -DI; venda quando -DI cruza acima de +DI.<br>Com ADX minimo: exige ADX acima do limite configurado.<br>Direcao: compra com +DI &gt; -DI; venda com -DI &gt; +DI, com ADX acima do minimo.<br>ADX cruza acima: sinal ao superar o minimo, na direcao dos DIs.<br>ADX crescente: exige ADX maior que na vela anterior e acima do minimo, na direcao dos DIs.</p>
+                                            <p class="caption">Cruzamento: compra quando +DI cruza acima de -DI; venda quando -DI cruza acima de +DI.<br>Com ADX mínimo: exige ADX acima do limite configurado.<br>Direção: compra com +DI &gt; -DI; venda com -DI &gt; +DI, com ADX acima do mínimo.<br>ADX cruza acima: sinal ao superar o mínimo, na direção dos DIs.<br>ADX crescente: exige ADX maior que na vela anterior e acima do mínimo, na direção dos DIs.</p>
                                         {% endif %}
                                     </div>
                                 {% endfor %}
@@ -149,7 +149,7 @@
                                                 <div class="optimize-name">{{ title }}</div>
                                                 <div class="optimize-grid">
                                                     {% for label in ['Iniciar', 'Passo', 'Terminar'] %}<label for="opt-{{ index }}-{{ kind }}-{{ loop.index }}-{{ title }}">{{ label }}</label>{% endfor %}
-                                                    {% for value in [default, 1, default] %}<input id="opt-{{ index }}-{{ kind }}-{{ loop.index }}-{{ title }}" type="number" value="{{ value }}" min="{{ 0.01 if loop.index == 2 else minimum }}" step="{{ '0.01' if title in ['Sobrevenda', 'Sobrecompra', 'ADX minimo'] else '1' }}">{% endfor %}
+                                                    {% for value in [default, 1, default] %}<input id="opt-{{ index }}-{{ kind }}-{{ loop.index }}-{{ title }}" type="number" value="{{ value }}" min="{{ 0.01 if loop.index == 2 else minimum }}" step="{{ '0.01' if title in ['Sobrevenda', 'Sobrecompra', 'ADX mínimo'] else '1' }}">{% endfor %}
                                                 </div>
                                             </div>
                                         {% endfor %}
@@ -182,21 +182,21 @@
                         </div>
                         <strong data-indicator-summary-type>Não usar</strong>
                         <div data-indicator-summary-values aria-live="polite">
-                            <p>Sem par?metros ativos.</p>
+                            <p>Sem parâmetros ativos.</p>
                         </div>
                     </div>
                 {% endfor %}
             </section>
 
             <div class="button-row">
-                <span class="info">Configure os indicadores antes de seguir para Gestao.</span>
+                <span class="info">Configure os indicadores antes de seguir para Gestão.</span>
                 <a class="btn btn-primary" href="{{ url_for('page', page='gestao') }}">Continuar</a>
             </div>
 
         {% elif active_page == 'gestao' %}
-            <h1>Gestao</h1>
-            <p class="caption">Configure as regras de entrada e saida, alvos e gestao dos stops.</p>
-            <h2>Regras de entrada e saida</h2>
+            <h1>Gestão</h1>
+            <p class="caption">Configure as regras de entrada e saída, alvos e gestão dos stops.</p>
+            <h2>Regras de entrada e saída</h2>
             <section class="grid-3 rules-grid" data-rules-parameters>
                 <div class="card rules-card">
                     <h2>Ordem</h2>
@@ -206,21 +206,21 @@
                         <input class="tab-radio" id="pending-params" name="pending-tabs" type="radio" checked>
                         <input class="tab-radio" id="pending-optimize" name="pending-tabs" type="radio">
                         <div class="tab-list">
-                            <label class="tab-button" for="pending-params">Parametros</label>
+                            <label class="tab-button" for="pending-params">Parâmetros</label>
                             <label class="tab-button" for="pending-optimize">Otimizar</label>
                         </div>
                         <div class="tab-panel tab-panel-params">
                         <div class="row">
                         <div>
                             <label>Posicionar em</label>
-                            <select><option>Maxima</option><option>Minima</option><option>Abertura</option><option>Fechamento</option></select>
+                            <select><option>Máxima</option><option>Mínima</option><option>Abertura</option><option>Fechamento</option></select>
                         </div>
                         <div>
                             <label>Vela</label>
                             <input type="number" value="1" min="1" step="1">
                         </div>
                     </div>
-                        <p class="muted">Vela 1 representa a ultima vela fechada.</p>
+                        <p class="muted">Vela 1 representa a Última vela fechada.</p>
                         </div>
                         <div class="tab-panel tab-panel-optimize">
                             <div class="optimize-row">
@@ -230,7 +230,7 @@
                                     <label for="pending-reference-end">Terminar</label>
                                     {% for bound in ['start', 'end'] %}
                                         <select id="pending-reference-{{ bound }}" name="pending-reference-{{ bound }}">
-                                            {% for item in ['Maxima', 'Minima', 'Abertura', 'Fechamento'] %}<option>{{ item }}</option>{% endfor %}
+                                            {% for item in ['Máxima', 'Mínima', 'Abertura', 'Fechamento'] %}<option>{{ item }}</option>{% endfor %}
                                         </select>
                                     {% endfor %}
                                 </div>
@@ -251,13 +251,13 @@
                 </div>
                 <div class="card rules-card">
                     <h2>Filtro de candle</h2>
-                    <label>Condicao</label>
+                    <label>Condição</label>
                     <select data-candle-condition><option>Desativado</option><option>Candles</option><option>Pavios</option></select>
                     <div class="tabs is-hidden" data-candle-common>
                         <input class="tab-radio" id="candle-params" name="candle-tabs" type="radio" checked>
                         <input class="tab-radio" id="candle-optimize" name="candle-tabs" type="radio">
                         <div class="tab-list">
-                            <label class="tab-button" for="candle-params">Parametros</label>
+                            <label class="tab-button" for="candle-params">Parâmetros</label>
                             <label class="tab-button" for="candle-optimize">Otimizar</label>
                         </div>
                         <div class="tab-panel tab-panel-params">
@@ -269,22 +269,22 @@
                     </div>
                     <div data-candle-size>
                     <label>Medir candle</label>
-                    <select><option>Corpo</option><option>Total maxima - minima</option></select>
+                    <select><option>Corpo</option><option>Total máxima - mínima</option></select>
                     <div class="row">
-                        <div><label>Candle min.</label><input value="0.00"></div>
-                        <div><label>Candle max.</label><input value="0.00"></div>
+                        <div><label>Candle mín.</label><input value="0.00"></div>
+                        <div><label>Candle máx.</label><input value="0.00"></div>
                     </div>
                     </div>
                     <div class="row" data-candle-wicks>
-                        <div><label>Pavio sup. min.</label><input value="0.00"></div>
-                        <div><label>Pavio inf. min.</label><input value="0.00"></div>
+                        <div><label>Pavio sup. mín.</label><input value="0.00"></div>
+                        <div><label>Pavio inf. mín.</label><input value="0.00"></div>
                     </div>
                     <p class="muted" data-candle-common>Zero desativa somente aquele limite.</p>
                         </div>
                         <div class="tab-panel tab-panel-optimize">
                             {% for key, title, options, visibility in [
                                 ('reference', 'Configurar candle', candle_options, 'data-candle-common'),
-                                ('measure', 'Medir candle', ['Corpo', 'Total maxima - minima'], 'data-candle-size')
+                                ('measure', 'Medir candle', ['Corpo', 'Total máxima - mínima'], 'data-candle-size')
                             ] %}
                                 <div class="optimize-row" {{ visibility }}>
                                     <div class="optimize-name">{{ title }}</div>
@@ -298,10 +298,10 @@
                                 </div>
                             {% endfor %}
                             {% for key, title, visibility in [
-                                ('min', 'Candle min.', 'data-candle-size'),
-                                ('max', 'Candle max.', 'data-candle-size'),
-                                ('upper-wick', 'Pavio sup. min.', 'data-candle-wicks'),
-                                ('lower-wick', 'Pavio inf. min.', 'data-candle-wicks')
+                                ('min', 'Candle mín.', 'data-candle-size'),
+                                ('max', 'Candle máx.', 'data-candle-size'),
+                                ('upper-wick', 'Pavio sup. mín.', 'data-candle-wicks'),
+                                ('lower-wick', 'Pavio inf. mín.', 'data-candle-wicks')
                             ] %}
                                 <div class="optimize-row" {{ visibility }}>
                                     <div class="optimize-name">{{ title }}</div>
@@ -324,7 +324,7 @@
                         <input class="tab-radio" id="targets-params" name="targets-tabs" type="radio" checked>
                         <input class="tab-radio" id="targets-optimize" name="targets-tabs" type="radio">
                         <div class="tab-list">
-                            <label class="tab-button" for="targets-params">Parametros</label>
+                            <label class="tab-button" for="targets-params">Parâmetros</label>
                             <label class="tab-button" for="targets-optimize">Otimizar</label>
                         </div>
                         <div class="tab-panel tab-panel-params">
@@ -335,20 +335,20 @@
                         <div><label>+ Vezes</label><input value="1.00"></div>
                     </div>
                     <div class="row">
-                        <div><label>Candle</label><select><option>Ultimo</option><option>Penultimo</option><option>Antepenultimo</option></select></div>
+                        <div><label>Candle</label><select><option>último</option><option>Penúltimo</option><option>Antepenúltimo</option></select></div>
                         <div><label>Tamanho</label><select><option>Total com pavios</option><option>Corpo</option></select></div>
                     </div>
                     <label>Take Profit</label>
-                    <select data-take-mode><option>Vezes o stop</option><option>Distancia fixa</option></select>
+                    <select data-take-mode><option>Vezes o stop</option><option>Distância fixa</option></select>
                     <div class="row">
                         <div data-take-multiplier><label>Vezes o stop</label><input value="2.00"></div>
-                        <div data-take-distance><label>Distancia fixa</label><input value="0.00"></div>
+                        <div data-take-distance><label>Distância fixa</label><input value="0.00"></div>
                     </div>
-                    <p class="muted">Distancia e vezes 0 desligam o alvo.</p>
+                    <p class="muted">Distância e vezes 0 desligam o alvo.</p>
                         </div>
                         <div class="tab-panel tab-panel-optimize">
                             {% for key, title, options, default in [
-                                ('candle', 'Candle', ['Ultimo', 'Penultimo', 'Antepenultimo'], 'Ultimo'),
+                                ('candle', 'Candle', ['último', 'Penúltimo', 'Antepenúltimo'], 'último'),
                                 ('size', 'Tamanho', ['Total com pavios', 'Corpo'], 'Total com pavios')
                             ] %}
                                 <div class="optimize-row">
@@ -365,7 +365,7 @@
                             {% for key, title, default in [
                                 ('stop', 'Stop loss', '0.00'),
                                 ('take-multiplier', 'Vezes o stop', '2.00'),
-                                ('take-distance', 'Distancia fixa', '0.00')
+                                ('take-distance', 'Distância fixa', '0.00')
                             ] %}
                                 <div class="optimize-row" {{ 'data-take-multiplier' if key == 'take-multiplier' else ('data-take-distance' if key == 'take-distance' else '') }}>
                                     <div class="optimize-name">{{ title }}</div>
@@ -379,12 +379,12 @@
                                     </div>
                                 </div>
                             {% endfor %}
-                            <p class="muted">O campo de Take Profit segue o tipo escolhido em Parametros. Zero desliga o alvo.</p>
+                            <p class="muted">O campo de Take Profit segue o tipo escolhido em Parâmetros. Zero desliga o alvo.</p>
                         </div>
                     </div>
                 </div>
             </section>
-            <h2>Resumo das regras de entrada e saida</h2>
+            <h2>Resumo das regras de entrada e saída</h2>
             <section class="grid-4 summary-grid" data-rules-summary>
                 {% for title in ['Ordem', 'Filtro de candle', 'Stop loss', 'Take Profit'] %}
                     <div class="card summary-card">
@@ -393,16 +393,16 @@
                     </div>
                 {% endfor %}
             </section>
-            <h2>Gestao dos stops</h2>
+            <h2>Gestão dos stops</h2>
             <section class="grid-3">
-                {% for title in ['Breakeven', 'Trailing stop', 'Stop movel'] %}
+                {% for title in ['Breakeven', 'Trailing stop', 'Stop móvel'] %}
                     <div class="card">
                         <h2>{{ title }}</h2>
                         <label>Modo</label>
                         <select>{% for item in management_modes %}<option>{{ item }}</option>{% endfor %}</select>
-                        <label>Ativar apos</label>
+                        <label>Ativar após</label>
                         <input value="0.00">
-                        <label>Distancia do preco</label>
+                        <label>Distância do preço</label>
                         <input value="0.00">
                         <label>Passo de ajuste</label>
                         <input value="0.00">
@@ -410,11 +410,11 @@
                     </div>
                 {% endfor %}
             </section>
-            <h2>Resumo do stop movel</h2>
+            <h2>Resumo do stop móvel</h2>
             <div class="card">
                 <p>Breakeven: Desativado</p>
                 <p>Trailing stop: Desativado</p>
-                <p>Stop movel: Desativado</p>
+                <p>Stop móvel: Desativado</p>
             </div>
             <div class="button-row">
                 <a class="btn" href="{{ url_for('page', page='indicadores') }}">Indicadores</a>
@@ -422,10 +422,10 @@
             </div>
 
         {% elif active_page == 'revisao' %}
-            <h1>Revisao e Sets</h1>
-            <p class="caption">Confira a configuracao antes de salvar ou ativar o set.</p>
+            <h1>Revisão e Sets</h1>
+            <p class="caption">Confira a configuração antes de salvar ou ativar o set.</p>
             <div class="top-action">
-                <div class="info">Carregue um set salvo ou confira a configuracao atual.</div>
+                <div class="info">Carregue um set salvo ou confira a configuração atual.</div>
                 <a class="btn btn-primary" href="#">Carregar set</a>
             </div>
             <section class="grid-2">
@@ -446,54 +446,54 @@
             <h2>Indicadores</h2>
             <section class="grid-4">
                 {% for index in range(1, 5) %}
-                    <div class="card"><strong>Indicador {{ index }}</strong><p class="muted">Resumo dos parametros.</p></div>
+                    <div class="card"><strong>Indicador {{ index }}</strong><p class="muted">Resumo dos parâmetros.</p></div>
                 {% endfor %}
             </section>
-            <h2>Gestao</h2>
+            <h2>Gestão</h2>
             <section class="grid-3">
                 <div class="card">Breakeven: Desativado</div>
                 <div class="card">Trailing stop: Desativado</div>
-                <div class="card">Stop movel: Desativado</div>
+                <div class="card">Stop móvel: Desativado</div>
             </section>
             <h2>Sets</h2>
             <section class="grid-2">
                 <div class="card">
                     <h2>Set atual</h2>
                     <p>{{ data.setup_name }}</p>
-                    <p class="muted">A revisao acima compoe o set que sera salvo.</p>
+                    <p class="muted">A revisão acima compõe o set que será salvo.</p>
                 </div>
                 <div class="card">
-                    <h2>Acoes</h2>
+                    <h2>Ações</h2>
                     <a class="btn btn-primary" href="#">Salvar set</a>
                     <a class="btn" href="#">Exportar set</a>
                 </div>
             </section>
             <div class="button-row">
-                <a class="btn" href="{{ url_for('page', page='gestao') }}">Gestao</a>
+                <a class="btn" href="{{ url_for('page', page='gestao') }}">Gestão</a>
                 <a class="btn btn-primary" href="{{ url_for('page', page='ativacao') }}">Continuar</a>
             </div>
 
         {% elif active_page == 'ativacao' %}
-            <h1>Ativacao</h1>
-            <p class="caption">Ultima etapa do fluxo.</p>
+            <h1>Ativação</h1>
+            <p class="caption">Última etapa do fluxo.</p>
             <div class="card">
                 <h2>Controle do set</h2>
-                <div class="info">A ativacao real ainda sera conectada ao motor.</div>
+                <div class="info">A ativação real ainda será conectada ao motor.</div>
                 <label><input type="checkbox" style="width:auto; min-height:0;"> Set ativo</label>
                 <p>Status: Pausado</p>
             </div>
             <div class="button-row">
-                <a class="btn" href="{{ url_for('page', page='revisao') }}">Revisao</a>
+                <a class="btn" href="{{ url_for('page', page='revisao') }}">Revisão</a>
                 <a class="btn btn-primary" href="#">Aplicar</a>
             </div>
 
         {% elif active_page == 'relatorios' %}
-            <h1>Relatorios</h1>
-            <div class="info">Aqui ficarao os indicadores e exportacoes do GeraSet.</div>
+            <h1>Relatórios</h1>
+            <div class="info">Aqui ficarão os indicadores e exportações do GeraSet.</div>
 
         {% elif active_page == 'configuracoes' %}
-            <h1>Configuracoes</h1>
-            <div class="info">Aqui ficarao as preferencias do projeto.</div>
+            <h1>Configurações</h1>
+            <div class="info">Aqui ficarão as preferências do projeto.</div>
         {% endif %}
     </main>
     <script src="{{ url_for('static', filename='app.js') }}"></script>

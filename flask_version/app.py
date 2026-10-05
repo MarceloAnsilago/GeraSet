@@ -6,12 +6,12 @@ from flask import Flask, redirect, render_template, request, url_for
 app = Flask(__name__)
 
 PAGES = {
-    "inicio": "Pagina Inicial",
+    "inicio": "Página Inicial",
     "indicadores": "Indicadores",
-    "gestao": "Gestao",
-    "ativacao": "Ativacao",
-    "relatorios": "Relatorios",
-    "configuracoes": "Configuracoes",
+    "gestao": "Gestão",
+    "ativacao": "Ativação",
+    "relatorios": "Relatórios",
+    "configuracoes": "Configurações",
 }
 
 TIMEFRAMES = [
@@ -43,7 +43,7 @@ PRICE_OPTIONS = ["Close", "Open", "High", "Low", "Median", "Typical", "Weighted"
 METHOD_OPTIONS = ["SMA", "EMA", "SMMA", "LWMA"]
 MANAGEMENT_MODES = ["Desativado", "Pontos", "Porcentagem"]
 TARGET_UNITS = ["Pontos", "Porcentagem"]
-CANDLE_OPTIONS = ["Candle 1 (ultimo fechado)", "Candle 2", "Candle 3"]
+CANDLE_OPTIONS = ["Candle 1 (último fechado)", "Candle 2", "Candle 3"]
 
 DEFAULTS = {
     "setup_name": "Meu setup",
@@ -59,7 +59,7 @@ DEFAULTS = {
     "candle_filter_condition": "Desativado",
     "rule_target_unit": "Pontos",
     "rule_stop_multiplier": "1.00",
-    "rule_stop_candle": "Ultimo",
+    "rule_stop_candle": "último",
     "rule_stop_measure": "Total (com pavios)",
     "rule_take_mode": "Vezes o stop",
     "rule_take_multiplier": "2.00",

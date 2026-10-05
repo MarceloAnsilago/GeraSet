@@ -63,12 +63,12 @@ function updateIndicatorSummary(select, fields, summary) {
         line.textContent = text;
         values.appendChild(line);
     };
-    if (select.value === "Nao usar") {
+    if (select.value === "Não usar") {
         addLine("Sem parâmetros ativos.");
         return;
     }
     const usage = select.closest(".indicator-card").querySelector("[data-indicator-usage] input:checked");
-    addLine(`Usar como: ${usage.value === "Saida" ? "Saída" : "Entrada"}`);
+    addLine(`Usar como: ${usage.value === "Saída" ? "Saída" : "Entrada"}`);
     fields.querySelectorAll(".tab-panel-params [data-indicator-kind]").forEach((group) => {
         if (group.dataset.indicatorKind !== select.value) return;
         group.querySelectorAll("[data-param-label]").forEach((control) => {
@@ -85,7 +85,7 @@ function bindIndicatorsVisibility() {
         const fields = select.closest(".indicator-card").querySelector("[data-indicator-fields]");
         const summary = document.querySelector(`[data-indicator-summary="${select.dataset.indicatorType}"]`);
         const update = () => {
-            const active = select.value !== "Nao usar";
+            const active = select.value !== "Não usar";
             setVisible([fields], active);
             fields.querySelectorAll("[data-indicator-kind]").forEach((group) => {
                 const selected = group.dataset.indicatorKind === select.value;
@@ -127,7 +127,7 @@ function bindRulesSummary() {
                 const value = control.tagName === "SELECT"
                     ? control.selectedOptions[0].textContent
                     : control.value || "—";
-                const take = index === 2 && ["Take Profit", "Vezes o stop", "Distancia fixa"].includes(title);
+                const take = index === 2 && ["Take Profit", "Vezes o stop", "Distância fixa"].includes(title);
                 const output = outputs[take ? 3 : index];
                 const line = document.createElement("p");
                 line.textContent = `${title}: ${value}`;
