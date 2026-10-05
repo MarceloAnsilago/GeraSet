@@ -400,12 +400,41 @@
                         <h2>{{ title }}</h2>
                         <label>Modo</label>
                         <select>{% for item in management_modes %}<option>{{ item }}</option>{% endfor %}</select>
+                        {% if title == 'Breakeven' %}
+                        <div class="tabs">
+                            <input class="tab-radio" id="breakeven-params" name="breakeven-tabs" type="radio" checked>
+                            <input class="tab-radio" id="breakeven-optimize" name="breakeven-tabs" type="radio">
+                            <div class="tab-list">
+                                <label class="tab-button" for="breakeven-params">Parâmetros</label>
+                                <label class="tab-button" for="breakeven-optimize">Otimizar</label>
+                            </div>
+                            <div class="tab-panel tab-panel-params">
+                        {% endif %}
                         <label>Ativar após</label>
                         <input value="0.00">
                         <label>Distância do preço</label>
                         <input value="0.00">
                         <label>Passo de ajuste</label>
                         <input value="0.00">
+                        {% if title == 'Breakeven' %}
+                            </div>
+                            <div class="tab-panel tab-panel-optimize">
+                                {% for key, label in [('activate', 'Ativar após'), ('distance', 'Distância do preço'), ('step', 'Passo de ajuste')] %}
+                                    <div class="optimize-row">
+                                        <div class="optimize-name">{{ label }}</div>
+                                        <div class="optimize-grid">
+                                            {% for bound, caption in [('start', 'Iniciar'), ('step', 'Passo'), ('end', 'Terminar')] %}
+                                                <label for="breakeven-{{ key }}-{{ bound }}">{{ caption }}</label>
+                                            {% endfor %}
+                                            {% for bound in ['start', 'step', 'end'] %}
+                                                <input id="breakeven-{{ key }}-{{ bound }}" name="breakeven-{{ key }}-{{ bound }}" type="number" value="{{ '0.01' if bound == 'step' else '0.00' }}" min="{{ '0.01' if bound == 'step' else '0' }}" step="0.01">
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
                         <p class="muted">Valores em pontos.</p>
                     </div>
                 {% endfor %}
