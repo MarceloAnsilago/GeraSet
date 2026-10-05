@@ -320,3 +320,62 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     renderSetupReview();
 });
+
+function optimizationRowCount(row) {
+    const controls = Array.from(row.querySelectorAll("input, select"));
+    if (controls.length === 2 && controls.every(control => control.tagName === "SELECT")) {
+        return BigInt(Math.abs(controls[1].selectedIndex - controls[0].selectedIndex) + 1);
+    }
+    if (controls.length === 3) {
+        const [start, step, end] = controls.map(control => Number(control.value));
+        if (!controls.every(control => control.value.trim()) || ![start, step, end].every(Number.isFinite) || step <= 0 || end < start) return 0n;
+        const intervals = (end - start) / step;
+        if (!Number.isSafeInteger(Math.floor(intervals))) return 0n;
+        return BigInt(Math.floor(intervals + 1e-9) + 1);
+    }
+    return 1n;
+}
+
+function pagePassageCount(root) {
+    let count = 1n;
+    root.querySelectorAll(".tab-panel-optimize .optimize-row").forEach(row => {
+        const card = row.closest(".card");
+        const control = row.querySelector("input, select");
+        if (!control || !relevantReviewControl(control, card)) return;
+        const mode = card.querySelector("[data-unit-selector]");
+        if (mode?.value === "Desativado") return;
+        count *= optimizationRowCount(row);
+    });
+    return count;
+}
+
+async function bindPassageCounter() {
+    const counter = document.querySelector("[data-passage-counter]");
+    const current = document.querySelector("[data-page]");
+    if (!counter || !current) return;
+    const roots = new Map();
+    try {
+        for (const page of ["inicio", "indicadores", "gestao"]) {
+            if (current.dataset.page === page) roots.set(page, current);
+            else {
+                const response = await fetch(`/${page}`);
+                if (!response.ok) throw new Error("Falha ao carregar intervalos");
+                const root = new DOMParser().parseFromString(await response.text(), "text/html");
+                restoreSetup(root, page);
+                roots.set(page, root);
+            }
+        }
+        const update = () => {
+            let count = 1n;
+            roots.forEach(root => { count *= pagePassageCount(root); });
+            counter.textContent = count === 0n ? "Passagens: intervalos inválidos" : `Passagens: ${count.toLocaleString("pt-BR")}`;
+        };
+        current.addEventListener("input", update);
+        current.addEventListener("change", update);
+        update();
+    } catch {
+        counter.textContent = "Passagens: indisponível";
+    }
+}
+
+document.addEventListener("DOMContentLoaded", bindPassageCounter);

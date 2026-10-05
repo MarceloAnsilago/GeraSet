@@ -680,3 +680,9 @@ input:disabled {
         flex-direction: column;
     }
 }
+.passage-counter {
+    color: #dbe4f0;
+    font-weight: 700;
+    margin-right: 1rem;
+    white-space: nowrap;
+}
