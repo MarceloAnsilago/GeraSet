@@ -68,14 +68,38 @@
                 </div>
                 <div class="card">
                     <h2>Horários</h2>
+                    <div class="tabs">
+                        <input class="tab-radio" id="schedule-params" name="schedule-tabs" type="radio" checked>
+                        <input class="tab-radio" id="schedule-optimize" name="schedule-tabs" type="radio">
+                        <div class="tab-list">
+                            <label class="tab-button" for="schedule-params">Parâmetros</label>
+                            <label class="tab-button" for="schedule-optimize">Otimizar</label>
+                        </div>
+                        <div class="tab-panel tab-panel-params">
                     <div class="row">
                         <div>
                             <label>Início entradas</label>
-                            <select>{% for item in times %}<option>{{ item }}</option>{% endfor %}</select>
+                            <select name="setup_entry_start">{% for item in times %}<option {{ 'selected' if item == data.setup_entry_start else '' }}>{{ item }}</option>{% endfor %}</select>
                         </div>
                         <div>
                             <label>Encerramento entradas</label>
-                            <select>{% for item in times %}<option {{ 'selected' if item == '23:55' else '' }}>{{ item }}</option>{% endfor %}</select>
+                            <select name="setup_entry_end">{% for item in times %}<option {{ 'selected' if item == data.setup_entry_end else '' }}>{{ item }}</option>{% endfor %}</select>
+                        </div>
+                    </div>
+                        </div>
+                        <div class="tab-panel tab-panel-optimize">
+                            {% for key, title, default in [('entry-start', 'Início entradas', data.setup_entry_start), ('entry-end', 'Encerramento entradas', data.setup_entry_end)] %}
+                                <div class="optimize-row">
+                                    <div class="optimize-name">{{ title }}</div>
+                                    <div class="optimize-grid optimize-grid-select">
+                                        <label for="schedule-{{ key }}-start">Iniciar</label>
+                                        <label for="schedule-{{ key }}-end">Terminar</label>
+                                        {% for bound in ['start', 'end'] %}
+                                            <select id="schedule-{{ key }}-{{ bound }}" name="schedule-{{ key }}-{{ bound }}">{% for item in times %}<option {{ 'selected' if item == default else '' }}>{{ item }}</option>{% endfor %}</select>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endfor %}
                         </div>
                     </div>
                     <p class="muted">Posições: conforme a modalidade.</p>
