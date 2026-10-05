@@ -600,6 +600,28 @@ def render_indicators() -> None:
                 else:
                     st.caption("Sem parâmetros ativos.")
 
+    st.subheader("Condições")
+    crossing_options = [
+        "Máxima do último candle",
+        "Mínima do último candle",
+        "Abertura do último candle",
+        "Fechamento do último candle",
+    ]
+    for index in range(1, 5):
+        selected_type = st.session_state.get(f"indicator_type_{index}", "Não usar")
+        if selected_type != "Não usar" and st.session_state.get(f"indicator_send_to_crossing_{index}", False):
+            crossing_options.append(f"Indicador {index}: {selected_type}")
+
+    if st.session_state.get("indicator_condition_target") not in crossing_options:
+        st.session_state["indicator_condition_target"] = crossing_options[0]
+
+    with st.container(border=True):
+        condition_col, target_col = st.columns(2, gap="medium")
+        with condition_col:
+            st.selectbox("Condição", ["Se", "Ou", "E"], key="indicator_condition_operator")
+        with target_col:
+            st.selectbox("Então", crossing_options, key="indicator_condition_target")
+
     footer_left, footer_right = st.columns([4, 1])
     with footer_left:
         st.info("Configure os indicadores antes de seguir para Gestão.")
