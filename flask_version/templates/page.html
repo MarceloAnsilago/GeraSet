@@ -400,8 +400,7 @@
                         <h2>{{ title }}</h2>
                         <label>Modo</label>
                         <select>{% for item in management_modes %}<option>{{ item }}</option>{% endfor %}</select>
-                        {% set management_key = 'breakeven' if title == 'Breakeven' else 'trailing' %}
-                        {% if title in ['Breakeven', 'Trailing stop'] %}
+                        {% set management_key = {'Breakeven': 'breakeven', 'Trailing stop': 'trailing', 'Stop móvel': 'moving-stop'}[title] %}
                         <div class="tabs">
                             <input class="tab-radio" id="{{ management_key }}-params" name="{{ management_key }}-tabs" type="radio" checked>
                             <input class="tab-radio" id="{{ management_key }}-optimize" name="{{ management_key }}-tabs" type="radio">
@@ -410,14 +409,12 @@
                                 <label class="tab-button" for="{{ management_key }}-optimize">Otimizar</label>
                             </div>
                             <div class="tab-panel tab-panel-params">
-                        {% endif %}
                         <label>Ativar após</label>
                         <input value="0.00">
                         <label>Distância do preço</label>
                         <input value="0.00">
                         <label>Passo de ajuste</label>
                         <input value="0.00">
-                        {% if title in ['Breakeven', 'Trailing stop'] %}
                             </div>
                             <div class="tab-panel tab-panel-optimize">
                                 {% for key, label in [('activate', 'Ativar após'), ('distance', 'Distância do preço'), ('step', 'Passo de ajuste')] %}
@@ -435,7 +432,6 @@
                                 {% endfor %}
                             </div>
                         </div>
-                        {% endif %}
                         <p class="muted">Valores em pontos.</p>
                     </div>
                 {% endfor %}
