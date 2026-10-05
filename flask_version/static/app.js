@@ -368,13 +368,13 @@ async function bindPassageCounter() {
         const update = () => {
             let count = 1n;
             roots.forEach(root => { count *= pagePassageCount(root); });
-            counter.textContent = count === 0n ? "Passagens: intervalos inválidos" : `Passagens: ${count.toLocaleString("pt-BR")}`;
+            counter.textContent = count === 0n ? "Combinações: intervalos inválidos" : `Combinações: ${count.toLocaleString("pt-BR")}`;
         };
         current.addEventListener("input", update);
         current.addEventListener("change", update);
         update();
     } catch {
-        counter.textContent = "Passagens: indisponível";
+        counter.textContent = "Combinações: indisponível";
     }
 }
 
