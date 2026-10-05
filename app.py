@@ -528,6 +528,11 @@ def render_indicators() -> None:
                     ["Não usar", "Média Móvel", "RSI", "ADX"],
                     key=f"indicator_type_{index}",
                 )
+                st.checkbox(
+                    "Enviar pra cruzamento",
+                    value=False,
+                    key=f"indicator_send_to_crossing_{index}",
+                )
                 parameters_tab, optimize_tab = st.tabs(["Parâmetros", "Otimizar"])
 
                 with parameters_tab:
