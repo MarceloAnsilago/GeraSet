@@ -263,21 +263,21 @@
                         <div class="tab-panel tab-panel-params">
                     <div data-candle-common>
                             <label>Unidade</label>
-                            <select>{% for item in target_units %}<option>{{ item }}</option>{% endfor %}</select>
+                            <select data-unit-selector>{% for item in target_units %}<option>{{ item }}</option>{% endfor %}</select>
                             <label>Configurar candle</label>
                             <select>{% for item in candle_options %}<option>{{ item }}</option>{% endfor %}</select>
                     </div>
                     <div data-candle-size>
-                    <label>Medir candle</label>
+                    <label data-unit-label="Medir candle">Medir candle (pontos)</label>
                     <select><option>Corpo</option><option>Total máxima - mínima</option></select>
                     <div class="row">
-                        <div><label>Candle mín.</label><input value="0.00"></div>
-                        <div><label>Candle máx.</label><input value="0.00"></div>
+                        <div><label data-unit-label="Candle mín.">Candle mín. (pontos)</label><input value="0.00"></div>
+                        <div><label data-unit-label="Candle máx.">Candle máx. (pontos)</label><input value="0.00"></div>
                     </div>
                     </div>
                     <div class="row" data-candle-wicks>
-                        <div><label>Pavio sup. mín.</label><input value="0.00"></div>
-                        <div><label>Pavio inf. mín.</label><input value="0.00"></div>
+                        <div><label data-unit-label="Pavio sup. mín.">Pavio sup. mín. (pontos)</label><input value="0.00"></div>
+                        <div><label data-unit-label="Pavio inf. mín.">Pavio inf. mín. (pontos)</label><input value="0.00"></div>
                     </div>
                     <p class="muted" data-candle-common>Zero desativa somente aquele limite.</p>
                         </div>
@@ -287,7 +287,7 @@
                                 ('measure', 'Medir candle', ['Corpo', 'Total máxima - mínima'], 'data-candle-size')
                             ] %}
                                 <div class="optimize-row" {{ visibility }}>
-                                    <div class="optimize-name">{{ title }}</div>
+                                    <div class="optimize-name" {% if key in ['measure', 'min', 'max', 'upper-wick', 'lower-wick', 'stop', 'take-distance'] %}data-unit-label="{{ title }}"{% endif %}>{{ title }}</div>
                                     <div class="optimize-grid optimize-grid-select">
                                         <label for="candle-{{ key }}-start">Iniciar</label>
                                         <label for="candle-{{ key }}-end">Terminar</label>
@@ -304,7 +304,7 @@
                                 ('lower-wick', 'Pavio inf. mín.', 'data-candle-wicks')
                             ] %}
                                 <div class="optimize-row" {{ visibility }}>
-                                    <div class="optimize-name">{{ title }}</div>
+                                    <div class="optimize-name" {% if key in ['measure', 'min', 'max', 'upper-wick', 'lower-wick', 'stop', 'take-distance'] %}data-unit-label="{{ title }}"{% endif %}>{{ title }}</div>
                                     <div class="optimize-grid">
                                         <label for="candle-{{ key }}-start">Iniciar</label>
                                         <label for="candle-{{ key }}-step">Passo</label>
@@ -329,9 +329,9 @@
                         </div>
                         <div class="tab-panel tab-panel-params">
                     <label>Unidade dos alvos</label>
-                    <select>{% for item in target_units %}<option>{{ item }}</option>{% endfor %}</select>
+                    <select data-unit-selector>{% for item in target_units %}<option>{{ item }}</option>{% endfor %}</select>
                     <div class="row">
-                        <div><label>Stop loss</label><input value="0.00"></div>
+                        <div><label data-unit-label="Stop loss">Stop loss (pontos)</label><input value="0.00"></div>
                         <div><label>+ Vezes</label><input value="1.00"></div>
                     </div>
                     <div class="row">
@@ -342,7 +342,7 @@
                     <select data-take-mode><option>Vezes o stop</option><option>Distância fixa</option></select>
                     <div class="row">
                         <div data-take-multiplier><label>Vezes o stop</label><input value="2.00"></div>
-                        <div data-take-distance><label>Distância fixa</label><input value="0.00"></div>
+                        <div data-take-distance><label data-unit-label="Distância fixa">Distância fixa (pontos)</label><input value="0.00"></div>
                     </div>
                     <p class="muted">Distância e vezes 0 desligam o alvo.</p>
                         </div>
@@ -352,7 +352,7 @@
                                 ('size', 'Tamanho', ['Total com pavios', 'Corpo'], 'Total com pavios')
                             ] %}
                                 <div class="optimize-row">
-                                    <div class="optimize-name">{{ title }}</div>
+                                    <div class="optimize-name" {% if key in ['measure', 'min', 'max', 'upper-wick', 'lower-wick', 'stop', 'take-distance'] %}data-unit-label="{{ title }}"{% endif %}>{{ title }}</div>
                                     <div class="optimize-grid optimize-grid-select">
                                         <label for="target-{{ key }}-start">Iniciar</label>
                                         <label for="target-{{ key }}-end">Terminar</label>
@@ -368,7 +368,7 @@
                                 ('take-distance', 'Distância fixa', '0.00')
                             ] %}
                                 <div class="optimize-row" {{ 'data-take-multiplier' if key == 'take-multiplier' else ('data-take-distance' if key == 'take-distance' else '') }}>
-                                    <div class="optimize-name">{{ title }}</div>
+                                    <div class="optimize-name" {% if key in ['measure', 'min', 'max', 'upper-wick', 'lower-wick', 'stop', 'take-distance'] %}data-unit-label="{{ title }}"{% endif %}>{{ title }}</div>
                                     <div class="optimize-grid">
                                         <label for="target-{{ key }}-start">Iniciar</label>
                                         <label for="target-{{ key }}-step">Passo</label>
@@ -399,7 +399,7 @@
                     <div class="card">
                         <h2>{{ title }}</h2>
                         <label>Modo</label>
-                        <select>{% for item in management_modes %}<option>{{ item }}</option>{% endfor %}</select>
+                        <select data-unit-selector>{% for item in management_modes %}<option>{{ item }}</option>{% endfor %}</select>
                         {% set management_key = {'Breakeven': 'breakeven', 'Trailing stop': 'trailing', 'Stop móvel': 'moving-stop'}[title] %}
                         <div class="tabs">
                             <input class="tab-radio" id="{{ management_key }}-params" name="{{ management_key }}-tabs" type="radio" checked>
@@ -409,17 +409,17 @@
                                 <label class="tab-button" for="{{ management_key }}-optimize">Otimizar</label>
                             </div>
                             <div class="tab-panel tab-panel-params">
-                        <label>Ativar após</label>
+                        <label data-unit-label="Ativar após">Ativar após (pontos)</label>
                         <input value="0.00">
-                        <label>Distância do preço</label>
+                        <label data-unit-label="Distância do preço">Distância do preço (pontos)</label>
                         <input value="0.00">
-                        <label>Passo de ajuste</label>
+                        <label data-unit-label="Passo de ajuste">Passo de ajuste (pontos)</label>
                         <input value="0.00">
                             </div>
                             <div class="tab-panel tab-panel-optimize">
                                 {% for key, label in [('activate', 'Ativar após'), ('distance', 'Distância do preço'), ('step', 'Passo de ajuste')] %}
                                     <div class="optimize-row">
-                                        <div class="optimize-name">{{ label }}</div>
+                                        <div class="optimize-name" data-unit-label="{{ label }}">{{ label }}</div>
                                         <div class="optimize-grid">
                                             {% for bound, caption in [('start', 'Iniciar'), ('step', 'Passo'), ('end', 'Terminar')] %}
                                                 <label for="{{ management_key }}-{{ key }}-{{ bound }}">{{ caption }}</label>
@@ -432,7 +432,7 @@
                                 {% endfor %}
                             </div>
                         </div>
-                        <p class="muted">Valores em pontos.</p>
+                        <p class="muted" data-unit-help>Valores em pontos.</p>
                     </div>
                 {% endfor %}
             </section>

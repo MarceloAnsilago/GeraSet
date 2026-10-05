@@ -110,6 +110,25 @@ function bindIndicatorsVisibility() {
 
 document.addEventListener("DOMContentLoaded", bindIndicatorsVisibility);
 
+function bindUnitLabels() {
+    document.querySelectorAll("[data-unit-selector]").forEach((select) => {
+        const card = select.closest(".card");
+        const update = () => {
+            const percentage = select.value === "Porcentagem";
+            const suffix = percentage ? "(% porcentagem)" : "(pontos)";
+            card.querySelectorAll("[data-unit-label]").forEach((label) => {
+                label.textContent = `${label.dataset.unitLabel} ${suffix}`;
+            });
+            const help = card.querySelector("[data-unit-help]");
+            if (help) help.textContent = percentage ? "Valores em porcentagem." : "Valores em pontos.";
+        };
+        select.addEventListener("change", update);
+        update();
+    });
+}
+
+document.addEventListener("DOMContentLoaded", bindUnitLabels);
+
 function bindRulesSummary() {
     const rules = document.querySelector("[data-rules-parameters]");
     const summary = document.querySelector("[data-rules-summary]");
@@ -127,7 +146,8 @@ function bindRulesSummary() {
                 const value = control.tagName === "SELECT"
                     ? control.selectedOptions[0].textContent
                     : control.value || "—";
-                const take = index === 2 && ["Take Profit", "Vezes o stop", "Distância fixa"].includes(title);
+                const baseTitle = label.dataset.unitLabel || title;
+                const take = index === 2 && ["Take Profit", "Vezes o stop", "Distância fixa"].includes(baseTitle);
                 const output = outputs[take ? 3 : index];
                 const line = document.createElement("p");
                 line.textContent = `${title}: ${value}`;
