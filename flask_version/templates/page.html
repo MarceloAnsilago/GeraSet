@@ -42,6 +42,14 @@
                 </div>
                 <div class="card">
                     <h2>Mercado e operação</h2>
+                    <div class="tabs">
+                        <input class="tab-radio" id="operation-params" name="operation-tabs" type="radio" checked>
+                        <input class="tab-radio" id="operation-optimize" name="operation-tabs" type="radio">
+                        <div class="tab-list">
+                            <label class="tab-button" for="operation-params">Parâmetros</label>
+                            <label class="tab-button" for="operation-optimize">Otimizar</label>
+                        </div>
+                        <div class="tab-panel tab-panel-params">
                     <div class="row">
                         <div>
                             <label>Mercado</label>
@@ -55,7 +63,7 @@
                     <div class="row">
                         <div>
                             <label>Timeframe</label>
-                            <select>{% for item in timeframes %}<option {{ 'selected' if item == 'Tempo corrente' else '' }}>{{ item }}</option>{% endfor %}</select>
+                            <select name="setup_timeframe">{% for item in timeframes %}<option {{ 'selected' if item == data.setup_timeframe else '' }}>{{ item }}</option>{% endfor %}</select>
                         </div>
                         <div>
                             <label>Lote</label>
@@ -63,8 +71,27 @@
                         </div>
                     </div>
                     <label>Direção permitida</label>
-                    <select><option>Compra e venda</option><option>Somente compra</option><option>Somente venda</option></select>
+                    <select name="setup_direction">{% for item in ['Compra e venda', 'Somente compra', 'Somente venda'] %}<option {{ 'selected' if item == data.setup_direction else '' }}>{{ item }}</option>{% endfor %}</select>
                     <p class="muted">Lote: mín. 0.01 - Passo 0.01</p>
+                        </div>
+                        <div class="tab-panel tab-panel-optimize">
+                            {% for key, title, options, default in [
+                                ('timeframe', 'Timeframe', timeframes, data.setup_timeframe),
+                                ('direction', 'Direção permitida', ['Compra e venda', 'Somente compra', 'Somente venda'], data.setup_direction)
+                            ] %}
+                                <div class="optimize-row">
+                                    <div class="optimize-name">{{ title }}</div>
+                                    <div class="optimize-grid optimize-grid-select">
+                                        <label for="operation-{{ key }}-start">Iniciar</label>
+                                        <label for="operation-{{ key }}-end">Terminar</label>
+                                        {% for bound in ['start', 'end'] %}
+                                            <select id="operation-{{ key }}-{{ bound }}" name="operation-{{ key }}-{{ bound }}">{% for item in options %}<option {{ 'selected' if item == default else '' }}>{{ item }}</option>{% endfor %}</select>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
                 <div class="card">
                     <h2>Horários</h2>
