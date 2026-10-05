@@ -35,9 +35,9 @@
                 <div class="card">
                     <h2>Identificação</h2>
                     <label>Nome do setup</label>
-                    <input name="setup_name" value="{{ data.setup_name }}">
+                    <input name="setup_name" value="{{ data.setup_name }}" data-setup-name>
                     <label>Magic Number</label>
-                    <input value="{{ data.setup_magic }}" disabled>
+                    <input name="setup_magic" value="{{ data.setup_magic }}" data-setup-magic readonly>
                     <p class="muted">Magic Number identifica as ordens deste setup.</p>
                 </div>
                 <div class="card">

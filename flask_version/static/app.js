@@ -1,3 +1,29 @@
+function magicNumberFromName(name) {
+    const text = name.trim();
+    if (!text) return "";
+    if (/^[0-9]+$/.test(text)) return text;
+
+    let crc = 0xffffffff;
+    for (const byte of new TextEncoder().encode(text)) {
+        crc ^= byte;
+        for (let bit = 0; bit < 8; bit++) {
+            crc = (crc >>> 1) ^ ((crc & 1) ? 0xedb88320 : 0);
+        }
+    }
+    return String((crc ^ 0xffffffff) >>> 0);
+}
+
+function bindMagicNumber() {
+    const name = document.querySelector("[data-setup-name]");
+    const magic = document.querySelector("[data-setup-magic]");
+    if (!name || !magic) return;
+    const update = () => { magic.value = magicNumberFromName(name.value); };
+    name.addEventListener("input", update);
+    update();
+}
+
+document.addEventListener("DOMContentLoaded", bindMagicNumber);
+
 function setVisible(elements, visible) {
     elements.forEach((element) => {
         element.classList.toggle("is-hidden", !visible);
