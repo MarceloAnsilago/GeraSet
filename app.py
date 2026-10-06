@@ -602,10 +602,13 @@ def render_indicators() -> None:
 
     st.subheader("Condições")
     crossing_options = [
-        "Máxima do último candle",
-        "Mínima do último candle",
-        "Abertura do último candle",
-        "Fechamento do último candle",
+        "Fechamento da vela",
+        "Abertura da vela",
+        "Máxima da vela",
+        "Mínima da vela",
+        "Abertura do dia",
+        "Máxima do dia",
+        "Mínima do dia",
     ]
     for index in range(1, 5):
         selected_type = st.session_state.get(f"indicator_type_{index}", "Não usar")
