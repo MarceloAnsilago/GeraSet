@@ -619,7 +619,7 @@ def render_indicators() -> None:
         with title_col:
             st.subheader("Condições")
         with distance_unit_col:
-            st.radio(
+            distance_unit = st.radio(
                 "Distância em:",
                 ["Pontos", "Porcentagem"],
                 horizontal=True,
@@ -663,7 +663,7 @@ def render_indicators() -> None:
                     key=f"indicator_condition_candle{suffix}",
                 )
             with distance_col:
-                st.text_input("A distância de:", value="0", key=f"indicator_condition_distance{suffix}")
+                st.text_input(f"A distância de: {distance_unit}", value="0", key=f"indicator_condition_distance{suffix}")
 
     footer_left, footer_right = st.columns([4, 1])
     with footer_left:
