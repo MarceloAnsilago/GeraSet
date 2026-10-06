@@ -644,7 +644,7 @@ def render_indicators() -> None:
                 key="indicator_condition_comparison",
             )
         with reference_col:
-            st.selectbox("Que", crossing_options, key="indicator_condition_reference")
+            st.selectbox("Da (DE)", crossing_options, key="indicator_condition_reference")
         with candle_col:
             st.selectbox(
                 "Candle",
