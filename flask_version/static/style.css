@@ -587,6 +587,75 @@ button.btn:disabled {
     align-items: start;
 }
 
+.condition-checkbox {
+    align-items: center;
+    display: flex;
+    gap: 0.4rem;
+    margin-top: 1rem;
+}
+
+.condition-checkbox input {
+    min-height: 0;
+    width: auto;
+}
+
+.conditions-card {
+    margin-bottom: 1.55rem;
+}
+
+.conditions-header {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.conditions-header h2 {
+    margin: 0;
+}
+
+.conditions-header > div {
+    width: 170px;
+}
+
+.condition-row {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: 0.65fr 1.35fr 0.9fr 1.35fr 1.35fr 0.9fr 1fr;
+}
+
+.condition-row > div {
+    min-width: 0;
+}
+
+.condition-row + .condition-row {
+    border-top: 1px solid var(--line);
+    margin-top: 1rem;
+    padding-top: 0.5rem;
+}
+
+@media (max-width: 1100px) {
+    .condition-row {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
+    .condition-row {
+        grid-template-columns: 1fr;
+    }
+
+    .conditions-header {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .conditions-header > div {
+        width: 100%;
+    }
+}
+
 .rules-card h2 {
     margin-bottom: 1.1rem;
 }

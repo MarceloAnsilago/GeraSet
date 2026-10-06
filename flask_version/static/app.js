@@ -6,12 +6,16 @@ function readSetupState() {
 }
 
 function setupControls(root) {
-    return Array.from(root.querySelectorAll(".card input:not(.tab-radio), .card select"));
+    const controls = Array.from(root.querySelectorAll(".card input:not(.tab-radio), .card select"));
+    // Append new condition controls to preserve existing positional saved setups.
+    return [...controls.filter(control => !control.hasAttribute("data-condition-control")),
+        ...controls.filter(control => control.hasAttribute("data-condition-control"))];
 }
 
 function restoreSetup(root, page) {
     const saved = readSetupState()[page] || [];
     setupControls(root).forEach((control, index) => {
+        if (control.hasAttribute("data-crossing-source")) updateCrossingOptions(root);
         const value = saved[index];
         if (!value) return;
         if (control.type === "radio" || control.type === "checkbox") control.checked = value.checked;
@@ -19,7 +23,34 @@ function restoreSetup(root, page) {
             control.value = value.value;
         }
     });
+    updateCrossingOptions(root);
 }
+
+function updateCrossingOptions(root) {
+    const indicators = Array.from(root.querySelectorAll("[data-indicator-type]"))
+        .filter(select => select.value !== "Não usar" && select.closest(".indicator-card").querySelector("[data-indicator-crossing]")?.checked)
+        .map(select => `Indicador ${select.dataset.indicatorType}: ${select.value}`);
+    root.querySelectorAll("[data-crossing-source]").forEach(select => {
+        const selected = select.value;
+        Array.from(select.options).filter(option => option.dataset.indicatorOption).forEach(option => option.remove());
+        indicators.forEach(value => {
+            const option = select.ownerDocument.createElement("option");
+            option.value = value;
+            option.textContent = value;
+            option.dataset.indicatorOption = "true";
+            select.appendChild(option);
+        });
+        select.value = Array.from(select.options).some(option => option.value === selected) ? selected : select.options[0].value;
+    });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const root = document.querySelector('[data-page="indicadores"]');
+    if (!root) return;
+    root.addEventListener("change", event => {
+        if (event.target.matches("[data-indicator-type], [data-indicator-crossing]")) updateCrossingOptions(root);
+    });
+});
 
 // Restore before visibility, summaries and generated values are initialized.
 document.addEventListener("DOMContentLoaded", () => {
@@ -238,6 +269,9 @@ function relevantReviewControl(control, card) {
 }
 
 function reviewLine(control, card) {
+    if (control.hasAttribute("data-indicator-crossing")) {
+        return {title: "Enviar pra cruzamento", value: control.checked ? "Sim" : "Não"};
+    }
     const row = control.closest(".optimize-row");
     const label = control.previousElementSibling;
     let title = control.dataset.paramLabel || (label?.tagName === "LABEL" ? label.textContent.trim() : "");
@@ -251,7 +285,7 @@ function reviewLine(control, card) {
     const unitLabel = row?.querySelector("[data-unit-label]") || (label?.hasAttribute("data-unit-label") ? label : null);
     if (unitLabel) {
         const unit = card.querySelector("[data-unit-selector]");
-        title = row ? `${unitLabel.dataset.unitLabel} — ${row.querySelectorAll("label")[Array.from(row.querySelectorAll("input, select")).indexOf(control)].textContent.trim()}` : unitLabel.dataset.unitLabel;
+        title = row ? `${unitLabel.dataset.unitLabel} — ${row.querySelectorAll("label")[Array.from(row.querySelectorAll("input, select")).indexOf(control)].textContent.trim()}` : (control.dataset.paramLabel || unitLabel.dataset.unitLabel);
         title += unit?.value === "Porcentagem" ? " (% porcentagem)" : " (pontos)";
     }
     return {title, value: control.tagName === "SELECT" ? control.selectedOptions[0]?.textContent : control.value};
