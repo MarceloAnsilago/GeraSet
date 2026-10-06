@@ -210,7 +210,7 @@ function bindUnitLabels() {
         const card = select.closest(".card");
         const update = () => {
             const percentage = select.value === "Porcentagem";
-            const suffix = percentage ? "(% porcentagem)" : "(pontos)";
+            const suffix = percentage ? (card.matches("[data-conditions]") ? "(porcent.)" : "(% porcentagem)") : "(pontos)";
             card.querySelectorAll("[data-unit-label]").forEach((label) => {
                 label.textContent = `${label.dataset.unitLabel} ${suffix}`;
             });
