@@ -600,7 +600,6 @@ def render_indicators() -> None:
                 else:
                     st.caption("Sem parâmetros ativos.")
 
-    st.subheader("Condições")
     crossing_options = [
         "Fechamento da vela",
         "Abertura da vela",
@@ -616,6 +615,16 @@ def render_indicators() -> None:
             crossing_options.append(f"Indicador {index}: {selected_type}")
 
     with st.container(border=True):
+        title_col, distance_unit_col = st.columns([4, 2], gap="medium")
+        with title_col:
+            st.subheader("Condições")
+        with distance_unit_col:
+            st.radio(
+                "Distância em:",
+                ["Pontos", "Porcentagem"],
+                horizontal=True,
+                key="indicator_condition_distance_unit",
+            )
         for row_index in range(5):
             suffix = "" if row_index == 0 else f"_{row_index + 1}"
             if st.session_state.get(f"indicator_condition_target{suffix}") not in crossing_options:
