@@ -625,7 +625,7 @@ def render_indicators() -> None:
         with condition_col:
             st.selectbox("Condição", ["Se", "Ou", "E"], key="indicator_condition_operator")
         with target_col:
-            st.selectbox("Então", crossing_options, key="indicator_condition_target")
+            st.selectbox("A", crossing_options, key="indicator_condition_target")
         with comparison_col:
             st.selectbox(
                 "Comparação",
