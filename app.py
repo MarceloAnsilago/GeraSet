@@ -615,14 +615,14 @@ def render_indicators() -> None:
         if selected_type != "Não usar" and st.session_state.get(f"indicator_send_to_crossing_{index}", False):
             crossing_options.append(f"Indicador {index}: {selected_type}")
 
-    for row_index in range(5):
-        suffix = "" if row_index == 0 else f"_{row_index + 1}"
-        if st.session_state.get(f"indicator_condition_target{suffix}") not in crossing_options:
-            st.session_state[f"indicator_condition_target{suffix}"] = crossing_options[0]
-        if st.session_state.get(f"indicator_condition_reference{suffix}") not in crossing_options:
-            st.session_state[f"indicator_condition_reference{suffix}"] = crossing_options[0]
+    with st.container(border=True):
+        for row_index in range(5):
+            suffix = "" if row_index == 0 else f"_{row_index + 1}"
+            if st.session_state.get(f"indicator_condition_target{suffix}") not in crossing_options:
+                st.session_state[f"indicator_condition_target{suffix}"] = crossing_options[0]
+            if st.session_state.get(f"indicator_condition_reference{suffix}") not in crossing_options:
+                st.session_state[f"indicator_condition_reference{suffix}"] = crossing_options[0]
 
-        with st.container(border=True):
             condition_col, target_col, comparison_col, reference_col, candle_col, distance_col = st.columns(6, gap="medium")
             with condition_col:
                 st.selectbox("Condição", ["Se", "Ou", "E"], key=f"indicator_condition_operator{suffix}")
