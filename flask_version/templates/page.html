@@ -225,7 +225,7 @@
                     <h2>Sinal</h2>
                     <div>
                         <label for="condition-distance-unit">Distância em:</label>
-                        <select id="condition-distance-unit" name="condition-distance-unit" data-unit-selector data-condition-control>{% for item in target_units %}<option value="{{ item }}">{{ 'Porcent.' if item == 'Porcentagem' else item }}</option>{% endfor %}</select>
+                        <select id="condition-distance-unit" name="condition-distance-unit" data-unit-selector data-condition-control><option value="N.usar" selected>N.usar</option>{% for item in target_units %}<option value="{{ item }}">{{ 'Porcent.' if item == 'Porcentagem' else item }}</option>{% endfor %}</select>
                     </div>
                 </div>
                 {% for index in range(1, 6) %}

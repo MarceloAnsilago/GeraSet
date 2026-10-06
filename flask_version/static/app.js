@@ -13,7 +13,8 @@ function setupControls(root) {
 }
 
 function restoreSetup(root, page) {
-    let saved = readSetupState()[page] || [];
+    const state = readSetupState();
+    let saved = state[page] || [];
     if (page === "indicadores" && saved.length >= setupControls(root).length + 36) {
         // Previous indicator cards had one signal and two optimization bounds per kind.
         const removed = new Set([8, 13, 16, 30, 31, 43, 44, 51, 52]);
@@ -25,6 +26,10 @@ function restoreSetup(root, page) {
     }
     setupControls(root).forEach((control, index) => {
         if (control.hasAttribute("data-crossing-source")) updateCrossingOptions(root);
+        if (page === "indicadores" && state.signalDefaultsVersion !== 1 && control.matches("[data-conditions] select")) {
+            control.value = "N.usar";
+            return;
+        }
         const value = saved[index];
         if (!value) return;
         if (control.type === "radio" || control.type === "checkbox") control.checked = value.checked;
@@ -210,7 +215,7 @@ function bindUnitLabels() {
         const card = select.closest(".card");
         const update = () => {
             const percentage = select.value === "Porcentagem";
-            const suffix = percentage ? (card.matches("[data-conditions]") ? "(porcent.)" : "(% porcentagem)") : "(pontos)";
+            const suffix = select.value === "N.usar" ? "" : percentage ? (card.matches("[data-conditions]") ? "(porcent.)" : "(% porcentagem)") : "(pontos)";
             card.querySelectorAll("[data-unit-label]").forEach((label) => {
                 label.textContent = `${label.dataset.unitLabel} ${suffix}`;
             });
@@ -352,6 +357,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const save = () => {
             const state = readSetupState();
             state[root.dataset.page] = setupControls(root).map(control => ({value: control.value, checked: control.checked}));
+            if (root.dataset.page === "indicadores") state.signalDefaultsVersion = 1;
             localStorage.setItem(setupStorageKey, JSON.stringify(state));
         };
         root.addEventListener("input", save);
