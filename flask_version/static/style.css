@@ -454,6 +454,16 @@ input:disabled {
     border-color: var(--dark);
 }
 
+button.btn {
+    font: inherit;
+    cursor: pointer;
+}
+
+button.btn:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
 .btn-primary {
     background: var(--dark);
     border-color: var(--dark);

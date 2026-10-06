@@ -526,7 +526,8 @@
                 <div class="card">
                     <h2>Ações</h2>
                     <a class="btn btn-primary" href="#">Salvar set</a>
-                    <a class="btn" href="#">Exportar set</a>
+                    <button class="btn" type="button" data-export-set disabled>Exportar set</button>
+                    <p class="muted" data-export-status role="status">Preparando exportação...</p>
                 </div>
             </section>
             <div class="button-row">
@@ -558,5 +559,6 @@
         {% endif %}
     </main>
     <script src="{{ url_for('static', filename='app.js') }}"></script>
+    <script src="{{ url_for('static', filename='export.js') }}"></script>
 </body>
 </html>
