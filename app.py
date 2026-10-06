@@ -647,7 +647,7 @@ def render_indicators() -> None:
             st.selectbox("Da (DE)", crossing_options, key="indicator_condition_reference")
         with candle_col:
             st.selectbox(
-                "Candle",
+                "No Candle",
                 ["Vela atual", "Anterior", "Penúltima", "Antepenúltima"],
                 key="indicator_condition_candle",
             )
