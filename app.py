@@ -615,7 +615,7 @@ def render_indicators() -> None:
             crossing_options.append(f"Indicador {index}: {selected_type}")
 
     with st.container(border=True):
-        title_col, distance_unit_col = st.columns([4, 2], gap="medium")
+        title_col, _, _, _, _, distance_unit_col = st.columns(6, gap="medium")
         with title_col:
             st.subheader("Condições")
         with distance_unit_col:
