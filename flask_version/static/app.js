@@ -210,6 +210,50 @@ function bindIndicatorsVisibility() {
 
 document.addEventListener("DOMContentLoaded", bindIndicatorsVisibility);
 
+function signalSummaryLines(card) {
+    const unit = card.querySelector("[data-unit-selector]").value;
+    return Array.from(card.querySelectorAll(".condition-row")).flatMap((row, index) => {
+        const selects = Array.from(row.querySelectorAll("select"));
+        const chosen = control => control.value !== "N.usar" && control.value !== "Não usar";
+        if (!selects.some(chosen)) return [];
+        const [operator, target, targetCandle, comparison, reference, referenceCandle] = selects;
+        const parts = [];
+        if (chosen(operator)) parts.push(operator.value);
+        if (chosen(target)) parts.push(target.value);
+        if (chosen(targetCandle)) parts.push(`(candle: ${targetCandle.value})`);
+        if (chosen(comparison)) parts.push(comparison.value);
+        if (chosen(reference)) parts.push(reference.value);
+        if (chosen(referenceCandle)) parts.push(`(candle: ${referenceCandle.value})`);
+        const distance = row.querySelector("input").value.trim();
+        if (unit !== "N.usar" && distance) parts.push(`— distância: ${distance} ${unit === "Porcentagem" ? "%" : "pontos"}`);
+        const complete = [operator, target, comparison, reference].every(chosen);
+        return [`Condição ${index + 1}: ${parts.join(" ")}${complete ? "" : " — incompleta"}`];
+    });
+}
+
+function bindSignalSummary() {
+    const card = document.querySelector("[data-conditions]");
+    const values = document.querySelector("[data-signal-summary-values]");
+    const status = document.querySelector("[data-signal-summary-status]");
+    if (!card || !values || !status) return;
+    const update = () => {
+        const lines = signalSummaryLines(card);
+        values.replaceChildren();
+        (lines.length ? lines : ["Nenhum sinal informado."]).forEach(text => {
+            const line = document.createElement("p");
+            line.textContent = text;
+            values.appendChild(line);
+        });
+        status.textContent = lines.length ? `${lines.length} ${lines.length === 1 ? "condição" : "condições"}` : "Não informado";
+    };
+    const root = card.closest("[data-page]");
+    root.addEventListener("input", update);
+    root.addEventListener("change", update);
+    update();
+}
+
+document.addEventListener("DOMContentLoaded", bindSignalSummary);
+
 function bindUnitLabels() {
     document.querySelectorAll("[data-unit-selector]").forEach((select) => {
         const card = select.closest(".card");

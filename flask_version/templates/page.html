@@ -251,7 +251,7 @@
                 {% endfor %}
             </section>
 
-            <h2>Resumo dos indicadores</h2>
+            <h2>Resumo dos indicadores e sinal</h2>
             <section class="grid-4 summary-grid">
                 {% for index in range(1, 5) %}
                     <div class="card summary-card" data-indicator-summary="{{ index }}">
@@ -265,6 +265,14 @@
                         </div>
                     </div>
                 {% endfor %}
+            </section>
+
+            <section class="card summary-card signal-summary">
+                <div class="summary-header">
+                    <span class="summary-index">Sinal</span>
+                    <span class="summary-status" data-signal-summary-status>Não informado</span>
+                </div>
+                <div data-signal-summary-values aria-live="polite"><p>Nenhum sinal informado.</p></div>
             </section>
 
             <div class="button-row">
