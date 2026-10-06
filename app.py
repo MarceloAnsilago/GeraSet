@@ -608,6 +608,8 @@ def render_indicators() -> None:
         "Abertura do dia",
         "Máxima do dia",
         "Mínima do dia",
+        "Máxima do dia anterior",
+        "Mínima do dia anterior",
     ]
     for index in range(1, 5):
         selected_type = st.session_state.get(f"indicator_type_{index}", "Não usar")
