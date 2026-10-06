@@ -587,18 +587,6 @@ button.btn:disabled {
     align-items: start;
 }
 
-.condition-checkbox {
-    align-items: center;
-    display: flex;
-    gap: 0.4rem;
-    margin-top: 1rem;
-}
-
-.condition-checkbox input {
-    min-height: 0;
-    width: auto;
-}
-
 .conditions-card {
     margin-bottom: 1.55rem;
 }

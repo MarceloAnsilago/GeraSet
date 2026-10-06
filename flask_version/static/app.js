@@ -14,6 +14,10 @@ function setupControls(root) {
 
 function restoreSetup(root, page) {
     const saved = readSetupState()[page] || [];
+    if (page === "indicadores" && saved.length === setupControls(root).length + 4) {
+        const legacyCount = setupControls(root).filter(control => !control.hasAttribute("data-condition-control")).length;
+        saved.splice(legacyCount, 4);
+    }
     setupControls(root).forEach((control, index) => {
         if (control.hasAttribute("data-crossing-source")) updateCrossingOptions(root);
         const value = saved[index];
@@ -28,7 +32,7 @@ function restoreSetup(root, page) {
 
 function updateCrossingOptions(root) {
     const indicators = Array.from(root.querySelectorAll("[data-indicator-type]"))
-        .filter(select => select.value !== "Não usar" && select.closest(".indicator-card").querySelector("[data-indicator-crossing]")?.checked)
+        .filter(select => select.value !== "Não usar")
         .map(select => `Indicador ${select.dataset.indicatorType}: ${select.value}`);
     root.querySelectorAll("[data-crossing-source]").forEach(select => {
         const selected = select.value;
@@ -48,7 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const root = document.querySelector('[data-page="indicadores"]');
     if (!root) return;
     root.addEventListener("change", event => {
-        if (event.target.matches("[data-indicator-type], [data-indicator-crossing]")) updateCrossingOptions(root);
+        if (event.target.matches("[data-indicator-type]")) updateCrossingOptions(root);
     });
 });
 
@@ -269,9 +273,6 @@ function relevantReviewControl(control, card) {
 }
 
 function reviewLine(control, card) {
-    if (control.hasAttribute("data-indicator-crossing")) {
-        return {title: "Enviar pra cruzamento", value: control.checked ? "Sim" : "Não"};
-    }
     const row = control.closest(".optimize-row");
     const label = control.previousElementSibling;
     let title = control.dataset.paramLabel || (label?.tagName === "LABEL" ? label.textContent.trim() : "");
