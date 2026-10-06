@@ -240,7 +240,7 @@
                         ] %}
                             <div>
                                 <label for="condition-{{ index }}-{{ key }}">{{ title }}</label>
-                                <select id="condition-{{ index }}-{{ key }}" name="condition-{{ index }}-{{ key }}" data-condition-control data-param-label="Condição {{ index }} — {{ title }}{{ ' de A' if key == 'target-candle' else ' de Da (DE)' if key == 'reference-candle' else '' }}" {{ 'data-crossing-source' if key in ['target', 'reference'] else '' }}>{% for item in options %}<option>{{ item }}</option>{% endfor %}</select>
+                                <select id="condition-{{ index }}-{{ key }}" name="condition-{{ index }}-{{ key }}" data-condition-control data-param-label="Condição {{ index }} — {{ title }}{{ ' de A' if key == 'target-candle' else ' de Da (DE)' if key == 'reference-candle' else '' }}" {{ 'data-crossing-source' if key in ['target', 'reference'] else '' }}><option value="N.usar" selected>N.usar</option>{% for item in options %}<option>{{ item }}</option>{% endfor %}</select>
                             </div>
                         {% endfor %}
                         <div>
