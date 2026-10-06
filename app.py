@@ -615,44 +615,46 @@ def render_indicators() -> None:
         if selected_type != "Não usar" and st.session_state.get(f"indicator_send_to_crossing_{index}", False):
             crossing_options.append(f"Indicador {index}: {selected_type}")
 
-    if st.session_state.get("indicator_condition_target") not in crossing_options:
-        st.session_state["indicator_condition_target"] = crossing_options[0]
-    if st.session_state.get("indicator_condition_reference") not in crossing_options:
-        st.session_state["indicator_condition_reference"] = crossing_options[0]
+    for row_index in range(5):
+        suffix = "" if row_index == 0 else f"_{row_index + 1}"
+        if st.session_state.get(f"indicator_condition_target{suffix}") not in crossing_options:
+            st.session_state[f"indicator_condition_target{suffix}"] = crossing_options[0]
+        if st.session_state.get(f"indicator_condition_reference{suffix}") not in crossing_options:
+            st.session_state[f"indicator_condition_reference{suffix}"] = crossing_options[0]
 
-    with st.container(border=True):
-        condition_col, target_col, comparison_col, reference_col, candle_col, distance_col = st.columns(6, gap="medium")
-        with condition_col:
-            st.selectbox("Condição", ["Se", "Ou", "E"], key="indicator_condition_operator")
-        with target_col:
-            st.selectbox("A", crossing_options, key="indicator_condition_target")
-        with comparison_col:
-            st.selectbox(
-                "Comparação",
-                [
-                    "Maior que",
-                    "Menor que",
-                    "Maior ou igual que",
-                    "Menor ou igual que",
-                    "Igual que",
-                    "Diferente de",
-                    "Cruzar p/ cima de",
-                    "Cruzar p/ baixo de",
-                    "Cruzar&fechar acima de",
-                    "Cruzar&fechar abaixo de",
-                ],
-                key="indicator_condition_comparison",
-            )
-        with reference_col:
-            st.selectbox("Da (DE)", crossing_options, key="indicator_condition_reference")
-        with candle_col:
-            st.selectbox(
-                "No Candle",
-                ["Vela atual", "Anterior", "Penúltima", "Antepenúltima"],
-                key="indicator_condition_candle",
-            )
-        with distance_col:
-            st.text_input("A distância de:", value="0", key="indicator_condition_distance")
+        with st.container(border=True):
+            condition_col, target_col, comparison_col, reference_col, candle_col, distance_col = st.columns(6, gap="medium")
+            with condition_col:
+                st.selectbox("Condição", ["Se", "Ou", "E"], key=f"indicator_condition_operator{suffix}")
+            with target_col:
+                st.selectbox("A", crossing_options, key=f"indicator_condition_target{suffix}")
+            with comparison_col:
+                st.selectbox(
+                    "Comparação",
+                    [
+                        "Maior que",
+                        "Menor que",
+                        "Maior ou igual que",
+                        "Menor ou igual que",
+                        "Igual que",
+                        "Diferente de",
+                        "Cruzar p/ cima de",
+                        "Cruzar p/ baixo de",
+                        "Cruzar&fechar acima de",
+                        "Cruzar&fechar abaixo de",
+                    ],
+                    key=f"indicator_condition_comparison{suffix}",
+                )
+            with reference_col:
+                st.selectbox("Da (DE)", crossing_options, key=f"indicator_condition_reference{suffix}")
+            with candle_col:
+                st.selectbox(
+                    "No Candle",
+                    ["Vela atual", "Anterior", "Penúltima", "Antepenúltima"],
+                    key=f"indicator_condition_candle{suffix}",
+                )
+            with distance_col:
+                st.text_input("A distância de:", value="0", key=f"indicator_condition_distance{suffix}")
 
     footer_left, footer_right = st.columns([4, 1])
     with footer_left:
