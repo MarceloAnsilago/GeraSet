@@ -615,7 +615,7 @@ def render_indicators() -> None:
             crossing_options.append(f"Indicador {index}: {selected_type}")
 
     with st.container(border=True):
-        title_col, _, _, _, _, distance_unit_col = st.columns(6, gap="medium")
+        title_col, _, _, _, _, _, distance_unit_col = st.columns(7, gap="medium")
         with title_col:
             st.subheader("Condições")
         with distance_unit_col:
@@ -632,11 +632,17 @@ def render_indicators() -> None:
             if st.session_state.get(f"indicator_condition_reference{suffix}") not in crossing_options:
                 st.session_state[f"indicator_condition_reference{suffix}"] = crossing_options[0]
 
-            condition_col, target_col, comparison_col, reference_col, candle_col, distance_col = st.columns(6, gap="medium")
+            condition_col, target_col, target_candle_col, comparison_col, reference_col, candle_col, distance_col = st.columns(7, gap="medium")
             with condition_col:
                 st.selectbox("Condição", ["Se", "Ou", "E"], key=f"indicator_condition_operator{suffix}")
             with target_col:
                 st.selectbox("A", crossing_options, key=f"indicator_condition_target{suffix}")
+            with target_candle_col:
+                st.selectbox(
+                    "No Candle",
+                    ["Vela atual", "Anterior", "Penúltima", "Antepenúltima"],
+                    key=f"indicator_condition_target_candle{suffix}",
+                )
             with comparison_col:
                 st.selectbox(
                     "Comparação",
