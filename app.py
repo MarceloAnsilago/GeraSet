@@ -621,7 +621,7 @@ def render_indicators() -> None:
         st.session_state["indicator_condition_reference"] = crossing_options[0]
 
     with st.container(border=True):
-        condition_col, target_col, comparison_col, reference_col, candle_col, distance_col = st.columns(6, gap="medium")
+        condition_col, target_col, comparison_col, reference_col, candle_col, distance_col, final_condition_col = st.columns(7, gap="medium")
         with condition_col:
             st.selectbox("Condição", ["Se", "Ou", "E"], key="indicator_condition_operator")
         with target_col:
@@ -653,6 +653,8 @@ def render_indicators() -> None:
             )
         with distance_col:
             st.text_input("A distância de:", value="0", key="indicator_condition_distance")
+        with final_condition_col:
+            st.selectbox("Condição", ["Se", "Ou", "E"], key="indicator_condition_final_operator")
 
     footer_left, footer_right = st.columns([4, 1])
     with footer_left:
