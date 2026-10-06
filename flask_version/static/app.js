@@ -13,7 +13,12 @@ function setupControls(root) {
 }
 
 function restoreSetup(root, page) {
-    const saved = readSetupState()[page] || [];
+    let saved = readSetupState()[page] || [];
+    if (page === "indicadores" && saved.length >= setupControls(root).length + 36) {
+        // Previous indicator cards had one signal and two optimization bounds per kind.
+        const removed = new Set([8, 13, 16, 30, 31, 43, 44, 51, 52]);
+        saved = saved.filter((_, index) => index >= 212 || !removed.has(index % 53));
+    }
     if (page === "indicadores" && saved.length === setupControls(root).length + 4) {
         const legacyCount = setupControls(root).filter(control => !control.hasAttribute("data-condition-control")).length;
         saved.splice(legacyCount, 4);

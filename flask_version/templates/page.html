@@ -169,9 +169,9 @@
                                 <label class="tab-button" for="optimize-{{ index }}">Otimizar</label>
                             </div>
                             {% set schemas = [
-                                ('Média Móvel', [('Período', 20, 1), ('Shift', 0, -100000), ('Velas de inclinação', 3, 2)], [('Preço aplicado', price_options, 'Close'), ('Método', method_options, 'EMA'), ('Sinal', ['Fechou acima', 'Fechou abaixo', 'Toque'], 'Fechou acima')]),
-                                ('RSI', [('Período', 14, 1), ('Sobrevenda', 30, 0), ('Sobrecompra', 70, 0)], [('Preço aplicado', price_options, 'Close'), ('Sinal', ['Cruzar acima dos níveis', 'Cruzar abaixo dos níveis', 'Cruzar acima e abaixo', 'Invertido (continuar tendência)'], 'Cruzar acima e abaixo')]),
-                                ('ADX', [('Período', 14, 1), ('ADX mínimo', 25, 0)], [('Sinal', ['Cruzamento +DI e -DI', 'Cruzamento +DI e -DI com ADX mínimo', 'Direção dos DIs com ADX mínimo', 'ADX cruza acima do mínimo', 'ADX crescente com direção dos DIs'], 'Cruzamento +DI e -DI com ADX mínimo')])
+                                ('Média Móvel', [('Período', 20, 1), ('Shift', 0, -100000), ('Velas de inclinação', 3, 2)], [('Preço aplicado', price_options, 'Close'), ('Método', method_options, 'EMA')]),
+                                ('RSI', [('Período', 14, 1), ('Sobrevenda', 30, 0), ('Sobrecompra', 70, 0)], [('Preço aplicado', price_options, 'Close')]),
+                                ('ADX', [('Período', 14, 1), ('ADX mínimo', 25, 0)], [])
                             ] %}
                             <div class="tab-panel tab-panel-params">
                                 {% for kind, numbers, combos in schemas %}
@@ -184,12 +184,6 @@
                                             <label for="combo-{{ index }}-{{ kind }}-{{ loop.index }}">{{ title }}</label>
                                             <select data-param-label="{{ title }}" id="combo-{{ index }}-{{ kind }}-{{ loop.index }}">{% for item in options %}<option {{ 'selected' if item == default else '' }}>{{ item }}</option>{% endfor %}</select>
                                         {% endfor %}
-                                        {% if kind == 'RSI' %}
-                                            <p class="caption">Acima: compra ao cruzar acima da sobrevenda; venda ao cruzar acima da sobrecompra.<br>Abaixo: compra ao cruzar abaixo da sobrevenda; venda ao cruzar abaixo da sobrecompra.<br>Acima e abaixo: compra acima da sobrevenda; venda abaixo da sobrecompra.<br>Invertido: venda abaixo da sobrevenda; compra acima da sobrecompra, para continuar a tendência.</p>
-                                        {% endif %}
-                                        {% if kind == 'ADX' %}
-                                            <p class="caption">Cruzamento: compra quando +DI cruza acima de -DI; venda quando -DI cruza acima de +DI.<br>Com ADX mínimo: exige ADX acima do limite configurado.<br>Direção: compra com +DI &gt; -DI; venda com -DI &gt; +DI, com ADX acima do mínimo.<br>ADX cruza acima: sinal ao superar o mínimo, na direção dos DIs.<br>ADX crescente: exige ADX maior que na vela anterior e acima do mínimo, na direção dos DIs.</p>
-                                        {% endif %}
                                     </div>
                                 {% endfor %}
                             </div>
