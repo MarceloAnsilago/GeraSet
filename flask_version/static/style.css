@@ -618,6 +618,11 @@ button.btn:disabled {
     width: 170px;
 }
 
+.conditions-header [data-reset-signal] {
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
 .condition-row {
     display: grid;
     gap: 0.75rem;
