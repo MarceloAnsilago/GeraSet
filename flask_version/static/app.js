@@ -258,6 +258,20 @@ function bindSignalSummary() {
 
 document.addEventListener("DOMContentLoaded", bindSignalSummary);
 
+function bindSignalReset() {
+    const card = document.querySelector("[data-conditions]");
+    const button = card?.querySelector("[data-reset-signal]");
+    if (!button) return;
+    button.addEventListener("click", () => {
+        card.querySelectorAll("select").forEach(control => { control.value = "N.usar"; });
+        card.querySelectorAll("input[data-condition-control]").forEach(control => { control.value = "0"; });
+        // Refresh unit labels, the summary and saved setup with the complete reset.
+        card.querySelector("[data-unit-selector]").dispatchEvent(new Event("change", {bubbles: true}));
+    });
+}
+
+document.addEventListener("DOMContentLoaded", bindSignalReset);
+
 function bindUnitLabels() {
     document.querySelectorAll("[data-unit-selector]").forEach((select) => {
         const card = select.closest(".card");
