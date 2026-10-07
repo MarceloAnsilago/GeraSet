@@ -195,7 +195,7 @@
                                                 <div class="optimize-name">{{ title }}</div>
                                                 <div class="optimize-grid">
                                                     {% for label in ['Iniciar', 'Passo', 'Terminar'] %}<label for="opt-{{ index }}-{{ kind }}-{{ loop.index }}-{{ title }}">{{ label }}</label>{% endfor %}
-                                                    {% for value in [default, 1, default] %}<input id="opt-{{ index }}-{{ kind }}-{{ loop.index }}-{{ title }}" type="number" value="{{ value }}" min="{{ 0.01 if loop.index == 2 else minimum }}" step="{{ '0.01' if title in ['Sobrevenda', 'Sobrecompra', 'ADX mínimo'] else '1' }}">{% endfor %}
+                                                    {% for value in [0, 0, 0] %}<input id="opt-{{ index }}-{{ kind }}-{{ loop.index }}-{{ title }}" type="number" value="{{ value }}" min="{{ minimum if minimum < 0 else 0 }}" step="{{ '0.01' if title in ['Sobrevenda', 'Sobrecompra', 'ADX mínimo'] else '1' }}">{% endfor %}
                                                 </div>
                                             </div>
                                         {% endfor %}
@@ -329,7 +329,7 @@
                                     <label for="pending-bar-step">Passo</label>
                                     <label for="pending-bar-end">Terminar</label>
                                     {% for bound in ['start', 'step', 'end'] %}
-                                        <input id="pending-bar-{{ bound }}" name="pending-bar-{{ bound }}" type="number" value="1" min="1" step="1">
+                                        <input id="pending-bar-{{ bound }}" name="pending-bar-{{ bound }}" type="number" value="0" min="0" step="1">
                                     {% endfor %}
                                 </div>
                             </div>
@@ -397,7 +397,7 @@
                                         <label for="candle-{{ key }}-step">Passo</label>
                                         <label for="candle-{{ key }}-end">Terminar</label>
                                         {% for bound in ['start', 'step', 'end'] %}
-                                            <input id="candle-{{ key }}-{{ bound }}" name="candle-{{ key }}-{{ bound }}" type="number" value="{{ '0.01' if bound == 'step' else '0.00' }}" min="{{ '0.01' if bound == 'step' else '0' }}" step="0.01">
+                                            <input id="candle-{{ key }}-{{ bound }}" name="candle-{{ key }}-{{ bound }}" type="number" value="0" min="0" step="0.01">
                                         {% endfor %}
                                     </div>
                                 </div>
@@ -461,7 +461,7 @@
                                         <label for="target-{{ key }}-step">Passo</label>
                                         <label for="target-{{ key }}-end">Terminar</label>
                                         {% for bound in ['start', 'step', 'end'] %}
-                                            <input id="target-{{ key }}-{{ bound }}" name="target-{{ key }}-{{ bound }}" type="number" value="{{ '0.01' if bound == 'step' else default }}" min="{{ '0.01' if bound == 'step' else '0' }}" step="0.01">
+                                            <input id="target-{{ key }}-{{ bound }}" name="target-{{ key }}-{{ bound }}" type="number" value="0" min="0" step="0.01">
                                         {% endfor %}
                                     </div>
                                 </div>
@@ -512,7 +512,7 @@
                                                 <label for="{{ management_key }}-{{ key }}-{{ bound }}">{{ caption }}</label>
                                             {% endfor %}
                                             {% for bound in ['start', 'step', 'end'] %}
-                                                <input id="{{ management_key }}-{{ key }}-{{ bound }}" name="{{ management_key }}-{{ key }}-{{ bound }}" type="number" value="{{ '0.01' if bound == 'step' else '0.00' }}" min="{{ '0.01' if bound == 'step' else '0' }}" step="0.01">
+                                                <input id="{{ management_key }}-{{ key }}-{{ bound }}" name="{{ management_key }}-{{ key }}-{{ bound }}" type="number" value="0" min="0" step="0.01">
                                             {% endfor %}
                                         </div>
                                     </div>

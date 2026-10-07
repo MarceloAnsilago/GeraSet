@@ -25,6 +25,10 @@ function restoreSetup(root, page) {
         saved.splice(legacyCount, 4);
     }
     setupControls(root).forEach((control, index) => {
+        if (state.optimizationZeroVersion?.[page] !== 1 && control.matches('.tab-panel-optimize input[type="number"]')) {
+            control.value = "0";
+            return;
+        }
         if (control.hasAttribute("data-crossing-source")) updateCrossingOptions(root);
         if (page === "indicadores" && state.signalDefaultsVersion !== 1 && control.matches("[data-conditions] select")) {
             control.value = "N.usar";
@@ -401,6 +405,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const save = () => {
             const state = readSetupState();
             state[root.dataset.page] = setupControls(root).map(control => ({value: control.value, checked: control.checked}));
+            state.optimizationZeroVersion = {...state.optimizationZeroVersion, [root.dataset.page]: 1};
             if (root.dataset.page === "indicadores") state.signalDefaultsVersion = 1;
             localStorage.setItem(setupStorageKey, JSON.stringify(state));
         };
@@ -418,6 +423,8 @@ function optimizationRowCount(row) {
     }
     if (controls.length === 3) {
         const [start, step, end] = controls.map(control => Number(control.value));
+        // An untouched zero range leaves this parameter out of optimization.
+        if (controls.every(control => control.value.trim()) && start === 0 && step === 0 && end === 0) return 1n;
         if (!controls.every(control => control.value.trim()) || ![start, step, end].every(Number.isFinite) || step <= 0 || end < start) return 0n;
         const intervals = (end - start) / step;
         if (!Number.isSafeInteger(Math.floor(intervals))) return 0n;
