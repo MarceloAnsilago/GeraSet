@@ -379,7 +379,7 @@ async function renderSetupReview() {
                 root.querySelector("[data-setup-magic]").value = magicNumberFromName(name.value);
                 document.querySelector("[data-review-setup-name]").textContent = name.value;
             }
-            root.querySelectorAll(".card").forEach((card) => {
+            root.querySelectorAll(".card").forEach((card, cardIndex) => {
                 const heading = card.querySelector("h2");
                 if (!heading || !card.querySelector("input, select")) return;
                 for (const [panel, optimization] of [[parameters, false], [optimize, true]]) {
@@ -391,8 +391,10 @@ async function renderSetupReview() {
                     const combinations = pagePassageCount(card);
                     if (combinations > 1n) {
                         section.classList.add("review-card-optimized");
-                        const marker = document.createElement("span");
+                        const marker = document.createElement("a");
                         marker.className = "review-optimization-marker";
+                        marker.href = `/${page}#optimization-card-${cardIndex}`;
+                        marker.title = `Abrir Otimizar em ${heading.textContent.trim()}`;
                         marker.textContent = `Com otimização · ${combinations.toLocaleString("pt-BR")} combinações`;
                         title.append(" ", marker);
                     }
@@ -525,3 +527,26 @@ async function bindPassageCounter() {
 }
 
 document.addEventListener("DOMContentLoaded", bindPassageCounter);
+
+function openOptimizationCard() {
+    const root = document.querySelector("[data-page]");
+    if (!root || !["inicio", "indicadores", "gestao"].includes(root.dataset.page)) return;
+    root.querySelectorAll(".card").forEach((card, index) => {
+        card.id = `optimization-card-${index}`;
+    });
+    const match = /^#optimization-card-(\d+)$/.exec(window.location.hash);
+    if (!match) return;
+    const card = document.getElementById(`optimization-card-${match[1]}`);
+    if (!card) return;
+    card.querySelectorAll('.tab-radio[id*="optimize"]').forEach(tab => {
+        tab.checked = true;
+        tab.dispatchEvent(new Event("change", {bubbles: true}));
+    });
+    card.classList.add("optimization-card-target");
+    card.tabIndex = -1;
+    card.focus({preventScroll: true});
+    card.scrollIntoView({behavior: "smooth", block: "center"});
+}
+
+document.addEventListener("DOMContentLoaded", openOptimizationCard);
+window.addEventListener("hashchange", openOptimizationCard);
