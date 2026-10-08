@@ -483,6 +483,33 @@ async function bindPassageCounter() {
         };
         current.addEventListener("input", update);
         current.addEventListener("change", update);
+        const reset = document.querySelector("[data-reset-combinations]");
+        if (reset) {
+            reset.disabled = false;
+            reset.addEventListener("click", async () => {
+                const state = readSetupState();
+                roots.forEach((root, page) => {
+                    root.querySelectorAll(".tab-panel-optimize input[type='number']").forEach(control => {
+                        control.value = "0";
+                    });
+                    root.querySelectorAll(".tab-panel-optimize .optimize-row").forEach(row => {
+                        const selects = row.querySelectorAll("select");
+                        if (selects.length === 2) selects[1].value = selects[0].value;
+                    });
+                    state[page] = setupControls(root).map(control => ({value: control.value, checked: control.checked}));
+                    state.optimizationZeroVersion = {...state.optimizationZeroVersion, [page]: 1};
+                });
+                localStorage.setItem(setupStorageKey, JSON.stringify(state));
+                update();
+                const parameters = document.querySelector("[data-review-params]");
+                const optimize = document.querySelector("[data-review-optimize]");
+                if (parameters && optimize) {
+                    parameters.replaceChildren();
+                    optimize.replaceChildren();
+                    await renderSetupReview();
+                }
+            });
+        }
         update();
     } catch {
         counter.textContent = "Combinações: indisponível";

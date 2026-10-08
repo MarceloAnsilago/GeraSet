@@ -115,6 +115,16 @@ body::before {
     font-weight: 700;
 }
 
+button[data-reset-combinations] {
+    font-family: inherit;
+    cursor: pointer;
+}
+
+button[data-reset-combinations]:disabled {
+    opacity: 0.5;
+    cursor: wait;
+}
+
 .page {
     margin: 0 auto;
     max-width: 1320px;

@@ -24,6 +24,7 @@
         </div>
         <div class="nav-review">
             <span class="passage-counter" data-passage-counter aria-live="polite">Combinações: 1</span>
+            <button type="button" class="nav-link" data-reset-combinations disabled>Zerar combinações</button>
             <a class="nav-link {{ 'active' if active_page == 'revisao' else '' }}" href="{{ url_for('page', page='revisao') }}">Revisão e Sets</a>
         </div>
     </nav>
