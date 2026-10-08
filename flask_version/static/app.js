@@ -216,11 +216,22 @@ document.addEventListener("DOMContentLoaded", bindIndicatorsVisibility);
 
 function signalSummaryLines(card) {
     const unit = card.querySelector("[data-unit-selector]").value;
+    const sourceUsage = control => {
+        const match = /^Indicador (\d+):/.exec(control.value);
+        if (!match) return null;
+        const indicator = card.closest("[data-page]").querySelector(`[data-indicator-type="${match[1]}"]`);
+        const usage = indicator?.closest(".indicator-card").querySelector("[data-indicator-usage] input:checked");
+        return usage?.value || null;
+    };
     return Array.from(card.querySelectorAll(".condition-row")).flatMap((row, index) => {
         const selects = Array.from(row.querySelectorAll("select"));
         const chosen = control => control.value !== "N.usar" && control.value !== "Não usar";
         if (!selects.some(chosen)) return [];
         const [operator, target, targetCandle, comparison, reference, referenceCandle] = selects;
+        const usages = new Set([target, reference].map(sourceUsage).filter(Boolean));
+        const usage = usages.has("Entrada") && usages.has("Saída")
+            ? "Entrada e saída" : [...usages][0];
+        const usageLabel = usage ? ` (${usage})` : "";
         const parts = [];
         if (chosen(operator)) parts.push(operator.value);
         if (chosen(target)) parts.push(target.value);
@@ -231,7 +242,7 @@ function signalSummaryLines(card) {
         const distance = row.querySelector("input").value.trim();
         if (unit !== "N.usar" && distance) parts.push(`— distância: ${distance} ${unit === "Porcentagem" ? "%" : "pontos"}`);
         const complete = [operator, target, comparison, reference].every(chosen);
-        return [`Condição ${index + 1}: ${parts.join(" ")}${complete ? "" : " — incompleta"}`];
+        return [`Condição ${index + 1}${usageLabel}: ${parts.join(" ")}${complete ? "" : " — incompleta"}`];
     });
 }
 
