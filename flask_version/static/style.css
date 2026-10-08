@@ -779,3 +779,17 @@ button.btn:disabled {
     margin-right: 1rem;
     white-space: nowrap;
 }
+.review-card-optimized {
+    border-color: #2563eb;
+}
+
+.review-optimization-marker {
+    display: inline-block;
+    padding: 0.25rem 0.6rem;
+    border-radius: 1rem;
+    background: #dbeafe;
+    color: #1e40af;
+    font-size: 0.75rem;
+    font-weight: 700;
+    vertical-align: middle;
+}

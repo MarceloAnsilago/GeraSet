@@ -388,6 +388,14 @@ async function renderSetupReview() {
                     const title = document.createElement("h2");
                     title.textContent = heading.textContent;
                     section.appendChild(title);
+                    const combinations = pagePassageCount(card);
+                    if (combinations > 1n) {
+                        section.classList.add("review-card-optimized");
+                        const marker = document.createElement("span");
+                        marker.className = "review-optimization-marker";
+                        marker.textContent = `Com otimização · ${combinations.toLocaleString("pt-BR")} combinações`;
+                        title.append(" ", marker);
+                    }
                     const controls = Array.from(card.querySelectorAll("input:not(.tab-radio), select"));
                     controls.filter(control => {
                         const isOptimization = Boolean(control.closest(".tab-panel-optimize"));
