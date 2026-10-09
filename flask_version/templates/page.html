@@ -355,6 +355,9 @@
                             <select data-unit-selector>{% for item in target_units %}<option>{{ item }}</option>{% endfor %}</select>
                             <label>Configurar candle</label>
                             <select>{% for item in candle_options %}<option>{{ item }}</option>{% endfor %}</select>
+                            <label for="candle-direction">Dire??o do candle</label>
+                            <select id="candle-direction" name="candle-direction" data-candle-direction-control><option>N?o usar</option><option>Candle de alta</option><option>Candle de baixa</option></select>
+                            <p class="muted">Alta: fechamento acima da abertura. Baixa: fechamento abaixo da abertura.</p>
                     </div>
                     <div data-candle-size>
                     <label data-unit-label="Medir candle">Medir candle (pontos)</label>
@@ -373,6 +376,7 @@
                         <div class="tab-panel tab-panel-optimize">
                             {% for key, title, options, visibility in [
                                 ('reference', 'Configurar candle', candle_options, 'data-candle-common'),
+                                ('direction', 'Dire??o do candle', ['N?o usar', 'Candle de alta', 'Candle de baixa'], 'data-candle-common'),
                                 ('measure', 'Medir candle', ['Corpo', 'Total máxima - mínima'], 'data-candle-size')
                             ] %}
                                 <div class="optimize-row" {{ visibility }}>
@@ -381,7 +385,7 @@
                                         <label for="candle-{{ key }}-start">Iniciar</label>
                                         <label for="candle-{{ key }}-end">Terminar</label>
                                         {% for bound in ['start', 'end'] %}
-                                            <select id="candle-{{ key }}-{{ bound }}" name="candle-{{ key }}-{{ bound }}">{% for item in options %}<option>{{ item }}</option>{% endfor %}</select>
+                                            <select id="candle-{{ key }}-{{ bound }}" name="candle-{{ key }}-{{ bound }}" {% if key == 'direction' %}data-candle-direction-control{% endif %}>{% for item in options %}<option>{{ item }}</option>{% endfor %}</select>
                                         {% endfor %}
                                     </div>
                                 </div>

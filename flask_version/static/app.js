@@ -7,9 +7,10 @@ function readSetupState() {
 
 function setupControls(root) {
     const controls = Array.from(root.querySelectorAll(".card input:not(.tab-radio), .card select"));
-    // Append new condition controls to preserve existing positional saved setups.
-    return [...controls.filter(control => !control.hasAttribute("data-condition-control")),
-        ...controls.filter(control => control.hasAttribute("data-condition-control"))];
+    // Append new controls to preserve existing positional saved setups.
+    return [...controls.filter(control => !control.matches("[data-condition-control], [data-candle-direction-control]")),
+        ...controls.filter(control => control.hasAttribute("data-condition-control")),
+        ...controls.filter(control => control.hasAttribute("data-candle-direction-control"))];
 }
 
 function restoreSetup(root, page) {

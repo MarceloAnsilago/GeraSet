@@ -40,6 +40,7 @@ PRICE_OPTIONS = ["Close", "Open", "High", "Low", "Median", "Typical", "Weighted"
 METHOD_OPTIONS = ["SMA", "EMA", "SMMA", "LWMA"]
 MANAGEMENT_MODES = ["Desativado", "Pontos", "Porcentagem"]
 CANDLE_FILTER_MODES = ["Desativado", "Corpo e pavios"]
+CANDLE_DIRECTION_OPTIONS = ["N?o usar", "Candle de alta", "Candle de baixa"]
 CANDLE_OPTIONS = ["Candle 1 (último fechado)", "Candle 2", "Candle 3"]
 TARGET_UNITS = ["Pontos", "Porcentagem"]
 
@@ -240,6 +241,12 @@ def render_rules_section() -> None:
             else:
                 candle = st.selectbox("Configurar candle", CANDLE_OPTIONS, key="candle_filter_candle")
                 candle_number = selected_candle_number(candle)
+                st.selectbox(
+                    "Dire??o do candle",
+                    CANDLE_DIRECTION_OPTIONS,
+                    key=f"candle_filter_direction_{candle_number}",
+                )
+                st.caption("Alta: fechamento acima da abertura. Baixa: fechamento abaixo da abertura.")
                 unit = st.selectbox("Unidade dos tamanhos", TARGET_UNITS, key=f"candle_filter_unit_{candle_number}")
                 unit_label = "%" if unit == "Porcentagem" else "pontos"
 
