@@ -39,7 +39,7 @@ TIMES = [f"{hour:02d}:{minute:02d}" for hour in range(24) for minute in range(0,
 PRICE_OPTIONS = ["Close", "Open", "High", "Low", "Median", "Typical", "Weighted"]
 METHOD_OPTIONS = ["SMA", "EMA", "SMMA", "LWMA"]
 MANAGEMENT_MODES = ["Desativado", "Pontos", "Porcentagem"]
-CANDLE_FILTER_MODES = ["Desativado", "Candles", "Pavios"]
+CANDLE_FILTER_MODES = ["Desativado", "Corpo e pavios"]
 CANDLE_OPTIONS = ["Candle 1 (último fechado)", "Candle 2", "Candle 3"]
 TARGET_UNITS = ["Pontos", "Porcentagem"]
 
@@ -173,23 +173,21 @@ def candle_filter_review_lines() -> list[str]:
     unit = str(state_value(f"candle_filter_unit_{candle_number}", "Pontos"))
 
     lines = [f"Condição: {condition}", f"Candle: {candle}", f"Unidade: {unit}"]
-    if condition == "Candles":
-        lines.extend(
-            [
-                f"Medida: {state_value(f'candle_filter_measure_{candle_number}', 'Corpo')}",
-                f"Mínimo: {float(state_value(f'candle_filter_body_min_{candle_number}_{unit}', 0.0)):.2f}",
-                f"Máximo: {float(state_value(f'candle_filter_body_max_{candle_number}_{unit}', 0.0)):.2f}",
-            ]
-        )
-    else:
-        lines.extend(
-            [
-                f"Pavio superior mín.: {float(state_value(f'candle_filter_upper_min_{candle_number}_{unit}', 0.0)):.2f}",
-                f"Pavio superior máx.: {float(state_value(f'candle_filter_upper_max_{candle_number}_{unit}', 0.0)):.2f}",
-                f"Pavio inferior mín.: {float(state_value(f'candle_filter_lower_min_{candle_number}_{unit}', 0.0)):.2f}",
-                f"Pavio inferior máx.: {float(state_value(f'candle_filter_lower_max_{candle_number}_{unit}', 0.0)):.2f}",
-            ]
-        )
+    lines.extend(
+        [
+            f"Medida: {state_value(f'candle_filter_measure_{candle_number}', 'Corpo')}",
+            f"Mínimo: {float(state_value(f'candle_filter_body_min_{candle_number}_{unit}', 0.0)):.2f}",
+            f"Máximo: {float(state_value(f'candle_filter_body_max_{candle_number}_{unit}', 0.0)):.2f}",
+        ]
+    )
+    lines.extend(
+        [
+            f"Pavio superior mín.: {float(state_value(f'candle_filter_upper_min_{candle_number}_{unit}', 0.0)):.2f}",
+            f"Pavio superior máx.: {float(state_value(f'candle_filter_upper_max_{candle_number}_{unit}', 0.0)):.2f}",
+            f"Pavio inferior mín.: {float(state_value(f'candle_filter_lower_min_{candle_number}_{unit}', 0.0)):.2f}",
+            f"Pavio inferior máx.: {float(state_value(f'candle_filter_lower_max_{candle_number}_{unit}', 0.0)):.2f}",
+        ]
+    )
     return lines
 
 
@@ -245,55 +243,53 @@ def render_rules_section() -> None:
                 unit = st.selectbox("Unidade dos tamanhos", TARGET_UNITS, key=f"candle_filter_unit_{candle_number}")
                 unit_label = "%" if unit == "Porcentagem" else "pontos"
 
-                if condition == "Candles":
-                    st.selectbox(
-                        "Medir tamanho do candle",
-                        ["Corpo", "Total (máxima - mínima)"],
-                        key=f"candle_filter_measure_{candle_number}",
+                st.selectbox(
+                    "Medir tamanho do candle",
+                    ["Corpo", "Total (máxima - mínima)"],
+                    key=f"candle_filter_measure_{candle_number}",
+                )
+                min_col, max_col = st.columns(2)
+                with min_col:
+                    render_rule_value(
+                        "Candle: mín.",
+                        f"candle_filter_body_min_{candle_number}_{unit}",
+                        unit,
                     )
-                    min_col, max_col = st.columns(2)
-                    with min_col:
-                        render_rule_value(
-                            "Candle: mín.",
-                            f"candle_filter_body_min_{candle_number}_{unit}",
-                            unit,
-                        )
-                    with max_col:
-                        render_rule_value(
-                            "Candle: máx.",
-                            f"candle_filter_body_max_{candle_number}_{unit}",
-                            unit,
-                        )
-                else:
-                    upper_min_col, upper_max_col = st.columns(2)
-                    with upper_min_col:
-                        render_rule_value(
-                            "Pavio sup.: mín.",
-                            f"candle_filter_upper_min_{candle_number}_{unit}",
-                            unit,
-                        )
-                    with upper_max_col:
-                        render_rule_value(
-                            "Pavio sup.: máx.",
-                            f"candle_filter_upper_max_{candle_number}_{unit}",
-                            unit,
-                        )
+                with max_col:
+                    render_rule_value(
+                        "Candle: máx.",
+                        f"candle_filter_body_max_{candle_number}_{unit}",
+                        unit,
+                    )
+                upper_min_col, upper_max_col = st.columns(2)
+                with upper_min_col:
+                    render_rule_value(
+                        "Pavio sup.: mín.",
+                        f"candle_filter_upper_min_{candle_number}_{unit}",
+                        unit,
+                    )
+                with upper_max_col:
+                    render_rule_value(
+                        "Pavio sup.: máx.",
+                        f"candle_filter_upper_max_{candle_number}_{unit}",
+                        unit,
+                    )
 
-                    lower_min_col, lower_max_col = st.columns(2)
-                    with lower_min_col:
-                        render_rule_value(
-                            "Pavio inf.: mín.",
-                            f"candle_filter_lower_min_{candle_number}_{unit}",
-                            unit,
-                        )
-                    with lower_max_col:
-                        render_rule_value(
-                            "Pavio inf.: máx.",
-                            f"candle_filter_lower_max_{candle_number}_{unit}",
-                            unit,
-                        )
+                lower_min_col, lower_max_col = st.columns(2)
+                with lower_min_col:
+                    render_rule_value(
+                        "Pavio inf.: mín.",
+                        f"candle_filter_lower_min_{candle_number}_{unit}",
+                        unit,
+                    )
+                with lower_max_col:
+                    render_rule_value(
+                        "Pavio inf.: máx.",
+                        f"candle_filter_lower_max_{candle_number}_{unit}",
+                        unit,
+                    )
 
-                st.caption(f"Em {unit_label}. 0 = sem restrição.")
+            st.caption(f"Em {unit_label}. 0 = sem restrição.")
 
     with targets_col:
         with st.container(border=True):

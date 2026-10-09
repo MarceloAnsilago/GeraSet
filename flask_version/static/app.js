@@ -129,8 +129,8 @@ function bindRulesVisibility() {
         const updateCandleFilter = () => {
             const condition = candleCondition.value;
             setVisible(candleCommon, condition !== "Desativado");
-            setVisible(candleSize, condition === "Candles");
-            setVisible(candleWicks, condition === "Pavios");
+            setVisible(candleSize, condition !== "Desativado");
+            setVisible(candleWicks, condition !== "Desativado");
         };
         candleCondition.addEventListener("change", updateCandleFilter);
         updateCandleFilter();
@@ -344,8 +344,8 @@ function relevantReviewControl(control, card) {
     const condition = card.querySelector("[data-candle-condition]");
     if (condition) {
         if (control.closest("[data-candle-common]") && condition.value === "Desativado") return false;
-        if (control.closest("[data-candle-size]") && condition.value !== "Candles") return false;
-        if (control.closest("[data-candle-wicks]") && condition.value !== "Pavios") return false;
+        if (control.closest("[data-candle-size]") && condition.value === "Desativado") return false;
+        if (control.closest("[data-candle-wicks]") && condition.value === "Desativado") return false;
     }
     const take = card.querySelector("[data-take-mode]");
     if (take) {
