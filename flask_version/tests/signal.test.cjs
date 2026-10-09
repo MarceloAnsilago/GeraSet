@@ -16,6 +16,11 @@ function card(rules, unit = 'N.usar') {
     return {
         querySelector: () => ({value: unit}),
         querySelectorAll: () => rules.map(rule => ({
+            closest: () => ({querySelector: selector => {
+                const index = /data-indicator-type="(\d+)"/.exec(selector)[1];
+                const usage = rule.sourceUsages?.[index] || rule.usage;
+                return {closest: () => ({querySelector: () => ({value: usage})})};
+            }}),
             querySelector(selector) {
                 const key = /name\$="-([^"]+)"/.exec(selector)[1]
                     .replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
@@ -66,6 +71,15 @@ test('empty rows remain inactive despite purpose and direction defaults', () => 
     assert.equal(context.signalSummaryLines(card([inactive])).length, 0);
 });
 
+test('purpose is inherited from indicators and mixed purposes block export', () => {
+    const exit = {...valid, usage: 'Saída'};
+    assert.match(context.signalSummaryLines(card([exit]))[0], /Saída/);
+    const mixed = {...valid, reference: 'Indicador 2: RSI', referenceCandle: 'Anterior', sourceUsages: {'1': 'Entrada', '2': 'Saída'}};
+    assert.match(context.validateSignalCard(card([mixed])).join(' '), /finalidades diferentes/);
+    const prices = {...valid, target: 'Fechamento da vela', usage: 'Saída'};
+    assert.match(context.signalSummaryLines(card([prices]))[0], /Entrada/);
+});
+
 test('new fields preserve old saved control positions and survive another save and restore', () => {
     const stored = {};
     const appContext = vm.createContext({
@@ -101,4 +115,17 @@ test('new fields preserve old saved control positions and survive another save a
     extras.forEach(item => { item.value = 'changed'; });
     appContext.restoreSetup(root, 'indicadores');
     assert.deepEqual(extras.map(item => item.value), ['Saída', 'Somente venda', '25']);
+
+    const retained = Array.from({length: 5}, () => [
+        control('Compra e venda', ['data-condition-control', 'data-signal-extra']),
+        control('0', ['data-condition-control', 'data-signal-extra']),
+    ]).flat();
+    const migratedRoot = {querySelectorAll: selector => ['[data-crossing-source]', '[data-indicator-type]'].includes(selector) ? [] : [...original, ...retained]};
+    state.indicadores = [...original.map(item => ({value: item.value})),
+        ...Array.from({length: 5}, (_, index) => [
+            {value: 'Saída'}, {value: 'Somente venda'}, {value: String(index + 10)},
+        ]).flat()];
+    stored['geraset-flask-cards-v1'] = JSON.stringify(state);
+    appContext.restoreSetup(migratedRoot, 'indicadores');
+    assert.deepEqual(retained.map(item => item.value), ['Somente venda', '10', 'Somente venda', '11', 'Somente venda', '12', 'Somente venda', '13', 'Somente venda', '14']);
 });

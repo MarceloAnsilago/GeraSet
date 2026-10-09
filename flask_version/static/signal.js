@@ -1,7 +1,16 @@
 function readSignalRow(row) {
     const value = key => row.querySelector(`[name$="-${key}"]`).value;
-    return Object.fromEntries(["operator", "target", "target-candle", "comparison", "reference", "reference-candle", "distance", "usage", "direction", "fixed"]
+    const rule = Object.fromEntries(["operator", "target", "target-candle", "comparison", "reference", "reference-candle", "distance", "direction", "fixed"]
         .map(key => [key.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase()), value(key)]));
+    const root = row.closest("[data-page]");
+    const usages = new Set([rule.target, rule.reference].map(source => {
+        const match = /^Indicador (\d+):/.exec(source);
+        if (!match) return null;
+        return root.querySelector(`[data-indicator-type="${match[1]}"]`)
+            ?.closest(".indicator-card").querySelector("[data-indicator-usage] input:checked")?.value;
+    }).filter(Boolean));
+    rule.usage = usages.size > 1 ? "Conflito de finalidade" : [...usages][0] || "Entrada";
+    return rule;
 }
 
 function signalChosen(value) {
@@ -16,6 +25,7 @@ function signalRowActive(rule) {
 function signalRuleErrors(rule, unit) {
     const errors = [];
     const finite = value => value.trim() !== "" && Number.isFinite(Number(value));
+    if (rule.usage === "Conflito de finalidade") errors.push("os indicadores selecionados têm finalidades diferentes; ajuste Usar como nos indicadores");
     if (![rule.operator, rule.target, rule.comparison, rule.reference].every(signalChosen)) errors.push("preencha condição, A, comparação e Da (DE)");
     if (!signalChosen(rule.targetCandle)) errors.push("selecione o candle de A");
     if (rule.reference !== "Valor fixo" && !signalChosen(rule.referenceCandle)) errors.push("selecione o candle de Da (DE)");

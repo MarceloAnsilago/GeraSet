@@ -36,8 +36,10 @@ o mapeamento dos parâmetros desse robô.
 
 ## Sinal
 
-Cada condição define sua finalidade (Entrada ou Saída) e direção. Esses campos
-prevalecem sobre “Usar como” do indicador. Compra e venda aplica a mesma regra
+Cada condição herda Entrada ou Saída de “Usar como” dos indicadores selecionados.
+Condições somente com preços são de Entrada. Misturar indicadores de Entrada e
+Saída na mesma condição gera um erro. A direção é definida na condição.
+Compra e venda aplica a mesma regra
 às duas direções, sem inverter a comparação. Condições são agrupadas por
 finalidade e direção: a primeira usa Se e as seguintes E ou Ou, com prioridade
 de E sobre Ou. O resumo apresenta os grupos com parênteses.
@@ -54,6 +56,6 @@ zero; N.usar exige distância zero.
 
 Condições incompletas ou inválidas impedem a exportação. Os novos campos são
 anexados à ordem de armazenamento para preservar os campos dos setups salvos.
-Setups antigos recebem Entrada e Compra e venda como padrões; confira esses
-campos ao reabrir. Estas regras descrevem a configuração exportada; o projeto
+O antigo campo Finalidade é removido dos setups salvos, preservando direção e
+valor fixo. Estas regras descrevem a configuração exportada; o projeto
 não executa sinais e o robô integrado precisa implementar essa interpretação.

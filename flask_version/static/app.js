@@ -18,6 +18,10 @@ function restoreSetup(root, page) {
     const state = readSetupState();
     let saved = state[page] || [];
     const legacyLength = setupControls(root).filter(control => !control.hasAttribute("data-signal-extra")).length;
+    if (page === "indicadores" && saved.length === legacyLength + 15) {
+        // Remove the redundant per-condition usage from the former three-field extras.
+        saved = saved.filter((_, index) => index < legacyLength || (index - legacyLength) % 3 !== 0);
+    }
     if (page === "indicadores" && saved.length === legacyLength + 36) {
         // Previous indicator cards had one signal and two optimization bounds per kind.
         const removed = new Set([8, 13, 16, 30, 31, 43, 44, 51, 52]);

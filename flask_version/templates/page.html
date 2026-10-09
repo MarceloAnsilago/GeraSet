@@ -250,10 +250,6 @@
                             <input id="condition-{{ index }}-distance" name="condition-{{ index }}-distance" type="number" min="0" step="any" value="0" data-condition-control data-param-label="Condição {{ index }} — A distância de">
                         </div>
                         <div>
-                            <label for="condition-{{ index }}-usage">Finalidade</label>
-                            <select id="condition-{{ index }}-usage" name="condition-{{ index }}-usage" data-condition-control data-signal-extra data-param-label="Condição {{ index }} — Finalidade"><option>Entrada</option><option>Saída</option></select>
-                        </div>
-                        <div>
                             <label for="condition-{{ index }}-direction">Direção</label>
                             <select id="condition-{{ index }}-direction" name="condition-{{ index }}-direction" data-condition-control data-signal-extra data-param-label="Condição {{ index }} — Direção"><option>Compra e venda</option><option>Somente compra</option><option>Somente venda</option></select>
                         </div>
@@ -263,7 +259,7 @@
                         </div>
                     </div>
                 {% endfor %}
-                <p class="muted">Use Se na primeira condição de cada finalidade e direção; continue com E ou Ou. E tem prioridade sobre Ou. Finalidade e direção do sinal prevalecem sobre o uso definido no indicador. “Compra e venda” aplica a mesma regra às duas direções.</p>
+                <p class="muted">A finalidade vem de “Usar como” dos indicadores selecionados. Condições somente com preços são de Entrada. Indicadores de Entrada e Saída não podem ser misturados na mesma condição. Use Se na primeira condição de cada finalidade e direção; continue com E ou Ou. E tem prioridade sobre Ou. “Compra e venda” aplica a mesma regra às duas direções.</p>
                 <p class="muted">Escolha Valor fixo em Da (DE) para comparar, por exemplo, RSI com 30. A vela da referência não se aplica a valores fixos. Vela atual usa valores ainda em formação; cruzar e fechar exige velas fechadas.</p>
                 <p class="muted">Distância: tolerância absoluta para Toque, Igual que e Diferente de; afastamento mínimo nas demais comparações. Porcentagem é calculada sobre o valor absoluto de Da (DE). Pontos só se aplicam a preços; para RSI/ADX use valor fixo e distância N.usar.</p>
                 <div data-signal-errors role="status" aria-live="polite"></div>
