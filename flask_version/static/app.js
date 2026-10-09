@@ -9,19 +9,21 @@ function setupControls(root) {
     const controls = Array.from(root.querySelectorAll(".card input:not(.tab-radio), .card select"));
     // Append new controls to preserve existing positional saved setups.
     return [...controls.filter(control => !control.matches("[data-condition-control], [data-candle-direction-control]")),
-        ...controls.filter(control => control.hasAttribute("data-condition-control")),
-        ...controls.filter(control => control.hasAttribute("data-candle-direction-control"))];
+        ...controls.filter(control => control.hasAttribute("data-condition-control") && !control.hasAttribute("data-signal-extra")),
+        ...controls.filter(control => control.hasAttribute("data-candle-direction-control")),
+        ...controls.filter(control => control.hasAttribute("data-signal-extra"))];
 }
 
 function restoreSetup(root, page) {
     const state = readSetupState();
     let saved = state[page] || [];
-    if (page === "indicadores" && saved.length >= setupControls(root).length + 36) {
+    const legacyLength = setupControls(root).filter(control => !control.hasAttribute("data-signal-extra")).length;
+    if (page === "indicadores" && saved.length === legacyLength + 36) {
         // Previous indicator cards had one signal and two optimization bounds per kind.
         const removed = new Set([8, 13, 16, 30, 31, 43, 44, 51, 52]);
         saved = saved.filter((_, index) => index >= 212 || !removed.has(index % 53));
     }
-    if (page === "indicadores" && saved.length === setupControls(root).length + 4) {
+    if (page === "indicadores" && saved.length === legacyLength + 4) {
         const legacyCount = setupControls(root).filter(control => !control.hasAttribute("data-condition-control")).length;
         saved.splice(legacyCount, 4);
     }
@@ -31,7 +33,7 @@ function restoreSetup(root, page) {
             return;
         }
         if (control.hasAttribute("data-crossing-source")) updateCrossingOptions(root);
-        if (page === "indicadores" && state.signalDefaultsVersion !== 1 && control.matches("[data-conditions] select")) {
+        if (page === "indicadores" && state.signalDefaultsVersion !== 1 && control.matches("[data-conditions] select:not([data-signal-extra])")) {
             control.value = "N.usar";
             return;
         }
@@ -48,7 +50,10 @@ function restoreSetup(root, page) {
 function updateCrossingOptions(root) {
     const indicators = Array.from(root.querySelectorAll("[data-indicator-type]"))
         .filter(select => select.value !== "Não usar")
-        .map(select => `Indicador ${select.dataset.indicatorType}: ${select.value}`);
+        .flatMap(select => {
+            const base = `Indicador ${select.dataset.indicatorType}: ${select.value}`;
+            return select.value === "ADX" ? [base, `${base} +DI`, `${base} −DI`] : [base];
+        });
     root.querySelectorAll("[data-crossing-source]").forEach(select => {
         const selected = select.value;
         Array.from(select.options).filter(option => option.dataset.indicatorOption).forEach(option => option.remove());
@@ -215,45 +220,15 @@ function bindIndicatorsVisibility() {
 
 document.addEventListener("DOMContentLoaded", bindIndicatorsVisibility);
 
-function signalSummaryLines(card) {
-    const unit = card.querySelector("[data-unit-selector]").value;
-    const sourceUsage = control => {
-        const match = /^Indicador (\d+):/.exec(control.value);
-        if (!match) return null;
-        const indicator = card.closest("[data-page]").querySelector(`[data-indicator-type="${match[1]}"]`);
-        const usage = indicator?.closest(".indicator-card").querySelector("[data-indicator-usage] input:checked");
-        return usage?.value || null;
-    };
-    return Array.from(card.querySelectorAll(".condition-row")).flatMap((row, index) => {
-        const selects = Array.from(row.querySelectorAll("select"));
-        const chosen = control => control.value !== "N.usar" && control.value !== "Não usar";
-        if (!selects.some(chosen)) return [];
-        const [operator, target, targetCandle, comparison, reference, referenceCandle] = selects;
-        const usages = new Set([target, reference].map(sourceUsage).filter(Boolean));
-        const usage = usages.has("Entrada") && usages.has("Saída")
-            ? "Entrada e saída" : [...usages][0];
-        const usageLabel = usage ? ` (${usage})` : "";
-        const parts = [];
-        if (chosen(operator)) parts.push(operator.value);
-        if (chosen(target)) parts.push(target.value);
-        if (chosen(targetCandle)) parts.push(`(candle: ${targetCandle.value})`);
-        if (chosen(comparison)) parts.push(comparison.value);
-        if (chosen(reference)) parts.push(reference.value);
-        if (chosen(referenceCandle)) parts.push(`(candle: ${referenceCandle.value})`);
-        const distance = row.querySelector("input").value.trim();
-        if (unit !== "N.usar" && distance) parts.push(`— distância: ${distance} ${unit === "Porcentagem" ? "%" : "pontos"}`);
-        const complete = [operator, target, comparison, reference].every(chosen);
-        return [`Condição ${index + 1}${usageLabel}: ${parts.join(" ")}${complete ? "" : " — incompleta"}`];
-    });
-}
-
 function bindSignalSummary() {
     const card = document.querySelector("[data-conditions]");
     const values = document.querySelector("[data-signal-summary-values]");
     const status = document.querySelector("[data-signal-summary-status]");
     if (!card || !values || !status) return;
     const update = () => {
+        updateSignalFields(card);
         const lines = signalSummaryLines(card);
+        const conditionCount = Array.from(card.querySelectorAll(".condition-row")).filter(row => signalRowActive(readSignalRow(row))).length;
         values.replaceChildren();
         (lines.length ? lines : ["Nenhum sinal informado."]).forEach(text => {
             const line = document.createElement("p");
@@ -261,6 +236,15 @@ function bindSignalSummary() {
             values.appendChild(line);
         });
         status.textContent = lines.length ? `${lines.length} ${lines.length === 1 ? "condição" : "condições"}` : "Não informado";
+        const errors = validateSignalCard(card);
+        const feedback = card.querySelector("[data-signal-errors]");
+        feedback.replaceChildren();
+        errors.forEach(message => {
+            const line = document.createElement("p");
+            line.textContent = message;
+            feedback.appendChild(line);
+        });
+        if (errors.length) status.textContent = "Sinal inválido";
     };
     const root = card.closest("[data-page]");
     root.addEventListener("input", update);
@@ -275,7 +259,7 @@ function bindSignalReset() {
     const button = card?.querySelector("[data-reset-signal]");
     if (!button) return;
     button.addEventListener("click", () => {
-        card.querySelectorAll("select").forEach(control => { control.value = "N.usar"; });
+        card.querySelectorAll("select").forEach(control => { control.value = control.hasAttribute("data-signal-extra") ? control.options[0].value : "N.usar"; });
         card.querySelectorAll("input[data-condition-control]").forEach(control => { control.value = "0"; });
         // Refresh unit labels, the summary and saved setup with the complete reset.
         card.querySelector("[data-unit-selector]").dispatchEvent(new Event("change", {bubbles: true}));
@@ -337,6 +321,12 @@ function bindRulesSummary() {
 document.addEventListener("DOMContentLoaded", bindRulesSummary);
 
 function relevantReviewControl(control, card) {
+    if (card.matches("[data-conditions]")) {
+        const row = control.closest(".condition-row");
+        if (row && !signalRowActive(readSignalRow(row))) return false;
+        if (control.closest("[data-signal-fixed]") && readSignalRow(row).reference !== "Valor fixo") return false;
+        if (control.name?.endsWith("-reference-candle") && readSignalRow(row).reference === "Valor fixo") return false;
+    }
     if (control.type === "radio" && !control.checked) return false;
     const kind = control.closest("[data-indicator-kind]");
     const indicator = card.querySelector("[data-indicator-type]");

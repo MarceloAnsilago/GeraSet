@@ -242,15 +242,31 @@
                         ] %}
                             <div>
                                 <label for="condition-{{ index }}-{{ key }}">{{ title }}</label>
-                                <select id="condition-{{ index }}-{{ key }}" name="condition-{{ index }}-{{ key }}" data-condition-control data-param-label="Condição {{ index }} — {{ title }}{{ ' de A' if key == 'target-candle' else ' de Da (DE)' if key == 'reference-candle' else '' }}" {{ 'data-crossing-source' if key in ['target', 'reference'] else '' }}><option value="N.usar" selected>N.usar</option>{% for item in options %}<option>{{ item }}</option>{% endfor %}</select>
+                                <select id="condition-{{ index }}-{{ key }}" name="condition-{{ index }}-{{ key }}" data-condition-control data-param-label="Condição {{ index }} — {{ title }}{{ ' de A' if key == 'target-candle' else ' de Da (DE)' if key == 'reference-candle' else '' }}" {{ 'data-crossing-source' if key in ['target', 'reference'] else '' }}><option value="N.usar" selected>N.usar</option>{% for item in options %}<option>{{ item }}</option>{% endfor %}{% if key == 'reference' %}<option>Valor fixo</option>{% endif %}</select>
                             </div>
                         {% endfor %}
                         <div>
                             <label for="condition-{{ index }}-distance" data-unit-label="Dist.:">Dist.: (pontos)</label>
-                            <input id="condition-{{ index }}-distance" name="condition-{{ index }}-distance" value="0" data-condition-control data-param-label="Condição {{ index }} — A distância de">
+                            <input id="condition-{{ index }}-distance" name="condition-{{ index }}-distance" type="number" min="0" step="any" value="0" data-condition-control data-param-label="Condição {{ index }} — A distância de">
+                        </div>
+                        <div>
+                            <label for="condition-{{ index }}-usage">Finalidade</label>
+                            <select id="condition-{{ index }}-usage" name="condition-{{ index }}-usage" data-condition-control data-signal-extra data-param-label="Condição {{ index }} — Finalidade"><option>Entrada</option><option>Saída</option></select>
+                        </div>
+                        <div>
+                            <label for="condition-{{ index }}-direction">Direção</label>
+                            <select id="condition-{{ index }}-direction" name="condition-{{ index }}-direction" data-condition-control data-signal-extra data-param-label="Condição {{ index }} — Direção"><option>Compra e venda</option><option>Somente compra</option><option>Somente venda</option></select>
+                        </div>
+                        <div data-signal-fixed class="is-hidden">
+                            <label for="condition-{{ index }}-fixed">Valor fixo (escala da referência)</label>
+                            <input id="condition-{{ index }}-fixed" name="condition-{{ index }}-fixed" type="number" step="any" value="0" data-condition-control data-signal-extra data-param-label="Condição {{ index }} — Valor fixo">
                         </div>
                     </div>
                 {% endfor %}
+                <p class="muted">Use Se na primeira condição de cada finalidade e direção; continue com E ou Ou. E tem prioridade sobre Ou. Finalidade e direção do sinal prevalecem sobre o uso definido no indicador. “Compra e venda” aplica a mesma regra às duas direções.</p>
+                <p class="muted">Escolha Valor fixo em Da (DE) para comparar, por exemplo, RSI com 30. A vela da referência não se aplica a valores fixos. Vela atual usa valores ainda em formação; cruzar e fechar exige velas fechadas.</p>
+                <p class="muted">Distância: tolerância absoluta para Toque, Igual que e Diferente de; afastamento mínimo nas demais comparações. Porcentagem é calculada sobre o valor absoluto de Da (DE). Pontos só se aplicam a preços; para RSI/ADX use valor fixo e distância N.usar.</p>
+                <div data-signal-errors role="status" aria-live="polite"></div>
             </section>
 
             <h2>Resumo dos indicadores e sinal</h2>
@@ -599,6 +615,7 @@
             <div class="info">Aqui ficarão as preferências do projeto.</div>
         {% endif %}
     </main>
+    <script src="{{ url_for('static', filename='signal.js') }}"></script>
     <script src="{{ url_for('static', filename='app.js') }}"></script>
     <script src="{{ url_for('static', filename='export.js') }}"></script>
 </body>

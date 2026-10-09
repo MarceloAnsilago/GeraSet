@@ -6,7 +6,7 @@ const vm = require('node:vm');
 
 const source = fs.readFileSync(path.join(__dirname, '../static/export.js'), 'utf8');
 
-function environment({picker, fetchFails = false} = {}) {
+function environment({picker, fetchFails = false, signalErrors = []} = {}) {
     const status = {textContent: ''};
     const button = {disabled: true, addEventListener(_, callback) { this.click = callback; }};
     const stored = {name: 'Estratégia / teste', lot: '0.25', end: '25'};
@@ -40,6 +40,7 @@ function environment({picker, fetchFails = false} = {}) {
             else end.value = stored.end;
         },
         setupControls: root => root.controls,
+        validateSignalCard: () => signalErrors,
         magicNumberFromName: () => '12345',
         Blob,
         URL: {createObjectURL: () => 'blob:test', revokeObjectURL: url => revoked.push(url)},
@@ -124,4 +125,23 @@ test('filenames remove invalid characters, reserved names and duplicate extensio
     assert.equal(context.setFileName('teste.set'), 'teste.set');
     assert.equal(context.setFileName('  '), 'Meu setup.set');
     assert.equal(context.setFileName('a:b?.'), 'a_b_.set');
+});
+
+test('invalid signals block both the save picker and downloads and allow retry', async () => {
+    for (const supportsPicker of [true, false]) {
+        let opened = false;
+        const signalErrors = ['Condição 1: selecione o candle de A.'];
+        const env = environment({signalErrors, picker: supportsPicker ? async () => { opened = true; } : undefined});
+        await env.context.bindSetExport();
+        await env.button.click();
+        assert.equal(opened, false);
+        assert.equal(env.downloads.length, 0);
+        assert.match(env.status.textContent, /Corrija o Sinal.*Condição 1/);
+        assert.equal(env.button.disabled, false);
+        signalErrors.length = 0;
+        if (!supportsPicker) {
+            await env.button.click();
+            assert.equal(env.downloads.length, 1);
+        }
+    }
 });

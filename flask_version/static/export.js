@@ -10,6 +10,12 @@ function serializeSetupSet(roots) {
     let name = "Meu setup";
     for (const [page, root] of roots) {
         restoreSetup(root, page);
+        const signalErrors = validateSignalCard(root.querySelector("[data-conditions]"));
+        if (signalErrors.length) {
+            const error = new Error(signalErrors.join(" "));
+            error.name = "SignalValidationError";
+            throw error;
+        }
         const nameControl = root.querySelector("[data-setup-name]");
         if (nameControl) {
             name = nameControl.value.trim() || name;
@@ -111,7 +117,9 @@ async function bindSetExport() {
                 status.textContent = `Download iniciado: ${file.filename}. O local segue a configuração do navegador.`;
             }
         } catch (error) {
-            status.textContent = error.name === "AbortError"
+            status.textContent = error.name === "SignalValidationError"
+                ? `Corrija o Sinal em Indicadores antes de exportar: ${error.message}`
+                : error.name === "AbortError"
                 ? "Exportação cancelada."
                 : "Não foi possível salvar o set. Tente novamente e confira a permissão da pasta escolhida.";
         } finally { button.disabled = false; }
