@@ -634,13 +634,38 @@ button.btn:disabled {
 }
 
 .condition-row {
-    display: grid;
-    gap: 0.75rem;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    align-items: end;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.4rem;
 }
 
 .condition-row > div {
+    flex: 1 1 0;
     min-width: 0;
+}
+
+.condition-row > div:nth-child(1),
+.condition-row > div:nth-child(7) {
+    flex-grow: 0.65;
+}
+
+.condition-row > div:nth-child(2),
+.condition-row > div:nth-child(4),
+.condition-row > div:nth-child(5) {
+    flex-grow: 1.5;
+}
+
+.condition-row label {
+    font-size: 0.72rem;
+    white-space: nowrap;
+}
+
+.condition-row input,
+.condition-row select {
+    font-size: 0.78rem;
+    padding-left: 0.35rem;
+    padding-right: 0.35rem;
 }
 
 [data-signal-errors] {
@@ -654,16 +679,16 @@ button.btn:disabled {
 }
 
 @media (max-width: 1100px) {
+    .conditions-card {
+        overflow-x: auto;
+    }
+
     .condition-row {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        min-width: 1000px;
     }
 }
 
 @media (max-width: 600px) {
-    .condition-row {
-        grid-template-columns: 1fr;
-    }
-
     .conditions-header {
         align-items: stretch;
         flex-direction: column;
