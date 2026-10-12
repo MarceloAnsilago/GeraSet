@@ -8,6 +8,7 @@ function setFileName(name) {
 function serializeSetupSet(roots) {
     const pages = {};
     let name = "Meu setup";
+    let magic = "";
     for (const [page, root] of roots) {
         restoreSetup(root, page);
         const signalErrors = validateSignalCard(root.querySelector("[data-conditions]"));
@@ -18,8 +19,15 @@ function serializeSetupSet(roots) {
         }
         const nameControl = root.querySelector("[data-setup-name]");
         if (nameControl) {
-            name = nameControl.value.trim() || name;
-            root.querySelector("[data-setup-magic]").value = magicNumberFromName(nameControl.value);
+            name = nameControl.value.trim();
+            magic = magicNumberFromName(name);
+            if (!name || name.length > 48 || /[\u0000-\u001f\u007f|]/.test(name) ||
+                !/^[0-9]+$/.test(magic) || Number(magic) < 1 || Number(magic) > 2147483647) {
+                const error = new Error("Use um nome de 1 a 48 caracteres, sem controles ou |, e Magic de 1 a 2147483647.");
+                error.name = "IdentityValidationError";
+                throw error;
+            }
+            root.querySelector("[data-setup-magic]").value = magic;
         }
         // Keep every control in storage order, including optimization ranges and
         // inactive options, so no configuration is lost during export.
@@ -29,15 +37,25 @@ function serializeSetupSet(roots) {
             checked: control.checked,
         }));
     }
-    return {
-        filename: setFileName(name),
-        contents: JSON.stringify({
-            format: "geraset",
-            version: 1,
-            name,
-            pages,
-        }, null, 2) + "\n",
-    };
+    if (!magic) throw new Error("Identificação do setup ausente.");
+    // Preserve the full draft as comments; only mapped inputs are applied by MT5.
+    const metadata = JSON.stringify({format: "geraset", version: 1, name, pages}, null, 2);
+    const text = [
+        "; GeraSet -> UniEA: etapa 1, identificacao",
+        `InpName=${name}`,
+        `InpMagic=${magic}||${magic}||1||2147483647||N`,
+        ...metadata.split("\n").map(line => `; ${line}`),
+        "",
+    ].join("\r\n");
+    // Explicit UTF-16LE with BOM preserves accents in native Windows MT5 presets.
+    const contents = new Uint8Array(2 + text.length * 2);
+    contents[0] = 0xff;
+    contents[1] = 0xfe;
+    for (let i = 0; i < text.length; i++) {
+        contents[2 + i * 2] = text.charCodeAt(i) & 0xff;
+        contents[3 + i * 2] = text.charCodeAt(i) >>> 8;
+    }
+    return {filename: setFileName(name), contents};
 }
 
 async function writeSetupSet(handle, contents) {
@@ -52,7 +70,7 @@ async function writeSetupSet(handle, contents) {
 }
 
 function downloadSetupSet(file) {
-    const url = URL.createObjectURL(new Blob([file.contents], {type: "application/json;charset=utf-8"}));
+    const url = URL.createObjectURL(new Blob([file.contents], {type: "application/octet-stream"}));
     const link = document.createElement("a");
     link.href = url;
     link.download = file.filename;
@@ -106,7 +124,7 @@ async function bindSetExport() {
                 const handle = await window.showSaveFilePicker({
                     id: "geraset-export",
                     suggestedName: file.filename,
-                    types: [{description: "Set do GeraSet", accept: {"application/json": [".set"]}}],
+                    types: [{description: "Set do GeraSet", accept: {"application/octet-stream": [".set"]}}],
                     excludeAcceptAllOption: true,
                 });
                 status.textContent = "Salvando set...";
@@ -117,7 +135,9 @@ async function bindSetExport() {
                 status.textContent = `Download iniciado: ${file.filename}. O local segue a configuração do navegador.`;
             }
         } catch (error) {
-            status.textContent = error.name === "SignalValidationError"
+            status.textContent = error.name === "IdentityValidationError"
+                ? `Corrija a identificação: ${error.message}`
+                : error.name === "SignalValidationError"
                 ? `Corrija o Sinal em Indicadores antes de exportar: ${error.message}`
                 : error.name === "AbortError"
                 ? "Exportação cancelada."

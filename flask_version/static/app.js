@@ -89,7 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
 function magicNumberFromName(name) {
     const text = name.trim();
     if (!text) return "";
-    if (/^[0-9]+$/.test(text)) return text;
+    if (/^[0-9]+$/.test(text)) return String(Number(text));
 
     let crc = 0xffffffff;
     for (const byte of new TextEncoder().encode(text)) {
@@ -98,7 +98,7 @@ function magicNumberFromName(name) {
             crc = (crc >>> 1) ^ ((crc & 1) ? 0xedb88320 : 0);
         }
     }
-    return String((crc ^ 0xffffffff) >>> 0);
+    return String(1 + (((crc ^ 0xffffffff) >>> 0) % 2147483647));
 }
 
 function bindMagicNumber() {

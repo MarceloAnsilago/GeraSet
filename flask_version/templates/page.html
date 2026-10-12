@@ -37,7 +37,7 @@
                 <div class="card">
                     <h2>Identificação</h2>
                     <label>Nome do setup</label>
-                    <input name="setup_name" value="{{ data.setup_name }}" data-setup-name>
+                    <input name="setup_name" maxlength="48" value="{{ data.setup_name }}" data-setup-name>
                     <label>Magic Number</label>
                     <input name="setup_magic" value="{{ data.setup_magic }}" data-setup-magic readonly>
                     <p class="muted">Magic Number identifica as ordens deste setup.</p>
@@ -574,7 +574,7 @@
                 <div class="card">
                     <h2>Set atual</h2>
                     <p data-review-setup-name>{{ data.setup_name }}</p>
-                    <p class="muted">A revisão acima compõe o set que será salvo.</p>
+                    <p class="muted">Nesta etapa, o Uni carrega apenas Nome e Magic Number. Os demais campos ficam guardados como comentários no arquivo.</p>
                 </div>
                 <div class="card">
                     <h2>Ações</h2>

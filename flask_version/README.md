@@ -1,11 +1,11 @@
 # GeraSet Flask
 
-Versão Flask separada do app Streamlit.
+Aplicação Flask do GeraSet.
 
 ## Rodar
 
 ```powershell
-cd C:\Users\76395499220\Desktop\prog\GeraSet
+cd D:\driver\Documentos\GeraSet
 .\.venv\Scripts\pip install -r .\flask_version\requirements-flask.txt
 .\.venv\Scripts\python .\flask_version\app.py
 ```
@@ -16,7 +16,6 @@ Depois abra:
 http://localhost:5000
 ```
 
-Para remover esta versão, apague somente a pasta `flask_version`.
 
 ## Exportar set
 
@@ -29,10 +28,32 @@ Nos navegadores sem suporte ao seletor de salvamento, o app inicia um download.
 Para escolher a pasta nesse caso, configure o navegador para perguntar onde
 salvar cada download.
 
-O arquivo usa o formato do GeraSet (JSON UTF-8, versão 1) e inclui o nome,
-o magic number, os parâmetros e os intervalos de otimização das três etapas,
-inclusive opções desativadas. A integração com um robô do MetaTrader exige
-o mapeamento dos parâmetros desse robô.
+O arquivo usa o formato nativo de parâmetros do MT5 (UTF-16LE com BOM).
+Nesta primeira etapa, somente `InpName` e `InpMagic` são aplicados ao UniEA.
+O JSON do GeraSet, versão 1, permanece em linhas de comentário (`; `), com
+os parâmetros e intervalos das três etapas, inclusive opções desativadas.
+Esses comentários não configuram indicadores, gestão ou outros inputs do Uni.
+Salvar novamente pelo MT5 pode descartar os comentários; preserve o original.
+
+O nome deve ter de 1 a 48 unidades UTF-16, sem caracteres de controle ou `|`.
+Nomes numéricos fornecem o Magic diretamente (1 a 2147483647).
+Outros nomes geram um Magic determinístico nessa faixa; nomes iguais geram
+o mesmo Magic e o hash não garante exclusividade entre nomes diferentes.
+O Flask não consulta reservas ou histórico de ordens do terminal.
+
+### Testar a identificação no Uni
+
+1. Atualize o navegador com Ctrl+F5 e defina o nome em Identificação.
+2. Anote o Magic mostrado e exporte em **Revisão e Sets**.
+3. Nas propriedades do UniEA no MT5, abra **Parâmetros de entrada → Carregar**
+   e selecione o `.set` exportado.
+4. Confira Nome do setup (`InpName`) e Magic Number (`InpMagic`) contra o Flask.
+   Os demais inputs não estão mapeados nesta etapa; confira os valores existentes.
+
+O carregamento ocorre pelos inputs nativos do MT5, não pelo leitor binário
+legado `GuiLoadSet`. Não é necessário recompilar o Uni para esta etapa.
+Arquivos JSON `.set` exportados antes desta integração precisam ser exportados
+novamente. A nova faixa do hash pode alterar o Magic exibido em rascunhos antigos.
 
 ## Sinal
 

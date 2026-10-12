@@ -51,11 +51,17 @@ function environment({picker, fetchFails = false, signalErrors = []} = {}) {
 }
 
 test('exports the latest configuration and confirms only after closing the file', async () => {
-    let written, options, closed = false;
+    let written, preset, options, closed = false;
     const env = environment({picker: async value => {
         options = value;
         return {name: 'chosen.set', createWritable: async () => ({
-            write: async contents => { written = JSON.parse(contents); },
+            write: async contents => {
+                const bytes = Buffer.from(contents);
+                assert.equal(bytes.readUInt16LE(0), 0xfeff);
+                preset = bytes.subarray(2).toString('utf16le');
+                const comments = preset.split('\r\n').filter(line => line.startsWith('; ')).slice(1);
+                written = JSON.parse(comments.map(line => line.slice(2)).join('\n'));
+            },
             close: async () => {
                 assert.equal(env.status.textContent, 'Salvando set...');
                 closed = true;
@@ -68,6 +74,9 @@ test('exports the latest configuration and confirms only after closing the file'
     await env.button.click();
     assert.equal(options.suggestedName, 'Estratégia _ teste.set');
     assert.equal(written.format, 'geraset');
+    assert.deepEqual(preset.split('\r\n').filter(line => line && !line.startsWith(';')), [
+        'InpName=Estratégia / teste', 'InpMagic=12345||12345||1||2147483647||N',
+    ]);
     assert.equal(written.pages.inicio[1].value, '12345');
     assert.equal(written.pages.inicio[2].value, '0.50');
     assert.equal(written.pages.indicadores[0].value, '50');
@@ -144,4 +153,29 @@ test('invalid signals block both the save picker and downloads and allow retry',
             assert.equal(env.downloads.length, 1);
         }
     }
+});
+
+test('invalid identity blocks export before opening a file', async () => {
+    for (const name of ['', 'a'.repeat(49), 'teste\nInpMagic=42', 'teste|outro']) {
+        let opened = false;
+        const env = environment({picker: async () => { opened = true; }});
+        env.stored.name = name;
+        await env.context.bindSetExport();
+        await env.button.click();
+        assert.equal(opened, false);
+        assert.match(env.status.textContent, /Corrija a identificação/);
+    }
+});
+
+test('Magic generation stays in the Uni range and preserves numeric names', () => {
+    const app = fs.readFileSync(path.join(__dirname, '../static/app.js'), 'utf8');
+    const context = vm.createContext({TextEncoder});
+    vm.runInContext(app.slice(app.indexOf('function magicNumberFromName'), app.indexOf('function bindMagicNumber')), context);
+    for (const name of ['Meu setup', 'Estratégia / teste', 'ação 🚀', 'Setup 999']) {
+        const magic = Number(context.magicNumberFromName(name));
+        assert.ok(Number.isInteger(magic) && magic >= 1 && magic <= 2147483647);
+        assert.equal(context.magicNumberFromName(name), context.magicNumberFromName('  ' + name + '  '));
+    }
+    assert.equal(context.magicNumberFromName('00042'), '42');
+    assert.equal(context.magicNumberFromName('2147483647'), '2147483647');
 });
