@@ -12,11 +12,17 @@ function environment({picker, fetchFails = false, signalErrors = []} = {}) {
     const stored = {name: 'Estratégia / teste', lot: '0.25', end: '25'};
     const name = {name: 'setup_name', value: 'default', checked: false};
     const magic = {name: 'setup_magic', value: '1', checked: false};
-    const lot = {name: '', id: '', value: '0.01', checked: false};
+    const lot = {name: 'setup_lot', id: '', value: '0.01', checked: false};
+    const operation = Object.entries({
+        setup_market: 'Forex', setup_mode: 'Day trade', setup_timeframe: 'Tempo corrente',
+        setup_direction: 'Compra e venda',
+        'operation-timeframe-start': 'Tempo corrente', 'operation-timeframe-end': 'Tempo corrente',
+        'operation-direction-start': 'Compra e venda', 'operation-direction-end': 'Compra e venda',
+    }).map(([name, value]) => ({name, value, checked: false}));
     const end = {name: 'period-end', value: '10', checked: false};
     const usage = {name: 'usage', value: 'Saída', checked: true};
     const roots = new Map(['inicio', 'indicadores', 'gestao'].map(page => [page, {
-        controls: page === 'inicio' ? [name, magic, lot] : [end, usage],
+        controls: page === 'inicio' ? [name, magic, lot, ...operation] : [end, usage],
         querySelector(selector) {
             if (selector.startsWith('[data-page=')) return this;
             if (page !== 'inicio') return null;
@@ -76,6 +82,9 @@ test('exports the latest configuration and confirms only after closing the file'
     assert.equal(written.format, 'geraset');
     assert.deepEqual(preset.split('\r\n').filter(line => line && !line.startsWith(';')), [
         'InpName=Estratégia / teste', 'InpMagic=12345||12345||1||2147483647||N',
+        'InpMarket=0||0||1||0||N', 'InpTradeMode=0||0||1||0||N',
+        'InpStrategyTimeframe=0||0||1||0||N', 'InpLot=0.5||0.5||0.01||0.5||N',
+        'InpDirection=0||0||1||0||N',
     ]);
     assert.equal(written.pages.inicio[1].value, '12345');
     assert.equal(written.pages.inicio[2].value, '0.50');
@@ -178,4 +187,55 @@ test('Magic generation stays in the Uni range and preserves numeric names', () =
     }
     assert.equal(context.magicNumberFromName('00042'), '42');
     assert.equal(context.magicNumberFromName('2147483647'), '2147483647');
+});
+
+function operationControls(overrides = {}) {
+    return Object.entries({
+        setup_market: 'B3', setup_mode: 'Swing trade', setup_timeframe: 'H4',
+        setup_lot: '2,50', setup_direction: 'Somente venda',
+        'operation-timeframe-start': 'M30', 'operation-timeframe-end': 'H4',
+        'operation-direction-start': 'Compra e venda', 'operation-direction-end': 'Somente venda',
+        ...overrides,
+    }).map(([key, value]) => ({key, value}));
+}
+
+test('operation exports fixed values separately from enabled optimization bounds', () => {
+    const {context} = environment();
+    assert.deepEqual(Array.from(context.operationSetLines(operationControls())), [
+        'InpMarket=1||1||1||1||N', 'InpTradeMode=1||1||1||1||N',
+        'InpStrategyTimeframe=16388||30||1||16388||Y', 'InpLot=2.5||2.5||0.01||2.5||N',
+        'InpDirection=2||0||1||2||Y',
+    ]);
+    const reversed = context.operationSetLines(operationControls({
+        'operation-timeframe-start': 'MN1', 'operation-timeframe-end': 'Tempo corrente',
+        'operation-direction-start': 'Somente venda', 'operation-direction-end': 'Somente compra',
+    }));
+    assert.equal(reversed[2], 'InpStrategyTimeframe=16388||0||1||49153||Y');
+    assert.equal(reversed[4], 'InpDirection=2||1||1||2||Y');
+    const fixed = context.operationSetLines(operationControls({
+        'operation-timeframe-start': 'M5', 'operation-timeframe-end': 'M5',
+    }));
+    assert.equal(fixed[2], 'InpStrategyTimeframe=16388||5||1||5||N');
+});
+
+test('operation rejects missing fields, unknown enums and invalid volume', () => {
+    const {context} = environment();
+    for (const overrides of [
+        {setup_market: 'other'}, {setup_mode: ''}, {setup_timeframe: 'H5'},
+        {setup_direction: 'both'}, {'operation-timeframe-end': 'H5'},
+        {'operation-direction-start': ''}, ...['', '0', '-1', 'Infinity', '1||2', '1.2.3'].map(setup_lot => ({setup_lot})),
+    ]) {
+        assert.throws(() => context.operationSetLines(operationControls(overrides)), {name: 'OperationValidationError'});
+    }
+    assert.throws(() => context.operationSetLines([]), {name: 'OperationValidationError'});
+});
+
+test('invalid operation prevents writing and reports the card to fix', async () => {
+    let opened = false;
+    const env = environment({picker: async () => { opened = true; }});
+    env.stored.lot = '0';
+    await env.context.bindSetExport();
+    await env.button.click();
+    assert.equal(opened, false);
+    assert.match(env.status.textContent, /Corrija Mercado e operação/);
 });

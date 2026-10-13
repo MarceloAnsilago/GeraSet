@@ -55,11 +55,11 @@
                     <div class="row">
                         <div>
                             <label>Mercado</label>
-                            <select><option>Forex</option><option>B3</option></select>
+                            <select name="setup_market">{% for item in ['Forex', 'B3'] %}<option {{ 'selected' if item == data.setup_market else '' }}>{{ item }}</option>{% endfor %}</select>
                         </div>
                         <div>
                             <label>Modalidade</label>
-                            <select><option>Day trade</option><option>Swing trade</option></select>
+                            <select name="setup_mode">{% for item in ['Day trade', 'Swing trade'] %}<option {{ 'selected' if item == data.setup_mode else '' }}>{{ item }}</option>{% endfor %}</select>
                         </div>
                     </div>
                     <div class="row">
@@ -69,16 +69,16 @@
                         </div>
                         <div>
                             <label>Lote</label>
-                            <input value="{{ data.setup_lot }}">
+                            <input name="setup_lot" inputmode="decimal" value="{{ data.setup_lot }}">
                         </div>
                     </div>
                     <label>Direção permitida</label>
                     <select name="setup_direction">{% for item in ['Compra e venda', 'Somente compra', 'Somente venda'] %}<option {{ 'selected' if item == data.setup_direction else '' }}>{{ item }}</option>{% endfor %}</select>
-                    <p class="muted">Lote: mín. 0.01 - Passo 0.01</p>
+                    <p class="muted">O lote deve respeitar o mínimo, máximo e passo do ativo na corretora.</p>
                         </div>
                         <div class="tab-panel tab-panel-optimize">
                             {% for key, title, options, default in [
-                                ('timeframe', 'Timeframe', timeframes, data.setup_timeframe),
+                                ('timeframe', 'Timeframe', ['Tempo corrente'] + timeframes[:-1], data.setup_timeframe),
                                 ('direction', 'Direção permitida', ['Compra e venda', 'Somente compra', 'Somente venda'], data.setup_direction)
                             ] %}
                                 <div class="optimize-row">
@@ -92,6 +92,7 @@
                                     </div>
                                 </div>
                             {% endfor %}
+                            <p class="muted">Início e fim diferentes habilitam a otimização. Valores iguais mantêm o parâmetro fixo. Mercado, modalidade e lote usam os valores da aba Parâmetros.</p>
                         </div>
                     </div>
                 </div>
@@ -574,7 +575,7 @@
                 <div class="card">
                     <h2>Set atual</h2>
                     <p data-review-setup-name>{{ data.setup_name }}</p>
-                    <p class="muted">Nesta etapa, o Uni carrega apenas Nome e Magic Number. Os demais campos ficam guardados como comentários no arquivo.</p>
+                    <p class="muted">O Uni carrega Identificação e Mercado e operação, incluindo os intervalos de Timeframe e Direção. Os demais cards ficam guardados como comentários no arquivo.</p>
                 </div>
                 <div class="card">
                     <h2>Ações</h2>

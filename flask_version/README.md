@@ -29,7 +29,8 @@ Para escolher a pasta nesse caso, configure o navegador para perguntar onde
 salvar cada download.
 
 O arquivo usa o formato nativo de parâmetros do MT5 (UTF-16LE com BOM).
-Nesta primeira etapa, somente `InpName` e `InpMagic` são aplicados ao UniEA.
+São aplicados Identificação (`InpName`, `InpMagic`) e Mercado e operação
+(`InpMarket`, `InpTradeMode`, `InpStrategyTimeframe`, `InpLot`, `InpDirection`).
 O JSON do GeraSet, versão 1, permanece em linhas de comentário (`; `), com
 os parâmetros e intervalos das três etapas, inclusive opções desativadas.
 Esses comentários não configuram indicadores, gestão ou outros inputs do Uni.
@@ -48,12 +49,41 @@ O Flask não consulta reservas ou histórico de ordens do terminal.
 3. Nas propriedades do UniEA no MT5, abra **Parâmetros de entrada → Carregar**
    e selecione o `.set` exportado.
 4. Confira Nome do setup (`InpName`) e Magic Number (`InpMagic`) contra o Flask.
-   Os demais inputs não estão mapeados nesta etapa; confira os valores existentes.
+   Confira também os valores do card Mercado e operação conforme abaixo.
 
 O carregamento ocorre pelos inputs nativos do MT5, não pelo leitor binário
 legado `GuiLoadSet`. Não é necessário recompilar o Uni para esta etapa.
 Arquivos JSON `.set` exportados antes desta integração precisam ser exportados
 novamente. A nova faixa do hash pode alterar o Magic exibido em rascunhos antigos.
+
+### Mercado e operação: parâmetros e otimização
+
+| Campo | Input Uni | Otimização |
+| --- | --- | --- |
+| Mercado | `InpMarket` (Forex=0, B3=1) | Fixo |
+| Modalidade | `InpTradeMode` (Day trade=0, Swing trade=1) | Fixo |
+| Timeframe | `InpStrategyTimeframe` (enum do Uni) | Iniciar/Terminar |
+| Lote | `InpLot` | Fixo |
+| Direção | `InpDirection` (Compra e venda=0, Somente compra=1, Somente venda=2) | Iniciar/Terminar |
+
+Os valores de Parâmetros são exportados na coluna Valor, independentemente
+da aba visível. Na aba Otimizar, limites diferentes ativam a marcação `Y` do
+respectivo input; limites iguais exportam `N` e mantêm o Valor fixo.
+Intervalos invertidos são ordenados antes da exportação. O passo dos enums é 1.
+Tempo corrente aparece primeiro no intervalo de Timeframe, acompanhando o
+enum do Uni (valor 0). Os códigos H1=16385, H4=16388 etc. são preservados.
+Os controles mantêm a ordem de armazenamento dos rascunhos anteriores.
+
+O lote aceita ponto ou vírgula decimal e deve ser maior que zero; os limites
+e o passo específicos do ativo continuam sendo validados pelo Uni no terminal.
+
+Para conferir, escolha B3, Swing trade, H4, lote 1 e Somente venda. Em Otimizar,
+escolha Timeframe M30 até H4 e Direção Compra e venda até Somente venda.
+Exporte novamente e carregue nos inputs do **Testador de Estratégias**:
+confira os cinco Valores, os dois intervalos e as duas marcações de otimização.
+Repita com limites iguais: as marcações devem ficar desativadas. Não é preciso
+iniciar uma execução para conferir a importação. Horários, indicadores e gestão
+ainda não são aplicados pelo arquivo nesta etapa.
 
 ## Sinal
 

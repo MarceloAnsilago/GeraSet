@@ -5,6 +5,55 @@ function setFileName(name) {
     return `${/^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(base) ? `_${base}` : base}.set`;
 }
 
+// Numeric values must match UniTypes.mqh and ENUM_UNI_TIMEFRAME in UniInputOptions.mqh.
+const operationEnums = {
+    setup_market: {Forex: 0, B3: 1},
+    setup_mode: {"Day trade": 0, "Swing trade": 1},
+    setup_direction: {"Compra e venda": 0, "Somente compra": 1, "Somente venda": 2},
+    setup_timeframe: {
+        "Tempo corrente": 0, M1: 1, M2: 2, M3: 3, M4: 4, M5: 5, M6: 6,
+        M10: 10, M12: 12, M15: 15, M20: 20, M30: 30,
+        H1: 16385, H2: 16386, H3: 16387, H4: 16388, H6: 16390,
+        H8: 16392, H12: 16396, D1: 16408, W1: 32769, MN1: 49153,
+    },
+};
+
+function operationSetLines(controls) {
+    const values = Object.fromEntries(controls.map(control => [control.key, control.value]));
+    const fail = message => {
+        const error = new Error(message);
+        error.name = "OperationValidationError";
+        throw error;
+    };
+    const enumValue = (key, field = key) => {
+        const options = operationEnums[key];
+        if (!Object.prototype.hasOwnProperty.call(options, values[field])) {
+            fail(`Selecione uma opção válida em ${field}.`);
+        }
+        return options[values[field]];
+    };
+    const fixed = (input, value, step = 1) => `${input}=${value}||${value}||${step}||${value}||N`;
+    const range = (input, key, prefix) => {
+        const value = enumValue(key);
+        const a = enumValue(key, `${prefix}-start`);
+        const b = enumValue(key, `${prefix}-end`);
+        // The review counts inclusive options in either direction. MT5 needs ascending bounds.
+        return `${input}=${value}||${Math.min(a, b)}||1||${Math.max(a, b)}||${a === b ? "N" : "Y"}`;
+    };
+    const lotText = String(values.setup_lot ?? "").trim().replace(",", ".");
+    const lot = Number(lotText);
+    if (!/^(?:\d+(?:\.\d*)?|\.\d+)$/.test(lotText) || !Number.isFinite(lot) || lot <= 0) {
+        fail("Lote deve ser um número maior que zero.");
+    }
+    return [
+        fixed("InpMarket", enumValue("setup_market")),
+        fixed("InpTradeMode", enumValue("setup_mode")),
+        range("InpStrategyTimeframe", "setup_timeframe", "operation-timeframe"),
+        fixed("InpLot", lot, 0.01),
+        range("InpDirection", "setup_direction", "operation-direction"),
+    ];
+}
+
 function serializeSetupSet(roots) {
     const pages = {};
     let name = "Meu setup";
@@ -41,9 +90,10 @@ function serializeSetupSet(roots) {
     // Preserve the full draft as comments; only mapped inputs are applied by MT5.
     const metadata = JSON.stringify({format: "geraset", version: 1, name, pages}, null, 2);
     const text = [
-        "; GeraSet -> UniEA: etapa 1, identificacao",
+        "; GeraSet -> UniEA: identificacao, mercado e operacao",
         `InpName=${name}`,
         `InpMagic=${magic}||${magic}||1||2147483647||N`,
+        ...operationSetLines(pages.inicio || []),
         ...metadata.split("\n").map(line => `; ${line}`),
         "",
     ].join("\r\n");
@@ -137,6 +187,8 @@ async function bindSetExport() {
         } catch (error) {
             status.textContent = error.name === "IdentityValidationError"
                 ? `Corrija a identificação: ${error.message}`
+                : error.name === "OperationValidationError"
+                ? `Corrija Mercado e operação: ${error.message}`
                 : error.name === "SignalValidationError"
                 ? `Corrija o Sinal em Indicadores antes de exportar: ${error.message}`
                 : error.name === "AbortError"
