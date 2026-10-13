@@ -18,6 +18,9 @@ function environment({picker, fetchFails = false, signalErrors = []} = {}) {
         setup_direction: 'Compra e venda',
         'operation-timeframe-start': 'Tempo corrente', 'operation-timeframe-end': 'Tempo corrente',
         'operation-direction-start': 'Compra e venda', 'operation-direction-end': 'Compra e venda',
+        setup_entry_start: '00:00', setup_entry_end: '23:55',
+        'schedule-entry-start-start': '00:00', 'schedule-entry-start-end': '00:00',
+        'schedule-entry-end-start': '23:55', 'schedule-entry-end-end': '23:55',
     }).map(([name, value]) => ({name, value, checked: false}));
     const end = {name: 'period-end', value: '10', checked: false};
     const usage = {name: 'usage', value: 'Saída', checked: true};
@@ -85,6 +88,7 @@ test('exports the latest configuration and confirms only after closing the file'
         'InpMarket=0||0||1||0||N', 'InpTradeMode=0||0||1||0||N',
         'InpStrategyTimeframe=0||0||1||0||N', 'InpLot=0.5||0.5||0.01||0.5||N',
         'InpDirection=0||0||1||0||N',
+        'InpEntryStart=0||0||5||0||N', 'InpEntryEnd=1435||1435||5||1435||N',
     ]);
     assert.equal(written.pages.inicio[1].value, '12345');
     assert.equal(written.pages.inicio[2].value, '0.50');

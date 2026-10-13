@@ -31,6 +31,7 @@ salvar cada download.
 O arquivo usa o formato nativo de parâmetros do MT5 (UTF-16LE com BOM).
 São aplicados Identificação (`InpName`, `InpMagic`) e Mercado e operação
 (`InpMarket`, `InpTradeMode`, `InpStrategyTimeframe`, `InpLot`, `InpDirection`).
+O card Horários também é aplicado: `InpEntryStart` e `InpEntryEnd`.
 O JSON do GeraSet, versão 1, permanece em linhas de comentário (`; `), com
 os parâmetros e intervalos das três etapas, inclusive opções desativadas.
 Esses comentários não configuram indicadores, gestão ou outros inputs do Uni.
@@ -82,8 +83,33 @@ escolha Timeframe M30 até H4 e Direção Compra e venda até Somente venda.
 Exporte novamente e carregue nos inputs do **Testador de Estratégias**:
 confira os cinco Valores, os dois intervalos e as duas marcações de otimização.
 Repita com limites iguais: as marcações devem ficar desativadas. Não é preciso
-iniciar uma execução para conferir a importação. Horários, indicadores e gestão
+iniciar uma execução para conferir a importação. Indicadores e gestão
 ainda não são aplicados pelo arquivo nesta etapa.
+
+### Horários: parâmetros e otimização
+
+Início entradas mapeia para `InpEntryStart` e Encerramento entradas para
+`InpEntryEnd`. O Flask apresenta HH:MM; o Uni recebe minutos desde 00:00 no
+horário do servidor da corretora (09:30 = 570, 17:00 = 1020).
+São aceitos 00:00 a 23:55, em passos de 5 minutos. Os valores fixos devem ser
+diferentes; início maior que encerramento representa uma janela noturna.
+
+Cada intervalo da aba Otimizar usa passo 5. Limites diferentes exportam `Y`;
+iguais exportam `N`, preservando o valor da aba Parâmetros. Limites invertidos
+da otimização são ordenados. Se os intervalos produzirem uma combinação com
+início igual ao encerramento, o Uni rejeitará essa combinação na inicialização.
+
+Exemplo para conferir no Testador: início 09:30, encerramento 17:00, otimização
+do início de 09:00 a 10:00 e do encerramento de 16:00 a 18:00:
+
+```text
+InpEntryStart=570||540||5||600||Y
+InpEntryEnd=1020||960||5||1080||Y
+```
+
+Atualize com Ctrl+F5 e exporte um arquivo novo. Recompile o Uni para visualizar
+o grupo **Horários** atualizado. O encerramento de posições continua seguindo
+a modalidade; este card define a janela de entradas.
 
 ## Sinal
 

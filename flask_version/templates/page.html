@@ -134,6 +134,7 @@
                     </div>
                     <p class="muted">Posições: conforme a modalidade.</p>
                     <p class="muted">Horário do servidor da corretora - HH:MM</p>
+                    <p class="muted">No Uni, os horários são carregados em minutos: 09:30 = 570. A otimização usa passo de 5 minutos; limites iguais a desativam. Início e encerramento devem ser diferentes.</p>
                 </div>
             </section>
             <div class="button-row">
@@ -575,7 +576,7 @@
                 <div class="card">
                     <h2>Set atual</h2>
                     <p data-review-setup-name>{{ data.setup_name }}</p>
-                    <p class="muted">O Uni carrega Identificação e Mercado e operação, incluindo os intervalos de Timeframe e Direção. Os demais cards ficam guardados como comentários no arquivo.</p>
+                    <p class="muted">O Uni carrega Identificação, Mercado e operação e Horários, incluindo seus intervalos de otimização. Os demais cards ficam guardados como comentários no arquivo.</p>
                 </div>
                 <div class="card">
                     <h2>Ações</h2>

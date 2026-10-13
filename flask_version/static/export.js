@@ -61,6 +61,31 @@ function operationSetLines(controls) {
     ];
 }
 
+function scheduleSetLines(controls) {
+    const values = Object.fromEntries(controls.map(control => [control.key, control.value]));
+    const fail = message => {
+        const error = new Error(message);
+        error.name = "ScheduleValidationError";
+        throw error;
+    };
+    const minutes = key => {
+        const value = values[key];
+        if (typeof value !== "string" || !/^(?:[01]\d|2[0-3]):[0-5][05]$/.test(value)) {
+            fail("Selecione horários entre 00:00 e 23:55, em passos de 5 minutos.");
+        }
+        const [hour, minute] = value.split(":").map(Number);
+        return hour * 60 + minute;
+    };
+    const start = minutes("setup_entry_start");
+    const end = minutes("setup_entry_end");
+    if (start === end) fail("Início e encerramento das entradas devem ser diferentes.");
+    return [["InpEntryStart", start, "entry-start"], ["InpEntryEnd", end, "entry-end"]].map(([input, value, key]) => {
+        const a = minutes(`schedule-${key}-start`);
+        const b = minutes(`schedule-${key}-end`);
+        return `${input}=${value}||${Math.min(a, b)}||5||${Math.max(a, b)}||${a === b ? "N" : "Y"}`;
+    });
+}
+
 function serializeSetupSet(roots) {
     const pages = {};
     let name = "Meu setup";
@@ -97,10 +122,11 @@ function serializeSetupSet(roots) {
     // Preserve the full draft as comments; only mapped inputs are applied by MT5.
     const metadata = JSON.stringify({format: "geraset", version: 1, name, pages}, null, 2);
     const text = [
-        "; GeraSet -> UniEA: identificacao, mercado e operacao",
+        "; GeraSet -> UniEA: identificacao, mercado e operacao, horarios",
         `InpName=${name}`,
         `InpMagic=${magic}||${magic}||1||2147483647||N`,
         ...operationSetLines(pages.inicio || []),
+        ...scheduleSetLines(pages.inicio || []),
         ...metadata.split("\n").map(line => `; ${line}`),
         "",
     ].join("\r\n");
@@ -196,6 +222,8 @@ async function bindSetExport() {
                 ? `Corrija a identificação: ${error.message}`
                 : error.name === "OperationValidationError"
                 ? `Corrija Mercado e operação: ${error.message}`
+                : error.name === "ScheduleValidationError"
+                ? `Corrija Horários: ${error.message}`
                 : error.name === "SignalValidationError"
                 ? `Corrija o Sinal em Indicadores antes de exportar: ${error.message}`
                 : error.name === "AbortError"
