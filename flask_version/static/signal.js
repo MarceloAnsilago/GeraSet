@@ -1,6 +1,6 @@
 function readSignalRow(row) {
     const value = key => row.querySelector(`[name$="-${key}"]`).value;
-    const rule = Object.fromEntries(["operator", "target", "target-candle", "comparison", "reference", "reference-candle", "distance", "direction", "fixed"]
+    const rule = Object.fromEntries(["operator", "target", "target-candle", "comparison", "reference", "reference-candle", "distance", "sense", "fixed"]
         .map(key => [key.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase()), value(key)]));
     const root = row.closest("[data-page]");
     const usages = new Set([rule.target, rule.reference].map(source => {
@@ -49,11 +49,11 @@ function validateSignalCard(card) {
         const rule = readSignalRow(row);
         if (!signalRowActive(rule)) return [];
         const errors = signalRuleErrors(rule, unit);
-        const group = `${rule.usage}|${rule.direction}`;
+        const group = `${rule.usage}|${rule.sense}`;
         if (!groups.has(group)) {
-            if (rule.operator !== "Se") errors.push("a primeira condição desta finalidade e direção deve usar Se");
+            if (rule.operator !== "Se") errors.push("a primeira condição desta finalidade e sentido deve usar Se");
             groups.add(group);
-        } else if (rule.operator === "Se") errors.push("continue esta finalidade e direção com E ou Ou");
+        } else if (rule.operator === "Se") errors.push("continue esta finalidade e sentido com E ou Ou");
         return errors.map(message => `Condição ${index + 1}: ${message}.`);
     });
 }
@@ -73,7 +73,7 @@ function signalSummaryLines(card) {
     const lines = Array.from(card.querySelectorAll(".condition-row")).flatMap((row, index) => {
         const rule = readSignalRow(row);
         if (!signalRowActive(rule)) return [];
-        const group = `${rule.usage} / ${rule.direction}`;
+        const group = `${rule.usage} / ${rule.sense}`;
         if (!groups.has(group)) groups.set(group, []);
         groups.get(group).push({operator: rule.operator, label: `C${index + 1}`});
         const reference = rule.reference === "Valor fixo" ? rule.fixed : `${rule.reference} (${rule.referenceCandle})`;

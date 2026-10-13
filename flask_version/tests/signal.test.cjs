@@ -9,7 +9,7 @@ vm.runInContext(fs.readFileSync(path.join(__dirname, '../static/signal.js'), 'ut
 const valid = {
     operator: 'Se', target: 'Indicador 1: RSI', targetCandle: 'Anterior',
     comparison: 'Menor que', reference: 'Valor fixo', referenceCandle: 'N.usar',
-    fixed: '30', distance: '0', usage: 'Entrada', direction: 'Somente compra',
+    fixed: '30', distance: '0', usage: 'Entrada', sense: 'Normal',
 };
 
 function card(rules, unit = 'N.usar') {
@@ -56,15 +56,15 @@ test('distance validation rejects mixed scales, oscillator points and a zero per
     assert.equal(context.signalRuleErrors({...valid, target: 'Indicador 1: ADX +DI', reference: 'Indicador 1: ADX −DI', referenceCandle: 'Anterior'}, 'N.usar').length, 0);
 });
 
-test('logic groups by purpose and direction and displays E before Ou', () => {
+test('logic groups by purpose and sense and displays E before Ou', () => {
     const rules = [valid, {...valid, operator: 'Ou'}, {...valid, operator: 'E'}, {...valid, usage: 'Saída'}];
     assert.equal(context.validateSignalCard(card(rules)).length, 0);
-    assert.ok(context.signalSummaryLines(card(rules)).includes('Entrada / Somente compra: (C1) Ou (C2 E C3)'));
+    assert.ok(context.signalSummaryLines(card(rules)).includes('Entrada / Normal: (C1) Ou (C2 E C3)'));
     assert.ok(context.validateSignalCard(card([{...valid, operator: 'E'}])).length);
     assert.ok(context.validateSignalCard(card([valid, valid])).length);
 });
 
-test('empty rows remain inactive despite purpose and direction defaults', () => {
+test('empty rows remain inactive despite purpose and sense defaults', () => {
     const inactive = {...valid, operator: 'N.usar', target: 'N.usar', targetCandle: 'N.usar', comparison: 'N.usar', reference: 'N.usar'};
     assert.equal(context.signalRowActive(inactive), false);
     assert.equal(context.validateSignalCard(card([inactive])).length, 0);

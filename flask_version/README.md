@@ -115,10 +115,10 @@ a modalidade; este card define a janela de entradas.
 
 Cada condição herda Entrada ou Saída de “Usar como” dos indicadores selecionados.
 Condições somente com preços são de Entrada. Misturar indicadores de Entrada e
-Saída na mesma condição gera um erro. A direção é definida na condição.
-Compra e venda aplica a mesma regra
-às duas direções, sem inverter a comparação. Condições são agrupadas por
-finalidade e direção: a primeira usa Se e as seguintes E ou Ou, com prioridade
+Saída na mesma condição gera um erro. O campo Sentido oferece Normal e Inverter.
+Rascunhos com as antigas opções de Direção assumem Normal nesse campo.
+Condições são agrupadas por
+finalidade e sentido: a primeira usa Se e as seguintes E ou Ou, com prioridade
 de E sobre Ou. O resumo apresenta os grupos com parênteses.
 
 Da (DE) aceita Valor fixo na escala de A, por exemplo RSI < 30. ADX oferece
