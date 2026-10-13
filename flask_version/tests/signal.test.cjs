@@ -9,7 +9,7 @@ vm.runInContext(fs.readFileSync(path.join(__dirname, '../static/signal.js'), 'ut
 const valid = {
     operator: 'Se', target: 'Indicador 1: RSI', targetCandle: 'Anterior',
     comparison: 'Menor que', reference: 'Valor fixo', referenceCandle: 'N.usar',
-    fixed: '30', distance: '0', usage: 'Entrada', sense: 'Normal',
+    fixed: '30', distance: '0', usage: 'Entrada', sense: 'Normal', normalSide: 'Compra',
 };
 
 function card(rules, unit = 'N.usar') {
@@ -56,12 +56,32 @@ test('distance validation rejects mixed scales, oscillator points and a zero per
     assert.equal(context.signalRuleErrors({...valid, target: 'Indicador 1: ADX +DI', reference: 'Indicador 1: ADX −DI', referenceCandle: 'Anterior'}, 'N.usar').length, 0);
 });
 
-test('logic groups by purpose and sense and displays E before Ou', () => {
+test('logic groups by purpose and resulting side and displays E before Ou', () => {
     const rules = [valid, {...valid, operator: 'Ou'}, {...valid, operator: 'E'}, {...valid, usage: 'Saída'}];
     assert.equal(context.validateSignalCard(card(rules)).length, 0);
-    assert.ok(context.signalSummaryLines(card(rules)).includes('Entrada / Normal: (C1) Ou (C2 E C3)'));
+    assert.ok(context.signalSummaryLines(card(rules)).includes('Entrada / Compra: (C1) Ou (C2 E C3)'));
     assert.ok(context.validateSignalCard(card([{...valid, operator: 'E'}])).length);
     assert.ok(context.validateSignalCard(card([valid, valid])).length);
+});
+
+test('normal and inverted signals distinguish entry from exit without reversing the comparison', () => {
+    for (const [normalSide, sense, result, entry, exit] of [
+        ['Compra', 'Normal', 'Compra', 'Abrir compra', 'Fechar vendas'],
+        ['Compra', 'Inverter', 'Venda', 'Abrir venda', 'Fechar compras'],
+        ['Venda', 'Normal', 'Venda', 'Abrir venda', 'Fechar compras'],
+        ['Venda', 'Inverter', 'Compra', 'Abrir compra', 'Fechar vendas'],
+    ]) {
+        const rule = {...valid, normalSide, sense};
+        assert.equal(context.signalResultSide(rule), result);
+        assert.equal(context.signalAction(rule), entry);
+        assert.equal(context.signalAction({...rule, usage: 'Saída'}), exit);
+        assert.ok(context.signalSummaryLines(card([rule]))[0].includes(entry));
+        assert.equal(rule.comparison, 'Menor que');
+    }
+    assert.ok(context.signalRuleErrors({...valid, normalSide: ''}, 'N.usar').length);
+    assert.ok(context.signalRuleErrors({...valid, sense: 'other'}, 'N.usar').length);
+    assert.equal(context.validateSignalCard(card([valid, {...valid, normalSide: 'Venda'}])).length, 0);
+    assert.equal(context.validateSignalCard(card([valid, {...valid, normalSide: 'Venda', sense: 'Inverter', operator: 'E'}])).length, 0);
 });
 
 test('empty rows remain inactive despite purpose and sense defaults', () => {
@@ -128,4 +148,21 @@ test('new fields preserve old saved control positions and survive another save a
     stored['geraset-flask-cards-v1'] = JSON.stringify(state);
     appContext.restoreSetup(migratedRoot, 'indicadores');
     assert.deepEqual(retained.map(item => item.value), ['Somente venda', '10', 'Somente venda', '11', 'Somente venda', '12', 'Somente venda', '13', 'Somente venda', '14']);
+
+    // New side fields append after every existing field; 15 extras are no longer
+    // mistaken for the legacy layout that contained a usage field per row.
+    const sides = Array.from({length: 5}, () => control('', ['data-condition-control', 'data-signal-extra', 'data-signal-normal-side']));
+    const nextRoot = {querySelectorAll: selector => ['[data-crossing-source]', '[data-indicator-type]'].includes(selector) ? [] : [...sides, ...original, ...retained]};
+    state.indicadores = [...original, ...retained].map(item => ({value: item.value}));
+    stored['geraset-flask-cards-v1'] = JSON.stringify(state);
+    appContext.restoreSetup(nextRoot, 'indicadores');
+    assert.deepEqual(sides.map(item => item.value), ['', '', '', '', '']);
+    sides.forEach((item, i) => { item.value = i % 2 ? 'Venda' : 'Compra'; });
+    state.indicadores = appContext.setupControls(nextRoot).map(item => ({value: item.value}));
+    state.signalNormalSideVersion = 1;
+    stored['geraset-flask-cards-v1'] = JSON.stringify(state);
+    sides.forEach(item => { item.value = ''; });
+    appContext.restoreSetup(nextRoot, 'indicadores');
+    assert.deepEqual(sides.map(item => item.value), ['Compra', 'Venda', 'Compra', 'Venda', 'Compra']);
+    assert.equal(retained[1].value, '10');
 });

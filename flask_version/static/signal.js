@@ -1,6 +1,6 @@
 function readSignalRow(row) {
     const value = key => row.querySelector(`[name$="-${key}"]`).value;
-    const rule = Object.fromEntries(["operator", "target", "target-candle", "comparison", "reference", "reference-candle", "distance", "sense", "fixed"]
+    const rule = Object.fromEntries(["operator", "target", "target-candle", "comparison", "reference", "reference-candle", "distance", "sense", "fixed", "normal-side"]
         .map(key => [key.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase()), value(key)]));
     const root = row.closest("[data-page]");
     const usages = new Set([rule.target, rule.reference].map(source => {
@@ -11,6 +11,18 @@ function readSignalRow(row) {
     }).filter(Boolean));
     rule.usage = usages.size > 1 ? "Conflito de finalidade" : [...usages][0] || "Entrada";
     return rule;
+}
+
+function signalResultSide(rule) {
+    if (!["Compra", "Venda"].includes(rule.normalSide) || !["Normal", "Inverter"].includes(rule.sense)) return "";
+    return rule.sense === "Normal" ? rule.normalSide : rule.normalSide === "Compra" ? "Venda" : "Compra";
+}
+
+function signalAction(rule) {
+    const side = signalResultSide(rule);
+    if (!side) return "Selecione o sinal normal";
+    if (rule.usage === "Saída") return side === "Compra" ? "Fechar vendas" : "Fechar compras";
+    return side === "Compra" ? "Abrir compra" : "Abrir venda";
 }
 
 function signalChosen(value) {
@@ -24,6 +36,8 @@ function signalRowActive(rule) {
 
 function signalRuleErrors(rule, unit) {
     const errors = [];
+    if (!["Compra", "Venda"].includes(rule.normalSide)) errors.push("selecione Compra ou Venda em Sinal normal");
+    if (!["Normal", "Inverter"].includes(rule.sense)) errors.push("selecione Normal ou Inverter em Sentido");
     const finite = value => value.trim() !== "" && Number.isFinite(Number(value));
     if (rule.usage === "Conflito de finalidade") errors.push("os indicadores selecionados têm finalidades diferentes; ajuste Usar como nos indicadores");
     if (![rule.operator, rule.target, rule.comparison, rule.reference].every(signalChosen)) errors.push("preencha condição, A, comparação e Da (DE)");
@@ -49,11 +63,11 @@ function validateSignalCard(card) {
         const rule = readSignalRow(row);
         if (!signalRowActive(rule)) return [];
         const errors = signalRuleErrors(rule, unit);
-        const group = `${rule.usage}|${rule.sense}`;
+        const group = `${rule.usage}|${signalResultSide(rule)}`;
         if (!groups.has(group)) {
-            if (rule.operator !== "Se") errors.push("a primeira condição desta finalidade e sentido deve usar Se");
+            if (rule.operator !== "Se") errors.push("a primeira condição desta finalidade e sinal resultante deve usar Se");
             groups.add(group);
-        } else if (rule.operator === "Se") errors.push("continue esta finalidade e sentido com E ou Ou");
+        } else if (rule.operator === "Se") errors.push("continue esta finalidade e sinal resultante com E ou Ou");
         return errors.map(message => `Condição ${index + 1}: ${message}.`);
     });
 }
@@ -73,13 +87,13 @@ function signalSummaryLines(card) {
     const lines = Array.from(card.querySelectorAll(".condition-row")).flatMap((row, index) => {
         const rule = readSignalRow(row);
         if (!signalRowActive(rule)) return [];
-        const group = `${rule.usage} / ${rule.sense}`;
+        const group = `${rule.usage} / ${signalResultSide(rule) || "Sinal não definido"}`;
         if (!groups.has(group)) groups.set(group, []);
         groups.get(group).push({operator: rule.operator, label: `C${index + 1}`});
         const reference = rule.reference === "Valor fixo" ? rule.fixed : `${rule.reference} (${rule.referenceCandle})`;
         const distance = unit === "N.usar" ? "" : ` — distância: ${rule.distance} ${unit === "Porcentagem" ? "%" : "pontos"}`;
         const incomplete = signalRuleErrors(rule, unit).length ? " — incompleta ou inválida" : "";
-        return [`Condição ${index + 1} (${group}): ${rule.operator} ${rule.target} (${rule.targetCandle}) ${rule.comparison} ${reference}${distance}${incomplete}`];
+        return [`Condição ${index + 1} (${group}; ${rule.normalSide || "—"} / ${rule.sense} → ${signalAction(rule)}): ${rule.operator} ${rule.target} (${rule.targetCandle}) ${rule.comparison} ${reference}${distance}${incomplete}`];
     });
     groups.forEach((rules, group) => {
         const clauses = [[]];

@@ -115,10 +115,16 @@ a modalidade; este card define a janela de entradas.
 
 Cada condição herda Entrada ou Saída de “Usar como” dos indicadores selecionados.
 Condições somente com preços são de Entrada. Misturar indicadores de Entrada e
-Saída na mesma condição gera um erro. O campo Sentido oferece Normal e Inverter.
+Saída na mesma condição gera um erro. Sinal normal define Compra ou Venda por
+condição; Sentido oferece Normal e Inverter. Inverter troca o resultado, sem
+alterar a comparação. Entrada/Compra abre compra; Entrada/Venda abre venda.
+Saída/Compra fecha vendas; Saída/Venda fecha compras, sem abrir posição oposta.
+O resumo apresenta essa ação resultante. Condições ativas sem Sinal normal
+impedem a exportação; rascunhos antigos exigem escolher esse novo campo.
+Os campos novos são anexados ao armazenamento, preservando as seleções antigas.
 Rascunhos com as antigas opções de Direção assumem Normal nesse campo.
 Condições são agrupadas por
-finalidade e sentido: a primeira usa Se e as seguintes E ou Ou, com prioridade
+finalidade e sinal resultante: a primeira usa Se e as seguintes E ou Ou, com prioridade
 de E sobre Ou. O resumo apresenta os grupos com parênteses.
 
 Da (DE) aceita Valor fixo na escala de A, por exemplo RSI < 30. ADX oferece

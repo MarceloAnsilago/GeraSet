@@ -11,14 +11,15 @@ function setupControls(root) {
     return [...controls.filter(control => !control.matches("[data-condition-control], [data-candle-direction-control]")),
         ...controls.filter(control => control.hasAttribute("data-condition-control") && !control.hasAttribute("data-signal-extra")),
         ...controls.filter(control => control.hasAttribute("data-candle-direction-control")),
-        ...controls.filter(control => control.hasAttribute("data-signal-extra"))];
+        ...controls.filter(control => control.hasAttribute("data-signal-extra") && !control.hasAttribute("data-signal-normal-side")),
+        ...controls.filter(control => control.hasAttribute("data-signal-normal-side"))];
 }
 
 function restoreSetup(root, page) {
     const state = readSetupState();
     let saved = state[page] || [];
     const legacyLength = setupControls(root).filter(control => !control.hasAttribute("data-signal-extra")).length;
-    if (page === "indicadores" && saved.length === legacyLength + 15) {
+    if (page === "indicadores" && state.signalNormalSideVersion !== 1 && saved.length === legacyLength + 15) {
         // Remove the redundant per-condition usage from the former three-field extras.
         saved = saved.filter((_, index) => index < legacyLength || (index - legacyLength) % 3 !== 0);
     }
@@ -436,7 +437,10 @@ document.addEventListener("DOMContentLoaded", () => {
             const state = readSetupState();
             state[root.dataset.page] = setupControls(root).map(control => ({value: control.value, checked: control.checked}));
             state.optimizationZeroVersion = {...state.optimizationZeroVersion, [root.dataset.page]: 1};
-            if (root.dataset.page === "indicadores") state.signalDefaultsVersion = 1;
+            if (root.dataset.page === "indicadores") {
+                state.signalDefaultsVersion = 1;
+                state.signalNormalSideVersion = 1;
+            }
             localStorage.setItem(setupStorageKey, JSON.stringify(state));
         };
         root.addEventListener("input", save);
