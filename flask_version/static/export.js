@@ -20,6 +20,13 @@ const operationEnums = {
 
 function operationSetLines(controls) {
     const values = Object.fromEntries(controls.map(control => [control.key, control.value]));
+    // Older cached inicio templates had three unnamed controls. These are their
+    // original storage positions; prefer explicit names whenever present.
+    for (const [name, legacyKey] of Object.entries({
+        setup_market: "inicio_2", setup_mode: "inicio_3", setup_lot: "inicio_5",
+    })) {
+        if (!(name in values) && legacyKey in values) values[name] = values[legacyKey];
+    }
     const fail = message => {
         const error = new Error(message);
         error.name = "OperationValidationError";

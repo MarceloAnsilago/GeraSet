@@ -230,6 +230,16 @@ test('operation rejects missing fields, unknown enums and invalid volume', () =>
     assert.throws(() => context.operationSetLines([]), {name: 'OperationValidationError'});
 });
 
+test('cached legacy templates export unnamed market, mode and lot controls', () => {
+    const {context} = environment();
+    const controls = operationControls();
+    const legacyKeys = {setup_market: 'inicio_2', setup_mode: 'inicio_3', setup_lot: 'inicio_5'};
+    const legacy = controls.map(control => ({...control, key: legacyKeys[control.key] || control.key}));
+    assert.deepEqual(Array.from(context.operationSetLines(legacy)), Array.from(context.operationSetLines(controls)));
+    // Stale unnamed fields must not override explicit fields or hide invalid values.
+    assert.throws(() => context.operationSetLines([...legacy, {key: 'setup_lot', value: '0'}]), {name: 'OperationValidationError'});
+});
+
 test('invalid operation prevents writing and reports the card to fix', async () => {
     let opened = false;
     const env = environment({picker: async () => { opened = true; }});

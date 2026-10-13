@@ -4,6 +4,7 @@ from flask import Flask, redirect, render_template, request, url_for
 
 
 app = Flask(__name__)
+app.config["TEMPLATES_AUTO_RELOAD"] = True
 
 PAGES = {
     "inicio": "Página Inicial",
