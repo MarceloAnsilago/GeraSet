@@ -5,7 +5,10 @@ function readSetupState() {
     catch { return {}; }
 }
 
+const relocatedSetupControls = new WeakMap();
+
 function setupControls(root) {
+    if (relocatedSetupControls.has(root)) return relocatedSetupControls.get(root);
     const controls = Array.from(root.querySelectorAll(".card input:not(.tab-radio), .card select"));
     // Append new controls to preserve existing positional saved setups.
     return [...controls.filter(control => !control.matches("[data-condition-control], [data-candle-direction-control], [data-rsi-level-extra]")),
@@ -338,7 +341,7 @@ function relevantReviewControl(control, card) {
     }
     if (control.type === "radio" && !control.checked) return false;
     const kind = control.closest("[data-indicator-kind]");
-    const indicator = card.querySelector("[data-indicator-type]");
+    const indicator = card.querySelector("[data-indicator-type]") || (card.dataset.parameterSlot ? card.closest("[data-page]").querySelector(`[data-indicator-type="${card.dataset.parameterSlot}"]`) : null);
     if (kind && kind.dataset.indicatorKind !== indicator.value) return false;
     if (control.closest("[data-pending-fields]") && card.querySelector("[data-rule-order]").value !== "Pendente") return false;
     const condition = card.querySelector("[data-candle-condition]");
@@ -575,3 +578,38 @@ function bindIndicatorUsageValidation() {
     update();
 }
 document.addEventListener('DOMContentLoaded', bindIndicatorUsageValidation);
+
+
+// Move existing controls after binding: references and saved positional order stay stable.
+function separateIndicatorParameters() {
+    const root = document.querySelector('[data-page="indicadores"]');
+    const destination = root?.querySelector('[data-indicator-parameters]');
+    if (!destination) return;
+    relocatedSetupControls.set(root, setupControls(root));
+    root.querySelectorAll('[data-indicator-type]').forEach(select => {
+        const slot = select.dataset.indicatorType;
+        const slotCard = select.closest('.indicator-card');
+        const fields = slotCard.querySelector('[data-indicator-fields]');
+        const group = document.createElement('div');
+        group.className = 'card';
+        group.dataset.parameterSlot = slot;
+        const heading = document.createElement('h2');
+        group.appendChild(heading);
+        group.appendChild(fields);
+        destination.appendChild(group);
+        const link = document.createElement('p');
+        link.className = 'muted';
+        slotCard.appendChild(link);
+        const update = () => {
+            const usage = slotCard.querySelector('[data-indicator-usage] input:checked').value;
+            const active = select.value !== 'Não usar';
+            const instance = select.value === 'Média Móvel' ? `${select.value} — Slot ${slot}` : `${select.value} — ${usage}`;
+            heading.textContent = `${instance} (slot ${slot})`;
+            link.textContent = active ? `Parâmetros: ${instance}` : 'Sem indicador vinculado.';
+            group.classList.toggle('is-hidden', !active);
+        };
+        slotCard.addEventListener('change', update);
+        update();
+    });
+}
+document.addEventListener('DOMContentLoaded', separateIndicatorParameters);

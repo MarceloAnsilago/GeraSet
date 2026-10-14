@@ -133,6 +133,7 @@ function indicatorSignalSetLines(root) {
         types.push(type);
         const usage = root.querySelector(`[name="indicator-usage-${i}"]:checked`)?.value;
         const exit = choices(usage, ['Entrada', 'Saída']);
+        const instance = exit ? 'Exit' : 'Entry';
         lines.push(`InpIndicator${i}Type=${n}||${n}||1||${n}||N`, `InpIndicator${i}Exit=${exit}||${exit}||1||${exit}||N`);
         const prices = ['Close', 'Open', 'High', 'Low', 'Median', 'Typical', 'Weighted'];
         if (n === 0) {
@@ -141,13 +142,13 @@ function indicatorSignalSetLines(root) {
             combo(`InpIndicator${i}MaPrice`, i, type, 1, 'Preço aplicado', prices, 1);
             combo(`InpIndicator${i}MaMethod`, i, type, 2, 'Método', ['SMA', 'EMA', 'SMMA', 'LWMA']);
         } else if (n === 1) {
-            numeric(`InpIndicator${i}RsiPeriod`, i, type, 1, 'Período', 1, 100000);
-            combo(`InpIndicator${i}RsiPrice`, i, type, 1, 'Preço aplicado', prices, 1);
-            numeric(`InpIndicator${i}RsiLower`, i, type, 2, 'Sobrevenda', 0, 100, true);
-            numeric(`InpIndicator${i}RsiUpper`, i, type, 3, 'Sobrecompra', 0, 100, true);
-            numeric(`InpIndicator${i}RsiMiddle`, i, type, 4, 'Nível médio', 0, 100, true);
+            numeric(`InpRsi${instance}Period`, i, type, 1, 'Período', 1, 100000);
+            combo(`InpRsi${instance}Price`, i, type, 1, 'Preço aplicado', prices, 1);
+            numeric(`InpRsi${instance}Lower`, i, type, 2, 'Sobrevenda', 0, 100, true);
+            numeric(`InpRsi${instance}Upper`, i, type, 3, 'Sobrecompra', 0, 100, true);
+            numeric(`InpRsi${instance}Middle`, i, type, 4, 'Nível médio', 0, 100, true);
             if (!(Number(read(`param-${i}-RSI-2`)) < Number(read(`param-${i}-RSI-4`)) && Number(read(`param-${i}-RSI-4`)) < Number(read(`param-${i}-RSI-3`)))) fail('RSI: use nível inferior < médio < superior.');
-        } else if (n === 2) numeric(`InpIndicator${i}AdxPeriod`, i, type, 1, 'Período', 1, 100000);
+        } else if (n === 2) numeric(`InpAdx${instance}Period`, i, type, 1, 'Período', 1, 100000);
     }
     const priceSources = ['Fechamento da vela', 'Abertura da vela', 'Máxima da vela', 'Mínima da vela', 'Abertura do dia', 'Máxima do dia', 'Mínima do dia', 'Máxima do dia anterior', 'Mínima do dia anterior', 'Valor fixo'];
     const source = label => {

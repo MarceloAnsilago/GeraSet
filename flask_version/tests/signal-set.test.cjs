@@ -33,8 +33,8 @@ test('exports independent indicator parameters and entry/exit condition payloads
     const root = fixture([rule, {...rule, usage: 'Saída', target: 'Indicador 2: RSI', reference: 'Valor fixo', fixed: '70', sense: 'Inverter'}]);
     const lines = Array.from(context.indicatorSignalSetLines(root));
     assert.ok(lines.includes('InpIndicator2Exit=1||1||1||1||N'));
-    assert.ok(lines.includes('InpIndicator2RsiPeriod=14||14||1||14||N'));
-    assert.ok(lines.includes('InpIndicator3AdxPeriod=14||14||1||14||N'));
+    assert.ok(lines.includes('InpRsiExitPeriod=14||14||1||14||N'));
+    assert.ok(lines.includes('InpAdxEntryPeriod=14||14||1||14||N'));
     assert.ok(lines.includes('InpSignal1=1,0,1,10,0,6,0,0,0,0,0'));
     assert.ok(lines.includes('InpSignal2=1,1,-1,13,0,6,9,0,70,0,0'));
     assert.ok(lines.includes('InpSignal5='));
@@ -50,7 +50,7 @@ test('all ADX buffers and closed candle offsets have stable wire values', () => 
 test('exports indicator optimization and rejects unavailable sources', () => {
     const root = fixture();
     for (const [i, value] of [[1, '10'], [2, '2'], [3, '20']]) root.fields.set(`[id="opt-2-RSI-${i}-Período"]`, value);
-    assert.ok(context.indicatorSignalSetLines(root).includes('InpIndicator2RsiPeriod=14||10||2||20||Y'));
+    assert.ok(context.indicatorSignalSetLines(root).includes('InpRsiExitPeriod=14||10||2||20||Y'));
     assert.throws(() => context.indicatorSignalSetLines(fixture([{...rule, target: 'Indicador 1: ADX'}])), {name: 'SignalValidationError'});
 });
 
@@ -69,9 +69,9 @@ test('RSI configurable decimal levels and optimization are exported and validate
     root.fields.set('[id="param-2-RSI-3"]', '75.5');
     for (const [i, value] of [[1, '70'], [2, '0.5'], [3, '80']]) root.fields.set(`[id="opt-2-RSI-${i}-Sobrecompra"]`, value);
     const lines = context.indicatorSignalSetLines(root);
-    assert.ok(lines.includes('InpIndicator2RsiUpper=75.5||70||0.5||80||Y'));
-    assert.ok(lines.includes('InpIndicator2RsiMiddle=50||50||1||50||N'));
-    assert.ok(lines.includes('InpIndicator2RsiLower=30||30||1||30||N'));
+    assert.ok(lines.includes('InpRsiExitUpper=75.5||70||0.5||80||Y'));
+    assert.ok(lines.includes('InpRsiExitMiddle=50||50||1||50||N'));
+    assert.ok(lines.includes('InpRsiExitLower=30||30||1||30||N'));
     root.fields.set('[id="param-2-RSI-4"]', '80');
     assert.throws(() => context.indicatorSignalSetLines(root), {name: 'SignalValidationError'});
 });
@@ -90,4 +90,22 @@ test('only MA may repeat with the same purpose; other types allow one entry and 
         }
         assert.throws(() => context.indicatorSignalSetLines(fixture([], [type, type, type, 'Não usar'])), {name: 'SignalValidationError'});
     }
+});
+
+
+test('slots bind to separate entry/exit parameter groups, regardless of slot number', () => {
+    const root = fixture([], ['ADX', 'RSI', 'RSI', 'ADX']);
+    root.fields.set('[name="indicator-usage-4"]:checked', 'Saída');
+    root.fields.set('[id="param-1-ADX-1"]', '10');
+    root.fields.set('[id="param-4-ADX-1"]', '25');
+    root.fields.set('[id="param-2-RSI-1"]', '21');
+    root.fields.set('[id="param-3-RSI-1"]', '9');
+    root.fields.set('[id="param-2-RSI-3"]', '80');
+    root.fields.set('[id="param-3-RSI-3"]', '65');
+    const lines = Array.from(context.indicatorSignalSetLines(root));
+    for (const line of ['InpAdxEntryPeriod=10||10||1||10||N', 'InpAdxExitPeriod=25||25||1||25||N',
+        'InpRsiEntryPeriod=9||9||1||9||N', 'InpRsiExitPeriod=21||21||1||21||N',
+        'InpRsiEntryUpper=65||65||1||65||N', 'InpRsiExitUpper=80||80||1||80||N']) assert.ok(lines.includes(line), line);
+    assert.equal(new Set(lines.map(line => line.split('=')[0])).size, lines.length);
+    assert.ok(lines.every(line => !/^InpIndicator[1-4](Rsi|Adx)/.test(line)));
 });

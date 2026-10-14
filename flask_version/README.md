@@ -132,7 +132,7 @@ também +DI e −DI. RSI oferece sua linha e os níveis superior, médio e infer
 nos dois combos. Os níveis padrão são 70/50/30, ajustáveis nos parâmetros e
 na otimização de cada indicador. O candle não se aplica aos níveis nem ao
 valor fixo; uma referência constante não transforma vela fechada em sinal por tick.
-O .set usa InpIndicatorNRsiUpper/Middle/Lower. As fontes 22..33 representam
+O .set usa InpRsiEntryUpper/Middle/Lower e InpRsiExitUpper/Middle/Lower. As fontes 22..33 representam
 superior/médio/inferior de cada slot, preservando as fontes 0..21 anteriores.
 Os valores devem respeitar 0 <= inferior < médio < superior <= 100;
 combinações inválidas na otimização são rejeitadas pelo Uni.
@@ -153,8 +153,13 @@ RSI são referências selecionáveis; não geram regras automáticas.
 
 ### Execução integrada no Uni
 
-Os parâmetros de MA, RSI e ADX são independentes por indicador, incluindo seus
-intervalos de otimização. Os buffers A/Da e candles são gravados nos inputs
+Os slots 1 a 4 selecionam tipo e finalidade. MA mantém quatro configurações
+por slot; RSI e ADX possuem grupos Entry/Exit independentes, incluindo seus
+intervalos de otimização. O Flask separa visualmente os slots dos parâmetros
+e exporta cada configuração ao grupo correspondente. Sinais e buffers continuam
+endereçados pelo slot. Apenas MA permite repetir a mesma finalidade.
+Arquivos .set anteriores com InpIndicatorNRsi/Adx devem ser reexportados pelo
+Flask para usar os novos nomes; os valores salvos no navegador são preservados. Os buffers A/Da e candles são gravados nos inputs
 `InpSignal1` a `InpSignal5`; condições vazias limpam os respectivos inputs.
 Os novos inputs `InpIndicator1Exit` a `InpIndicator4Exit` preservam Entrada/Saída.
 
