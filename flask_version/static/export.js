@@ -99,6 +99,38 @@ function scheduleSetLines(controls) {
     });
 }
 
+function orderSetLines(controls) {
+    const values = Object.fromEntries(controls.map(control => [control.key, control.value]));
+    // Original positions of the three formerly unnamed controls.
+    for (const [name, index] of [['order_mode', 0], ['pending_reference', 1], ['pending_bar', 2]]) {
+        if (!(name in values) && `gestao_${index}` in values) values[name] = values[`gestao_${index}`];
+    }
+    const fail = message => { const error = new Error(message); error.name = 'OrderValidationError'; throw error; };
+    const choice = (key, options) => { const index = options.indexOf(values[key]); if (index < 0) fail(`Confira ${key}.`); return index; };
+    const integer = (key, min = 1) => {
+        const value = values[key];
+        if (value === undefined || String(value).trim() === '' || !Number.isInteger(Number(value)) || Number(value) < min || Number(value) > 100000) fail('Vela e intervalo devem ser inteiros de 1 a 100000; use 0/0/0 para desativar a otimização.');
+        return Number(value);
+    };
+    const mode = choice('order_mode', ['A mercado', 'Pendente']);
+    const fixed = (name, value) => `${name}=${value}||${value}||1||${value}||N`;
+    if (mode === 0) return [fixed('InpOrderMode', 0), fixed('InpPendingReference', 0), fixed('InpPendingCandle', 1)];
+    const options = ['Máxima', 'Mínima', 'Abertura', 'Fechamento'];
+    const reference = choice('pending_reference', options);
+    const a = choice('pending-reference-start', options), b = choice('pending-reference-end', options);
+    const bar = integer('pending_bar');
+    const bounds = ['start', 'step', 'end'].map(bound => values[`pending-bar-${bound}`]);
+    const inactive = bounds.every(value => value !== undefined && String(value).trim() !== '' && Number(value) === 0);
+    let start = bar, step = 1, end = bar;
+    if (!inactive) {
+        start = integer('pending-bar-start'); step = integer('pending-bar-step'); end = integer('pending-bar-end');
+        if (end < start) fail('O fim da otimização da vela deve ser maior ou igual ao início.');
+    }
+    return [fixed('InpOrderMode', mode),
+        `InpPendingReference=${reference}||${Math.min(a, b)}||1||${Math.max(a, b)}||${a === b ? 'N' : 'Y'}`,
+        `InpPendingCandle=${bar}||${start}||${step}||${end}||${start === end ? 'N' : 'Y'}`];
+}
+
 function indicatorSignalSetLines(root) {
     if (!root) throw new Error("Página de indicadores ausente.");
     const lines = [], types = [];
@@ -225,6 +257,7 @@ function serializeSetupSet(roots) {
         `InpMagic=${magic}||${magic}||1||2147483647||N`,
         ...operationSetLines(pages.inicio || []),
         ...scheduleSetLines(pages.inicio || []),
+        ...orderSetLines(pages.gestao || []),
         ...indicatorSignalSetLines(roots.get('indicadores')),
         ...metadata.split("\n").map(line => `; ${line}`),
         "",
@@ -323,6 +356,8 @@ async function bindSetExport() {
                 ? `Corrija Mercado e operação: ${error.message}`
                 : error.name === "ScheduleValidationError"
                 ? `Corrija Horários: ${error.message}`
+                : error.name === "OrderValidationError"
+                ? `Corrija Ordem em Gestão: ${error.message}`
                 : error.name === "SignalValidationError"
                 ? `Corrija o Sinal em Indicadores antes de exportar: ${error.message}`
                 : error.name === "AbortError"

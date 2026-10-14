@@ -180,3 +180,19 @@ Atualize com Ctrl+F5, recompile o Uni e exporte um novo arquivo. No Testador,
 habilite `InpTesterAutoStart` para testar entradas e use ticks reais para validar
 Toque/Vela atual. Confira os parâmetros de gestão no Uni, pois ainda não são
 exportados. Bollinger ainda não está entre os tipos disponíveis: MA, RSI e ADX.
+
+
+### Card Ordem integrado ao Uni
+
+O card Ordem exporta InpOrderMode (0 mercado, 1 pendente),
+InpPendingReference (0 maxima, 1 minima, 2 abertura, 3 fechamento) e
+InpPendingCandle (1 ultima vela fechada, ate 100000), no periodo da estrategia.
+O Uni tem um grupo Ordem com os mesmos campos. Stop/Limit e escolhido pelo
+motor conforme lado do sinal e posicao do preco OHLC em relacao ao mercado.
+
+A referencia e a vela possuem intervalos de otimizacao independentes do valor
+fixo. Vela com 0/0/0 desativa a otimizacao; intervalos ativos exigem inteiros
+positivos e fim >= inicio. A mercado desativa os intervalos da pendente.
+Setups salvos no navegador mantem sua ordem de campos; reexporte o .set para
+incluir estes inputs. Validacao: testes de exportacao e compilacao; envio de
+ordens deve ser verificado no testador.
