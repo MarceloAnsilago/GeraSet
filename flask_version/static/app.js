@@ -564,3 +564,14 @@ function openOptimizationCard() {
 
 document.addEventListener("DOMContentLoaded", openOptimizationCard);
 window.addEventListener("hashchange", openOptimizationCard);
+
+
+function bindIndicatorUsageValidation() {
+    const root = document.querySelector('[data-page="indicadores"]');
+    const feedback = root?.querySelector('[data-indicator-usage-errors]');
+    if (!feedback) return;
+    const update = () => { feedback.textContent = indicatorUsageErrors(root).join(' '); };
+    root.addEventListener('change', update);
+    update();
+}
+document.addEventListener('DOMContentLoaded', bindIndicatorUsageValidation);

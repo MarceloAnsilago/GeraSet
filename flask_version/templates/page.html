@@ -145,7 +145,8 @@
         {% elif active_page == 'indicadores' %}
             <h1>Indicadores</h1>
             <p class="caption">Segunda etapa do Canvas UniversalEa.</p>
-            <div class="info">Configure os quatro indicadores. Apenas Média Móvel pode ser repetida.</div>
+            <div class="info">Média Móvel pode ocupar os quatro indicadores. Cada outro tipo permite uma Entrada e uma Saída.</div>
+            <p data-indicator-usage-errors role="alert"></p>
             <section class="grid-4 indicator-grid">
                 {% for index in range(1, 5) %}
                     <div class="card indicator-card">

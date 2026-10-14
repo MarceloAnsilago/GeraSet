@@ -1,3 +1,16 @@
+function indicatorUsageErrors(root) {
+    const seen = new Map(), errors = [];
+    for (let slot = 1; slot <= 4; slot++) {
+        const type = root.querySelector(`[data-indicator-type="${slot}"]`)?.value;
+        if (!type || type === 'Não usar' || type === 'Média Móvel') continue;
+        const usage = root.querySelector(`[name="indicator-usage-${slot}"]:checked`)?.value;
+        const key = `${type}|${usage}`;
+        if (seen.has(key)) errors.push(`Indicadores ${seen.get(key)} e ${slot}: ${type} permite apenas uma Entrada e uma Saída. Altere o tipo ou a finalidade de um deles.`);
+        else seen.set(key, slot);
+    }
+    return errors;
+}
+
 function setFileName(name) {
     const base = name.trim().replace(/\.set$/i, "")
         .replace(/[<>:"/\\|?*\u0000-\u001f]/g, "_")
@@ -90,6 +103,8 @@ function indicatorSignalSetLines(root) {
     if (!root) throw new Error("Página de indicadores ausente.");
     const lines = [], types = [];
     const fail = message => { const e = new Error(message); e.name = "SignalValidationError"; throw e; };
+    const usageErrors = indicatorUsageErrors(root);
+    if (usageErrors.length) fail(usageErrors.join(" "));
     const read = id => root.querySelector(`[id="${id}"]`)?.value;
     const number = (value, min, max, decimal = false) => {
         if (value === undefined || String(value).trim() === "" || !(decimal ? Number.isFinite(Number(value)) : Number.isInteger(Number(value))) || Number(value) < min || Number(value) > max) fail("Confira os parâmetros e intervalos dos indicadores.");
