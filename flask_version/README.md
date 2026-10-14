@@ -83,8 +83,8 @@ escolha Timeframe M30 até H4 e Direção Compra e venda até Somente venda.
 Exporte novamente e carregue nos inputs do **Testador de Estratégias**:
 confira os cinco Valores, os dois intervalos e as duas marcações de otimização.
 Repita com limites iguais: as marcações devem ficar desativadas. Não é preciso
-iniciar uma execução para conferir a importação. Indicadores e gestão
-ainda não são aplicados pelo arquivo nesta etapa.
+iniciar uma execução para conferir a importação. Gestão e demais regras
+ainda não são aplicadas pelo arquivo nesta etapa.
 
 ### Horários: parâmetros e otimização
 
@@ -128,7 +128,14 @@ finalidade e sinal resultante: a primeira usa Se e as seguintes E ou Ou, com pri
 de E sobre Ou. O resumo apresenta os grupos com parênteses.
 
 Da (DE) aceita Valor fixo na escala de A, por exemplo RSI < 30. ADX oferece
-também +DI e −DI. O candle da referência não se aplica a valor fixo.
+também +DI e −DI. RSI oferece sua linha e os níveis superior, médio e inferior
+nos dois combos. Os níveis padrão são 70/50/30, ajustáveis nos parâmetros e
+na otimização de cada indicador. O candle não se aplica aos níveis nem ao
+valor fixo; uma referência constante não transforma vela fechada em sinal por tick.
+O .set usa InpIndicatorNRsiUpper/Middle/Lower. As fontes 22..33 representam
+superior/médio/inferior de cada slot, preservando as fontes 0..21 anteriores.
+Os valores devem respeitar 0 <= inferior < médio < superior <= 100;
+combinações inválidas na otimização são rejeitadas pelo Uni.
 Cruzar e fechar exige candles fechados; Vela atual ainda pode variar.
 
 Distância é tolerância absoluta para Toque, Igual que e Diferente de, e
@@ -140,5 +147,31 @@ zero; N.usar exige distância zero.
 Condições incompletas ou inválidas impedem a exportação. Os novos campos são
 anexados à ordem de armazenamento para preservar os campos dos setups salvos.
 O antigo campo Finalidade é removido dos setups salvos, preservando direção e
-valor fixo. Estas regras descrevem a configuração exportada; o projeto
-não executa sinais e o robô integrado precisa implementar essa interpretação.
+valor fixo. O Flask exporta os quatro indicadores e as cinco condições para
+o avaliador `UniSignals.mqh` do Uni. Os campos antigos de inclinação e ADX mínimo ficam ocultos. Os níveis
+RSI são referências selecionáveis; não geram regras automáticas.
+
+### Execução integrada no Uni
+
+Os parâmetros de MA, RSI e ADX são independentes por indicador, incluindo seus
+intervalos de otimização. Os buffers A/Da e candles são gravados nos inputs
+`InpSignal1` a `InpSignal5`; condições vazias limpam os respectivos inputs.
+Os novos inputs `InpIndicator1Exit` a `InpIndicator4Exit` preservam Entrada/Saída.
+
+Grupos com Vela atual são avaliados a cada tick; grupos somente com candles
+fechados, uma vez por nova vela. E tem prioridade sobre Ou dentro de cada grupo
+de finalidade e lado resultante. Toque aceita a distância definida e detecta
+passagem pelo nível entre ticks. Um sinal intrabar contínuo não repete ordens:
+precisa ficar falso antes de um novo disparo. Cruzar e fechar exige velas fechadas.
+
+Saída Compra fecha vendas e Saída Venda fecha compras, somente no ativo/Magic
+configurados. Saídas têm prioridade e não abrem uma posição contrária no mesmo
+tick. Também cancelam pendentes do lado encerrado e funcionam com entradas
+pausadas. Entradas opostas simultâneas são ignoradas. Ao ativar, grupos com
+Vela atual já podem disparar no próximo tick; os grupos somente de velas fechadas
+aguardam uma nova vela.
+
+Atualize com Ctrl+F5, recompile o Uni e exporte um novo arquivo. No Testador,
+habilite `InpTesterAutoStart` para testar entradas e use ticks reais para validar
+Toque/Vela atual. Confira os parâmetros de gestão no Uni, pois ainda não são
+exportados. Bollinger ainda não está entre os tipos disponíveis: MA, RSI e ADX.

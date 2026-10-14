@@ -28,6 +28,11 @@ function environment({picker, fetchFails = false, signalErrors = []} = {}) {
         controls: page === 'inicio' ? [name, magic, lot, ...operation] : [end, usage],
         querySelector(selector) {
             if (selector.startsWith('[data-page=')) return this;
+            if (page === 'indicadores') {
+                if (selector.startsWith('[data-indicator-type=')) return {value: 'Não usar'};
+                if (selector.startsWith('[name="indicator-usage-')) return {value: 'Entrada'};
+                if (selector === '[data-conditions]') return {querySelector: () => ({value: 'N.usar'}), querySelectorAll: () => []};
+            }
             if (page !== 'inicio') return null;
             return selector === '[data-setup-name]' ? name : magic;
         },
@@ -89,6 +94,8 @@ test('exports the latest configuration and confirms only after closing the file'
         'InpStrategyTimeframe=0||0||1||0||N', 'InpLot=0.5||0.5||0.01||0.5||N',
         'InpDirection=0||0||1||0||N',
         'InpEntryStart=0||0||5||0||N', 'InpEntryEnd=1435||1435||5||1435||N',
+        ...[1, 2, 3, 4].flatMap(i => [`InpIndicator${i}Type=-1||-1||1||-1||N`, `InpIndicator${i}Exit=0||0||1||0||N`]),
+        ...[1, 2, 3, 4, 5].map(i => `InpSignal${i}=`),
     ]);
     assert.equal(written.pages.inicio[1].value, '12345');
     assert.equal(written.pages.inicio[2].value, '0.50');

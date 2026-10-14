@@ -1,3 +1,7 @@
+function signalConstantSource(source) {
+    return source === "Valor fixo" || /: RSI Nível (superior|médio|inferior)$/.test(source);
+}
+
 function readSignalRow(row) {
     const value = key => row.querySelector(`[name$="-${key}"]`).value;
     const rule = Object.fromEntries(["operator", "target", "target-candle", "comparison", "reference", "reference-candle", "distance", "sense", "fixed", "normal-side"]
@@ -41,8 +45,8 @@ function signalRuleErrors(rule, unit) {
     const finite = value => value.trim() !== "" && Number.isFinite(Number(value));
     if (rule.usage === "Conflito de finalidade") errors.push("os indicadores selecionados têm finalidades diferentes; ajuste Usar como nos indicadores");
     if (![rule.operator, rule.target, rule.comparison, rule.reference].every(signalChosen)) errors.push("preencha condição, A, comparação e Da (DE)");
-    if (!signalChosen(rule.targetCandle)) errors.push("selecione o candle de A");
-    if (rule.reference !== "Valor fixo" && !signalChosen(rule.referenceCandle)) errors.push("selecione o candle de Da (DE)");
+    if (!signalConstantSource(rule.target) && !signalChosen(rule.targetCandle)) errors.push("selecione o candle de A");
+    if (!signalConstantSource(rule.reference) && !signalChosen(rule.referenceCandle)) errors.push("selecione o candle de Da (DE)");
     if (rule.reference === "Valor fixo" && !finite(rule.fixed)) errors.push("informe um valor fixo numérico");
     if (!finite(rule.distance) || Number(rule.distance) < 0) errors.push("a distância deve ser um número maior ou igual a zero");
     if (unit === "N.usar" && Number(rule.distance) !== 0) errors.push("selecione a unidade da distância ou zere a distância");
@@ -51,7 +55,7 @@ function signalRuleErrors(rule, unit) {
     const targetScale = scale(rule.target), referenceScale = scale(rule.reference);
     if (signalChosen(rule.target) && signalChosen(rule.reference) && referenceScale !== "fixo" && targetScale !== referenceScale) errors.push("compare valores da mesma escala; para RSI/ADX, use um indicador compatível ou valor fixo");
     if (unit === "Pontos" && Number(rule.distance) > 0 && (targetScale === "índice" || referenceScale === "índice")) errors.push("distância em pontos só se aplica a preços");
-    if (rule.comparison.startsWith("Cruzar&fechar") && (rule.targetCandle === "Vela atual" || rule.reference !== "Valor fixo" && rule.referenceCandle === "Vela atual")) errors.push("cruzar e fechar exige candles fechados");
+    if (rule.comparison.startsWith("Cruzar&fechar") && (!signalConstantSource(rule.target) && rule.targetCandle === "Vela atual" || !signalConstantSource(rule.reference) && rule.referenceCandle === "Vela atual")) errors.push("cruzar e fechar exige candles fechados");
     return errors;
 }
 
@@ -74,10 +78,12 @@ function validateSignalCard(card) {
 
 function updateSignalFields(card) {
     card.querySelectorAll(".condition-row").forEach(row => {
-        const fixed = readSignalRow(row).reference === "Valor fixo";
+        const rule = readSignalRow(row);
+        const fixed = rule.reference === "Valor fixo";
         row.querySelector("[data-signal-fixed]").classList.toggle("is-hidden", !fixed);
         row.querySelector('[name$="-fixed"]').disabled = !fixed;
-        row.querySelector('[name$="-reference-candle"]').disabled = fixed;
+        row.querySelector('[name$="-reference-candle"]').disabled = signalConstantSource(rule.reference);
+        row.querySelector('[name$="-target-candle"]').disabled = signalConstantSource(rule.target);
     });
 }
 
@@ -90,10 +96,10 @@ function signalSummaryLines(card) {
         const group = `${rule.usage} / ${signalResultSide(rule) || "Sinal não definido"}`;
         if (!groups.has(group)) groups.set(group, []);
         groups.get(group).push({operator: rule.operator, label: `C${index + 1}`});
-        const reference = rule.reference === "Valor fixo" ? rule.fixed : `${rule.reference} (${rule.referenceCandle})`;
+        const reference = rule.reference === "Valor fixo" ? rule.fixed : signalConstantSource(rule.reference) ? rule.reference : `${rule.reference} (${rule.referenceCandle})`;
         const distance = unit === "N.usar" ? "" : ` — distância: ${rule.distance} ${unit === "Porcentagem" ? "%" : "pontos"}`;
         const incomplete = signalRuleErrors(rule, unit).length ? " — incompleta ou inválida" : "";
-        return [`Condição ${index + 1} (${group}; ${rule.normalSide || "—"} / ${rule.sense} → ${signalAction(rule)}): ${rule.operator} ${rule.target} (${rule.targetCandle}) ${rule.comparison} ${reference}${distance}${incomplete}`];
+        return [`Condição ${index + 1} (${group}; ${rule.normalSide || "—"} / ${rule.sense} → ${signalAction(rule)}): ${rule.operator} ${rule.target}${signalConstantSource(rule.target) ? "" : ` (${rule.targetCandle})`} ${rule.comparison} ${reference}${distance}${incomplete}`];
     });
     groups.forEach((rules, group) => {
         const clauses = [[]];

@@ -8,17 +8,18 @@ function readSetupState() {
 function setupControls(root) {
     const controls = Array.from(root.querySelectorAll(".card input:not(.tab-radio), .card select"));
     // Append new controls to preserve existing positional saved setups.
-    return [...controls.filter(control => !control.matches("[data-condition-control], [data-candle-direction-control]")),
+    return [...controls.filter(control => !control.matches("[data-condition-control], [data-candle-direction-control], [data-rsi-level-extra]")),
         ...controls.filter(control => control.hasAttribute("data-condition-control") && !control.hasAttribute("data-signal-extra")),
         ...controls.filter(control => control.hasAttribute("data-candle-direction-control")),
         ...controls.filter(control => control.hasAttribute("data-signal-extra") && !control.hasAttribute("data-signal-normal-side")),
-        ...controls.filter(control => control.hasAttribute("data-signal-normal-side"))];
+        ...controls.filter(control => control.hasAttribute("data-signal-normal-side")),
+        ...controls.filter(control => control.hasAttribute("data-rsi-level-extra"))];
 }
 
 function restoreSetup(root, page) {
     const state = readSetupState();
     let saved = state[page] || [];
-    const legacyLength = setupControls(root).filter(control => !control.hasAttribute("data-signal-extra")).length;
+    const legacyLength = setupControls(root).filter(control => !control.hasAttribute("data-signal-extra") && !control.hasAttribute("data-rsi-level-extra")).length;
     if (page === "indicadores" && state.signalNormalSideVersion !== 1 && saved.length === legacyLength + 15) {
         // Remove the redundant per-condition usage from the former three-field extras.
         saved = saved.filter((_, index) => index < legacyLength || (index - legacyLength) % 3 !== 0);
@@ -29,7 +30,7 @@ function restoreSetup(root, page) {
         saved = saved.filter((_, index) => index >= 212 || !removed.has(index % 53));
     }
     if (page === "indicadores" && saved.length === legacyLength + 4) {
-        const legacyCount = setupControls(root).filter(control => !control.hasAttribute("data-condition-control")).length;
+        const legacyCount = setupControls(root).filter(control => !control.hasAttribute("data-condition-control") && !control.hasAttribute("data-rsi-level-extra")).length;
         saved.splice(legacyCount, 4);
     }
     setupControls(root).forEach((control, index) => {
@@ -57,6 +58,7 @@ function updateCrossingOptions(root) {
         .filter(select => select.value !== "Não usar")
         .flatMap(select => {
             const base = `Indicador ${select.dataset.indicatorType}: ${select.value}`;
+            if (select.value === "RSI") return [base, ...["superior", "médio", "inferior"].map(level => `${base} Nível ${level}`)];
             return select.value === "ADX" ? [base, `${base} +DI`, `${base} −DI`] : [base];
         });
     root.querySelectorAll("[data-crossing-source]").forEach(select => {
@@ -187,6 +189,7 @@ function updateIndicatorSummary(select, fields, summary) {
     fields.querySelectorAll(".tab-panel-params [data-indicator-kind]").forEach((group) => {
         if (group.dataset.indicatorKind !== select.value) return;
         group.querySelectorAll("[data-param-label]").forEach((control) => {
+            if (control.hasAttribute("data-retired-signal")) return;
             const value = control.tagName === "SELECT"
                 ? control.selectedOptions[0].textContent
                 : control.value;
@@ -326,6 +329,7 @@ function bindRulesSummary() {
 document.addEventListener("DOMContentLoaded", bindRulesSummary);
 
 function relevantReviewControl(control, card) {
+    if (control.closest("[data-retired-signal]")) return false;
     if (card.matches("[data-conditions]")) {
         const row = control.closest(".condition-row");
         if (row && !signalRowActive(readSignalRow(row))) return false;

@@ -82,7 +82,7 @@
                                 ('direction', 'Direção permitida', ['Compra e venda', 'Somente compra', 'Somente venda'], data.setup_direction)
                             ] %}
                                 <div class="optimize-row">
-                                    <div class="optimize-name">{{ title }}</div>
+                                    <div class="optimize-name">{{ {'Sobrevenda': 'Nível inferior', 'Sobrecompra': 'Nível superior'}.get(title, title) }}</div>
                                     <div class="optimize-grid optimize-grid-select">
                                         <label for="operation-{{ key }}-start">Iniciar</label>
                                         <label for="operation-{{ key }}-end">Terminar</label>
@@ -120,7 +120,7 @@
                         <div class="tab-panel tab-panel-optimize">
                             {% for key, title, default in [('entry-start', 'Início entradas', data.setup_entry_start), ('entry-end', 'Encerramento entradas', data.setup_entry_end)] %}
                                 <div class="optimize-row">
-                                    <div class="optimize-name">{{ title }}</div>
+                                    <div class="optimize-name">{{ {'Sobrevenda': 'Nível inferior', 'Sobrecompra': 'Nível superior'}.get(title, title) }}</div>
                                     <div class="optimize-grid optimize-grid-select">
                                         <label for="schedule-{{ key }}-start">Iniciar</label>
                                         <label for="schedule-{{ key }}-end">Terminar</label>
@@ -173,19 +173,19 @@
                             </div>
                             {% set schemas = [
                                 ('Média Móvel', [('Período', 20, 1), ('Shift', 0, -100000), ('Velas de inclinação', 3, 2)], [('Preço aplicado', price_options, 'Close'), ('Método', method_options, 'EMA')]),
-                                ('RSI', [('Período', 14, 1), ('Sobrevenda', 30, 0), ('Sobrecompra', 70, 0)], [('Preço aplicado', price_options, 'Close')]),
+                                ('RSI', [('Período', 14, 1), ('Sobrevenda', 30, 0), ('Sobrecompra', 70, 0), ('Nível médio', 50, 0)], [('Preço aplicado', price_options, 'Close')]),
                                 ('ADX', [('Período', 14, 1), ('ADX mínimo', 25, 0)], [])
                             ] %}
                             <div class="tab-panel tab-panel-params">
                                 {% for kind, numbers, combos in schemas %}
                                     <div data-indicator-kind="{{ kind }}" class="is-hidden">
                                         {% for title, default, minimum in numbers %}
-                                            <label for="param-{{ index }}-{{ kind }}-{{ loop.index }}">{{ title }}</label>
-                                            <input data-param-label="{{ title }}" id="param-{{ index }}-{{ kind }}-{{ loop.index }}" type="number" value="{{ default }}" min="{{ minimum }}" max="{{ 100 if title in ['Sobrevenda', 'Sobrecompra', 'ADX mínimo'] else 100000 }}" step="{{ '0.01' if title in ['Sobrevenda', 'Sobrecompra', 'ADX mínimo'] else '1' }}">
+                                            <label {% if title in ['Velas de inclinação', 'ADX mínimo'] %}class="is-hidden"{% endif %} for="param-{{ index }}-{{ kind }}-{{ loop.index }}">{{ {'Sobrevenda': 'Nível inferior', 'Sobrecompra': 'Nível superior'}.get(title, title) }}</label>
+                                            <input {% if title in ['Velas de inclinação', 'ADX mínimo'] %}class="is-hidden" data-retired-signal{% endif %} {% if title == "Nível médio" %}data-rsi-level-extra{% endif %} data-param-label="{{ {'Sobrevenda': 'Nível inferior', 'Sobrecompra': 'Nível superior'}.get(title, title) }}" id="param-{{ index }}-{{ kind }}-{{ loop.index }}" type="number" value="{{ default }}" min="{{ minimum }}" max="{{ 100 if title in ['Sobrevenda', 'Sobrecompra', 'Nível médio', 'ADX mínimo'] else 100000 }}" step="{{ '0.01' if title in ['Sobrevenda', 'Sobrecompra', 'Nível médio', 'ADX mínimo'] else '1' }}">
                                         {% endfor %}
                                         {% for title, options, default in combos %}
-                                            <label for="combo-{{ index }}-{{ kind }}-{{ loop.index }}">{{ title }}</label>
-                                            <select data-param-label="{{ title }}" id="combo-{{ index }}-{{ kind }}-{{ loop.index }}">{% for item in options %}<option {{ 'selected' if item == default else '' }}>{{ item }}</option>{% endfor %}</select>
+                                            <label for="combo-{{ index }}-{{ kind }}-{{ loop.index }}">{{ {'Sobrevenda': 'Nível inferior', 'Sobrecompra': 'Nível superior'}.get(title, title) }}</label>
+                                            <select data-param-label="{{ {'Sobrevenda': 'Nível inferior', 'Sobrecompra': 'Nível superior'}.get(title, title) }}" id="combo-{{ index }}-{{ kind }}-{{ loop.index }}">{% for item in options %}<option {{ 'selected' if item == default else '' }}>{{ item }}</option>{% endfor %}</select>
                                         {% endfor %}
                                     </div>
                                 {% endfor %}
@@ -194,17 +194,17 @@
                                 {% for kind, numbers, combos in schemas %}
                                     <div data-indicator-kind="{{ kind }}" class="is-hidden">
                                         {% for title, default, minimum in numbers %}
-                                            <div class="optimize-row">
-                                                <div class="optimize-name">{{ title }}</div>
+                                            <div class="optimize-row{% if title in ['Velas de inclinação', 'ADX mínimo'] %} is-hidden" data-retired-signal{% else %}"{% endif %}>
+                                                <div class="optimize-name">{{ {'Sobrevenda': 'Nível inferior', 'Sobrecompra': 'Nível superior'}.get(title, title) }}</div>
                                                 <div class="optimize-grid">
                                                     {% for label in ['Iniciar', 'Passo', 'Terminar'] %}<label for="opt-{{ index }}-{{ kind }}-{{ loop.index }}-{{ title }}">{{ label }}</label>{% endfor %}
-                                                    {% for value in [0, 0, 0] %}<input id="opt-{{ index }}-{{ kind }}-{{ loop.index }}-{{ title }}" type="number" value="{{ value }}" min="{{ minimum if minimum < 0 else 0 }}" step="{{ '0.01' if title in ['Sobrevenda', 'Sobrecompra', 'ADX mínimo'] else '1' }}">{% endfor %}
+                                                    {% for value in [0, 0, 0] %}<input {% if title == "Nível médio" %}data-rsi-level-extra{% endif %} id="opt-{{ index }}-{{ kind }}-{{ loop.index }}-{{ title }}" type="number" value="{{ value }}" min="{{ minimum if minimum < 0 else 0 }}" step="{{ '0.01' if title in ['Sobrevenda', 'Sobrecompra', 'Nível médio', 'ADX mínimo'] else '1' }}">{% endfor %}
                                                 </div>
                                             </div>
                                         {% endfor %}
                                         {% for title, options, default in combos %}
                                             <div class="optimize-row">
-                                                <div class="optimize-name">{{ title }}</div>
+                                                <div class="optimize-name">{{ {'Sobrevenda': 'Nível inferior', 'Sobrecompra': 'Nível superior'}.get(title, title) }}</div>
                                                 <div class="optimize-grid optimize-grid-select">
                                                     {% for label in ['Iniciar', 'Terminar'] %}<label for="opt-combo-{{ index }}-{{ kind }}-{{ loop.index }}-{{ title }}">{{ label }}</label>{% endfor %}
                                                     {% for bound in ['start', 'end'] %}
@@ -243,8 +243,8 @@
                             ('reference-candle', 'No Candle', condition_candles)
                         ] %}
                             <div>
-                                <label for="condition-{{ index }}-{{ key }}">{{ title }}</label>
-                                <select id="condition-{{ index }}-{{ key }}" name="condition-{{ index }}-{{ key }}" data-condition-control data-param-label="Condição {{ index }} — {{ title }}{{ ' de A' if key == 'target-candle' else ' de Da (DE)' if key == 'reference-candle' else '' }}" {{ 'data-crossing-source' if key in ['target', 'reference'] else '' }}><option value="N.usar" selected>N.usar</option>{% for item in options %}<option>{{ item }}</option>{% endfor %}{% if key == 'reference' %}<option>Valor fixo</option>{% endif %}</select>
+                                <label for="condition-{{ index }}-{{ key }}">{{ {'Sobrevenda': 'Nível inferior', 'Sobrecompra': 'Nível superior'}.get(title, title) }}</label>
+                                <select id="condition-{{ index }}-{{ key }}" name="condition-{{ index }}-{{ key }}" data-condition-control data-param-label="Condição {{ index }} — {{ {'Sobrevenda': 'Nível inferior', 'Sobrecompra': 'Nível superior'}.get(title, title) }}{{ ' de A' if key == 'target-candle' else ' de Da (DE)' if key == 'reference-candle' else '' }}" {{ 'data-crossing-source' if key in ['target', 'reference'] else '' }}><option value="N.usar" selected>N.usar</option>{% for item in options %}<option>{{ item }}</option>{% endfor %}{% if key == 'reference' %}<option>Valor fixo</option>{% endif %}</select>
                             </div>
                         {% endfor %}
                         <div>
@@ -267,7 +267,7 @@
                 {% endfor %}
                 <p class="muted">Sinal normal define Compra ou Venda. Inverter troca esse resultado sem alterar a comparação. Na Entrada, Compra abre compra e Venda abre venda. Na Saída, Compra fecha vendas e Venda fecha compras, sem abrir uma posição contrária.</p>
                 <p class="muted">A finalidade vem de “Usar como” dos indicadores selecionados. Condições somente com preços são de Entrada. Indicadores de Entrada e Saída não podem ser misturados na mesma condição. Use Se na primeira condição de cada finalidade e sinal resultante; continue com E ou Ou. E tem prioridade sobre Ou.</p>
-                <p class="muted">Escolha Valor fixo em Da (DE) para comparar, por exemplo, RSI com 30. A vela da referência não se aplica a valores fixos. Vela atual usa valores ainda em formação; cruzar e fechar exige velas fechadas.</p>
+                <p class="muted">Escolha Valor fixo em Da (DE) para comparar, por exemplo, RSI com 30. Os níveis superior, médio e inferior do RSI usam os valores definidos nos parâmetros do indicador. A seleção de vela não se aplica a níveis nem a valores fixos. Vela atual usa valores ainda em formação; cruzar e fechar exige velas fechadas.</p>
                 <p class="muted">Distância: tolerância absoluta para Toque, Igual que e Diferente de; afastamento mínimo nas demais comparações. Porcentagem é calculada sobre o valor absoluto de Da (DE). Pontos só se aplicam a preços; para RSI/ADX use valor fixo e distância N.usar.</p>
                 <div data-signal-errors role="status" aria-live="polite"></div>
             </section>
@@ -399,7 +399,7 @@
                                 ('measure', 'Medir candle', ['Corpo', 'Total máxima - mínima'], 'data-candle-size')
                             ] %}
                                 <div class="optimize-row" {{ visibility }}>
-                                    <div class="optimize-name" {% if key in ['measure', 'min', 'max', 'upper-wick', 'lower-wick', 'stop', 'take-distance'] %}data-unit-label="{{ title }}"{% endif %}>{{ title }}</div>
+                                    <div class="optimize-name" {% if key in ['measure', 'min', 'max', 'upper-wick', 'lower-wick', 'stop', 'take-distance'] %}data-unit-label="{{ {'Sobrevenda': 'Nível inferior', 'Sobrecompra': 'Nível superior'}.get(title, title) }}"{% endif %}>{{ {'Sobrevenda': 'Nível inferior', 'Sobrecompra': 'Nível superior'}.get(title, title) }}</div>
                                     <div class="optimize-grid optimize-grid-select">
                                         <label for="candle-{{ key }}-start">Iniciar</label>
                                         <label for="candle-{{ key }}-end">Terminar</label>
@@ -416,7 +416,7 @@
                                 ('lower-wick', 'Pavio inf. mín.', 'data-candle-wicks')
                             ] %}
                                 <div class="optimize-row" {{ visibility }}>
-                                    <div class="optimize-name" {% if key in ['measure', 'min', 'max', 'upper-wick', 'lower-wick', 'stop', 'take-distance'] %}data-unit-label="{{ title }}"{% endif %}>{{ title }}</div>
+                                    <div class="optimize-name" {% if key in ['measure', 'min', 'max', 'upper-wick', 'lower-wick', 'stop', 'take-distance'] %}data-unit-label="{{ {'Sobrevenda': 'Nível inferior', 'Sobrecompra': 'Nível superior'}.get(title, title) }}"{% endif %}>{{ {'Sobrevenda': 'Nível inferior', 'Sobrecompra': 'Nível superior'}.get(title, title) }}</div>
                                     <div class="optimize-grid">
                                         <label for="candle-{{ key }}-start">Iniciar</label>
                                         <label for="candle-{{ key }}-step">Passo</label>
@@ -464,7 +464,7 @@
                                 ('size', 'Tamanho', ['Total com pavios', 'Corpo'], 'Total com pavios')
                             ] %}
                                 <div class="optimize-row">
-                                    <div class="optimize-name" {% if key in ['measure', 'min', 'max', 'upper-wick', 'lower-wick', 'stop', 'take-distance'] %}data-unit-label="{{ title }}"{% endif %}>{{ title }}</div>
+                                    <div class="optimize-name" {% if key in ['measure', 'min', 'max', 'upper-wick', 'lower-wick', 'stop', 'take-distance'] %}data-unit-label="{{ {'Sobrevenda': 'Nível inferior', 'Sobrecompra': 'Nível superior'}.get(title, title) }}"{% endif %}>{{ {'Sobrevenda': 'Nível inferior', 'Sobrecompra': 'Nível superior'}.get(title, title) }}</div>
                                     <div class="optimize-grid optimize-grid-select">
                                         <label for="target-{{ key }}-start">Iniciar</label>
                                         <label for="target-{{ key }}-end">Terminar</label>
@@ -480,7 +480,7 @@
                                 ('take-distance', 'Distância fixa', '0.00')
                             ] %}
                                 <div class="optimize-row" {{ 'data-take-multiplier' if key == 'take-multiplier' else ('data-take-distance' if key == 'take-distance' else '') }}>
-                                    <div class="optimize-name" {% if key in ['measure', 'min', 'max', 'upper-wick', 'lower-wick', 'stop', 'take-distance'] %}data-unit-label="{{ title }}"{% endif %}>{{ title }}</div>
+                                    <div class="optimize-name" {% if key in ['measure', 'min', 'max', 'upper-wick', 'lower-wick', 'stop', 'take-distance'] %}data-unit-label="{{ {'Sobrevenda': 'Nível inferior', 'Sobrecompra': 'Nível superior'}.get(title, title) }}"{% endif %}>{{ {'Sobrevenda': 'Nível inferior', 'Sobrecompra': 'Nível superior'}.get(title, title) }}</div>
                                     <div class="optimize-grid">
                                         <label for="target-{{ key }}-start">Iniciar</label>
                                         <label for="target-{{ key }}-step">Passo</label>
@@ -500,7 +500,7 @@
             <section class="grid-4 summary-grid" data-rules-summary>
                 {% for title in ['Ordem', 'Filtro de candle', 'Stop loss', 'Take Profit'] %}
                     <div class="card summary-card">
-                        <strong>{{ title }}</strong>
+                        <strong>{{ {'Sobrevenda': 'Nível inferior', 'Sobrecompra': 'Nível superior'}.get(title, title) }}</strong>
                         <div data-indicator-summary-values aria-live="polite"></div>
                     </div>
                 {% endfor %}
@@ -509,7 +509,7 @@
             <section class="grid-3">
                 {% for title in ['Breakeven', 'Trailing stop', 'Stop móvel'] %}
                     <div class="card">
-                        <h2>{{ title }}</h2>
+                        <h2>{{ {'Sobrevenda': 'Nível inferior', 'Sobrecompra': 'Nível superior'}.get(title, title) }}</h2>
                         <label>Modo</label>
                         <select data-unit-selector>{% for item in management_modes %}<option>{{ item }}</option>{% endfor %}</select>
                         {% set management_key = {'Breakeven': 'breakeven', 'Trailing stop': 'trailing', 'Stop móvel': 'moving-stop'}[title] %}
@@ -581,7 +581,7 @@
                 <div class="card">
                     <h2>Set atual</h2>
                     <p data-review-setup-name>{{ data.setup_name }}</p>
-                    <p class="muted">O Uni carrega Identificação, Mercado e operação e Horários, incluindo seus intervalos de otimização. Os demais cards ficam guardados como comentários no arquivo.</p>
+                    <p class="muted">O Uni carrega Identificação, Mercado e operação, Horários, Indicadores e Sinal. Gestão e demais regras ainda ficam como comentários; confira esses inputs no Uni.</p>
                 </div>
                 <div class="card">
                     <h2>Ações</h2>

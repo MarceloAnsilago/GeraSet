@@ -165,4 +165,16 @@ test('new fields preserve old saved control positions and survive another save a
     appContext.restoreSetup(nextRoot, 'indicadores');
     assert.deepEqual(sides.map(item => item.value), ['Compra', 'Venda', 'Compra', 'Venda', 'Compra']);
     assert.equal(retained[1].value, '10');
+    const levels = Array.from({length: 16}, () => control('50', ['data-rsi-level-extra']));
+    const levelRoot = {querySelectorAll: selector => ['[data-crossing-source]', '[data-indicator-type]'].includes(selector) ? [] : [...levels, ...sides, ...original, ...retained]};
+    appContext.restoreSetup(levelRoot, 'indicadores');
+    assert.deepEqual(sides.map(item => item.value), ['Compra', 'Venda', 'Compra', 'Venda', 'Compra']);
+    assert.ok(levels.every(item => item.value === '50'));
+    levels[0].value = '55';
+    state.indicadores = appContext.setupControls(levelRoot).map(item => ({value: item.value}));
+    stored['geraset-flask-cards-v1'] = JSON.stringify(state);
+    levels[0].value = '0';
+    appContext.restoreSetup(levelRoot, 'indicadores');
+    assert.equal(levels[0].value, '55');
+
 });

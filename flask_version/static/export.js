@@ -86,6 +86,88 @@ function scheduleSetLines(controls) {
     });
 }
 
+function indicatorSignalSetLines(root) {
+    if (!root) throw new Error("Página de indicadores ausente.");
+    const lines = [], types = [];
+    const fail = message => { const e = new Error(message); e.name = "SignalValidationError"; throw e; };
+    const read = id => root.querySelector(`[id="${id}"]`)?.value;
+    const number = (value, min, max, decimal = false) => {
+        if (value === undefined || String(value).trim() === "" || !(decimal ? Number.isFinite(Number(value)) : Number.isInteger(Number(value))) || Number(value) < min || Number(value) > max) fail("Confira os parâmetros e intervalos dos indicadores.");
+        return Number(value);
+    };
+    const choices = (value, options) => { const n = options.indexOf(value); if (n < 0) fail("Opção de indicador inválida."); return n; };
+    const numeric = (input, slot, kind, index, title, min, max, decimal = false) => {
+        const value = number(read(`param-${slot}-${kind}-${index}`), min, max, decimal);
+        const bounds = [1, 2, 3].map(i => read(`opt-${slot}-${kind}-${i}-${title}`));
+        const inactive = bounds.every(v => Number(v) === 0 && String(v).trim() !== "");
+        let start = value, step = 1, end = value;
+        if (!inactive) {
+            start = number(bounds[0], min, max, decimal); step = number(bounds[1], decimal ? 0.01 : 1, 200000, decimal); end = number(bounds[2], min, max, decimal);
+            if (end < start) fail("O fim da otimização do indicador deve ser maior ou igual ao início.");
+        }
+        lines.push(`${input}=${value}||${start}||${step}||${end}||${!inactive && start !== end ? "Y" : "N"}`);
+    };
+    const combo = (input, slot, kind, index, title, options, offset = 0) => {
+        const value = choices(read(`combo-${slot}-${kind}-${index}`), options) + offset;
+        const bounds = ['start', 'end'].map(bound => choices(root.querySelector(`[name="opt-combo-${slot}-${kind}-${title}-${bound}"]`)?.value, options) + offset);
+        lines.push(`${input}=${value}||${Math.min(...bounds)}||1||${Math.max(...bounds)}||${bounds[0] === bounds[1] ? "N" : "Y"}`);
+    };
+    for (let i = 1; i <= 4; i++) {
+        const type = root.querySelector(`[data-indicator-type="${i}"]`)?.value;
+        const n = choices(type, ['Não usar', 'Média Móvel', 'RSI', 'ADX']) - 1;
+        types.push(type);
+        const usage = root.querySelector(`[name="indicator-usage-${i}"]:checked`)?.value;
+        const exit = choices(usage, ['Entrada', 'Saída']);
+        lines.push(`InpIndicator${i}Type=${n}||${n}||1||${n}||N`, `InpIndicator${i}Exit=${exit}||${exit}||1||${exit}||N`);
+        const prices = ['Close', 'Open', 'High', 'Low', 'Median', 'Typical', 'Weighted'];
+        if (n === 0) {
+            numeric(`InpIndicator${i}MaPeriod`, i, type, 1, 'Período', 1, 100000);
+            numeric(`InpIndicator${i}MaShift`, i, type, 2, 'Shift', -100000, 100000);
+            combo(`InpIndicator${i}MaPrice`, i, type, 1, 'Preço aplicado', prices, 1);
+            combo(`InpIndicator${i}MaMethod`, i, type, 2, 'Método', ['SMA', 'EMA', 'SMMA', 'LWMA']);
+        } else if (n === 1) {
+            numeric(`InpIndicator${i}RsiPeriod`, i, type, 1, 'Período', 1, 100000);
+            combo(`InpIndicator${i}RsiPrice`, i, type, 1, 'Preço aplicado', prices, 1);
+            numeric(`InpIndicator${i}RsiLower`, i, type, 2, 'Sobrevenda', 0, 100, true);
+            numeric(`InpIndicator${i}RsiUpper`, i, type, 3, 'Sobrecompra', 0, 100, true);
+            numeric(`InpIndicator${i}RsiMiddle`, i, type, 4, 'Nível médio', 0, 100, true);
+            if (!(Number(read(`param-${i}-RSI-2`)) < Number(read(`param-${i}-RSI-4`)) && Number(read(`param-${i}-RSI-4`)) < Number(read(`param-${i}-RSI-3`)))) fail('RSI: use nível inferior < médio < superior.');
+        } else if (n === 2) numeric(`InpIndicator${i}AdxPeriod`, i, type, 1, 'Período', 1, 100000);
+    }
+    const priceSources = ['Fechamento da vela', 'Abertura da vela', 'Máxima da vela', 'Mínima da vela', 'Abertura do dia', 'Máxima do dia', 'Mínima do dia', 'Máxima do dia anterior', 'Mínima do dia anterior', 'Valor fixo'];
+    const source = label => {
+        if (priceSources.includes(label)) return priceSources.indexOf(label);
+        for (let i = 0; i < types.length; i++) {
+            if (types[i] === 'Não usar') continue;
+            const base = `Indicador ${i + 1}: ${types[i]}`;
+            const buffers = types[i] === 'ADX' ? [base, `${base} +DI`, `${base} −DI`] : [base];
+            const levels = ['superior', 'médio', 'inferior'].map(level => `${base} Nível ${level}`);
+            if (types[i] === 'RSI' && levels.includes(label)) return 22 + i * 3 + levels.indexOf(label);
+            if (buffers.includes(label)) return 10 + i * 3 + buffers.indexOf(label);
+        }
+        fail("Buffer não encontrado nos indicadores selecionados.");
+    };
+    const card = root.querySelector('[data-conditions]');
+    const rows = Array.from(card.querySelectorAll('.condition-row'));
+    const unit = choices(card.querySelector('[data-unit-selector]').value, ['N.usar', 'Pontos', 'Porcentagem']);
+    const candles = ['Vela atual', 'Anterior', 'Penúltima', 'Antepenúltima'];
+    const comparisons = ['Maior que', 'Menor que', 'Maior ou igual que', 'Menor ou igual que', 'Igual que', 'Diferente de', 'Toque', 'Cruzar p/ cima de', 'Cruzar p/ baixo de', 'Cruzar&fechar acima de', 'Cruzar&fechar abaixo de'];
+    for (let i = 0; i < 5; i++) {
+        const rule = rows[i] ? readSignalRow(rows[i]) : null;
+        let payload = '';
+        if (rule && signalRowActive(rule)) {
+            const errors = signalRuleErrors(rule, card.querySelector('[data-unit-selector]').value);
+            if (errors.length) fail(errors.join(' '));
+            payload = [choices(rule.operator, ['Se', 'E', 'Ou']) + 1, choices(rule.usage, ['Entrada', 'Saída']), signalResultSide(rule) === 'Compra' ? 1 : -1,
+                source(rule.target), signalConstantSource(rule.target) ? 0 : choices(rule.targetCandle, candles), choices(rule.comparison, comparisons), source(rule.reference),
+                signalConstantSource(rule.reference) ? 0 : choices(rule.referenceCandle, candles), rule.reference === 'Valor fixo' ? Number(rule.fixed) : 0, Number(rule.distance), unit].join(',');
+            if (/[eE]/.test(payload)) fail("Use valores decimais sem notação exponencial nas condições.");
+        }
+        lines.push(`InpSignal${i + 1}=${payload}`);
+    }
+    return lines;
+}
+
 function serializeSetupSet(roots) {
     const pages = {};
     let name = "Meu setup";
@@ -127,6 +209,7 @@ function serializeSetupSet(roots) {
         `InpMagic=${magic}||${magic}||1||2147483647||N`,
         ...operationSetLines(pages.inicio || []),
         ...scheduleSetLines(pages.inicio || []),
+        ...indicatorSignalSetLines(roots.get('indicadores')),
         ...metadata.split("\n").map(line => `; ${line}`),
         "",
     ].join("\r\n");
