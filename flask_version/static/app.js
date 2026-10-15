@@ -70,14 +70,7 @@ function updateCrossingOptions(root) {
         indicators.forEach(value => {
             const option = select.ownerDocument.createElement("option");
             option.value = value;
-            option.textContent = value.replace(/: RSI Nível (superior|médio|inferior)$/, (_, level) =>
-                `: RSI ${level === "médio" ? "Meio" : level === "superior" ? "Superior" : "Inferior"}`);
-            // Keep the raw RSI available in A and preserve older saved comparisons.
-            option.hidden = /: RSI$/.test(value);
-            if (value === selected && /: RSI$/.test(value) && select.name.endsWith("-target")) {
-                const reference = select.closest(".condition-row").querySelector('[name$="-reference"]').value;
-                if (reference.startsWith(`${value} Nível `)) option.textContent = rsiLevelLabel(reference);
-            }
+            option.textContent = value;
             option.dataset.indicatorOption = "true";
             select.appendChild(option);
         });
@@ -85,35 +78,12 @@ function updateCrossingOptions(root) {
     });
 }
 
-function rsiLevelLabel(value) {
-    return value.replace(/: RSI Nível (superior|médio|inferior)$/, (_, level) =>
-        `: RSI ${level === "médio" ? "Meio" : level === "superior" ? "Superior" : "Inferior"}`);
-}
-
-function selectRsiForLevel(reference) {
-    const match = /^(Indicador \d+: RSI) Nível (superior|médio|inferior)$/.exec(reference.value);
-    if (!match) return;
-    const row = reference.closest(".condition-row");
-    const target = row.querySelector('[name$="-target"]');
-    target.value = match[1];
-    const selectedOption = target.options && Array.from(target.options).find(option => option.value === match[1]);
-    if (selectedOption) selectedOption.textContent = rsiLevelLabel(reference.value);
-    row.querySelector('[name$="-reference-candle"]').value = "N.usar";
-}
-
 document.addEventListener("DOMContentLoaded", () => {
     const root = document.querySelector('[data-page="indicadores"]');
     if (!root) return;
     root.addEventListener("change", event => {
         if (event.target.matches("[data-indicator-type]")) updateCrossingOptions(root);
-        if (event.target.matches('[data-crossing-source][name$="-target"]') && /: RSI Nível /.test(event.target.value)) {
-            const reference = event.target.closest(".condition-row").querySelector('[name$="-reference"]');
-            reference.value = event.target.value;
-            selectRsiForLevel(reference);
-        }
-        if (event.target.matches('[data-crossing-source][name$="-reference"]')) {
-            selectRsiForLevel(event.target);
-        }
+
     });
 });
 

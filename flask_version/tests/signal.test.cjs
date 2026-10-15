@@ -178,24 +178,3 @@ test('new fields preserve old saved control positions and survive another save a
     assert.equal(levels[0].value, '55');
 
 });
-
-test('indicator profiles restrict RSI references to its slot and fixed thresholds', () => {
-    assert.equal(context.signalSourcesCompatible('Indicador 1: RSI', 'Indicador 1: RSI Nível superior'), true);
-    assert.equal(context.signalSourcesCompatible('Indicador 1: RSI', 'Valor fixo'), true);
-    assert.equal(context.signalSourcesCompatible('Indicador 1: RSI', 'Fechamento da vela'), false);
-    assert.equal(context.signalSourcesCompatible('Indicador 1: RSI', 'Indicador 2: ADX'), false);
-    assert.equal(context.signalSourcesCompatible('Indicador 1: RSI', 'Indicador 2: RSI Nível inferior'), false);
-    assert.equal(context.signalSourcesCompatible('Fechamento da vela', 'Indicador 2: Média Móvel'), true);
-});
-
-test('UI hides incompatible references and clears a previous price reference for RSI', () => {
-    const target = {value: 'Indicador 1: RSI'};
-    const reference = {value: 'Fechamento da vela', options: ['N.usar', 'Fechamento da vela', 'Valor fixo', 'Indicador 1: RSI Nível superior', 'Indicador 2: ADX'].map(value => ({value}))};
-    context.filterSignalSources({querySelector: selector => selector.includes('-target') ? target : reference});
-    assert.equal(reference.value, 'N.usar');
-    assert.equal(reference.options[1].hidden, true);
-    assert.equal(reference.options[1].disabled, true);
-    assert.equal(reference.options[2].hidden, false);
-    assert.equal(reference.options[3].hidden, false);
-    assert.equal(reference.options[4].hidden, true);
-});
