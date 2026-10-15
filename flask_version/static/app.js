@@ -70,7 +70,10 @@ function updateCrossingOptions(root) {
         indicators.forEach(value => {
             const option = select.ownerDocument.createElement("option");
             option.value = value;
-            option.textContent = value;
+            option.textContent = value.replace(/: RSI Nível (superior|médio|inferior)$/, (_, level) =>
+                `: RSI ${level === "médio" ? "Meio" : level === "superior" ? "Superior" : "Inferior"}`);
+            // Keep the raw RSI available in A and preserve older saved comparisons.
+            option.hidden = select.name.endsWith("-reference") && /: RSI$/.test(value);
             option.dataset.indicatorOption = "true";
             select.appendChild(option);
         });
@@ -78,11 +81,23 @@ function updateCrossingOptions(root) {
     });
 }
 
+function selectRsiForLevel(reference) {
+    const match = /^(Indicador \d+: RSI) Nível (superior|médio|inferior)$/.exec(reference.value);
+    if (!match) return;
+    const row = reference.closest(".condition-row");
+    const target = row.querySelector('[name$="-target"]');
+    target.value = match[1];
+    row.querySelector('[name$="-reference-candle"]').value = "N.usar";
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     const root = document.querySelector('[data-page="indicadores"]');
     if (!root) return;
     root.addEventListener("change", event => {
         if (event.target.matches("[data-indicator-type]")) updateCrossingOptions(root);
+        if (event.target.matches('[data-crossing-source][name$="-reference"]')) {
+            selectRsiForLevel(event.target);
+        }
     });
 });
 
