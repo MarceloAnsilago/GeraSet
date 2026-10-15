@@ -95,6 +95,7 @@ test('exports the latest configuration and confirms only after closing the file'
         'InpDirection=0||0||1||0||N',
         'InpEntryStart=0||0||5||0||N', 'InpEntryEnd=1435||1435||5||1435||N',
         'InpOrderMode=0||0||1||0||N', 'InpPendingReference=0||0||1||0||N', 'InpPendingCandle=1||1||1||1||N',
+        'InpBreakevenMode=0||0||1||0||N', 'InpBreakevenTrigger=0||0||0.01||0||N', 'InpBreakevenOffset=0||0||0.01||0||N',
         ...[1, 2, 3, 4].flatMap(i => [`InpIndicator${i}Type=-1||-1||1||-1||N`, `InpIndicator${i}Exit=0||0||1||0||N`]),
         ...[1, 2, 3, 4, 5].map(i => `InpSignal${i}=`),
     ]);

@@ -516,7 +516,7 @@
                     <div class="card">
                         <h2>{{ {'Sobrevenda': 'Nível inferior', 'Sobrecompra': 'Nível superior'}.get(title, title) }}</h2>
                         <label>Modo</label>
-                        <select data-unit-selector>{% for item in management_modes %}<option>{{ item }}</option>{% endfor %}</select>
+                        <select {% if title == "Breakeven" %}name="breakeven-mode"{% endif %} data-unit-selector>{% for item in management_modes %}<option>{{ item }}</option>{% endfor %}</select>
                         {% set management_key = {'Breakeven': 'breakeven', 'Trailing stop': 'trailing', 'Stop móvel': 'moving-stop'}[title] %}
                         <div class="tabs">
                             <input class="tab-radio" id="{{ management_key }}-params" name="{{ management_key }}-tabs" type="radio" checked>
@@ -527,16 +527,20 @@
                             </div>
                             <div class="tab-panel tab-panel-params">
                         <label data-unit-label="Ativar após">Ativar após (pontos)</label>
-                        <input value="0.00">
-                        <label data-unit-label="Distância do preço">Distância do preço (pontos)</label>
-                        <input value="0.00">
+                        <input {% if title == "Breakeven" %}name="breakeven-trigger"{% endif %} value="0.00">
+                        <label data-unit-label="{{ 'Proteção a partir da entrada' if title == 'Breakeven' else 'Distância do preço' }}">{{ 'Proteção a partir da entrada' if title == 'Breakeven' else 'Distância do preço' }} (pontos)</label>
+                        <input {% if title == "Breakeven" %}name="breakeven-offset"{% endif %} value="0.00">
+                        <div {% if title == 'Breakeven' %}hidden{% endif %}>
                         <label data-unit-label="Passo de ajuste">Passo de ajuste (pontos)</label>
                         <input value="0.00">
+                        </div>
+                        {% if title == 'Breakeven' %}<p class="muted">Ativação maior que zero. Proteção menor que a ativação; zero move o stop para a entrada, sem compensar custos.</p>{% endif %}
                             </div>
                             <div class="tab-panel tab-panel-optimize">
                                 {% for key, label in [('activate', 'Ativar após'), ('distance', 'Distância do preço'), ('step', 'Passo de ajuste')] %}
-                                    <div class="optimize-row">
-                                        <div class="optimize-name" data-unit-label="{{ label }}">{{ label }}</div>
+                                    <div class="optimize-row" {% if title == 'Breakeven' and key == 'step' %}hidden{% endif %}>
+                                        {% set field_label = 'Proteção a partir da entrada' if title == 'Breakeven' and key == 'distance' else label %}
+                                        <div class="optimize-name" data-unit-label="{{ field_label }}">{{ field_label }}</div>
                                         <div class="optimize-grid">
                                             {% for bound, caption in [('start', 'Iniciar'), ('step', 'Passo'), ('end', 'Terminar')] %}
                                                 <label for="{{ management_key }}-{{ key }}-{{ bound }}">{{ caption }}</label>

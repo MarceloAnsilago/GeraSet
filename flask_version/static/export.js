@@ -131,6 +131,38 @@ function orderSetLines(controls) {
         `InpPendingCandle=${bar}||${start}||${step}||${end}||${start === end ? 'N' : 'Y'}`];
 }
 
+function breakevenSetLines(controls) {
+    const values = Object.fromEntries(controls.map(c => [c.key, c.value]));
+    const fail = message => { const e = new Error(message); e.name = 'BreakevenValidationError'; throw e; };
+    const mode = ['Desativado', 'Pontos', 'Porcentagem'].indexOf(values['breakeven-mode'] ?? 'Desativado');
+    if (mode < 0) fail('Selecione o modo do breakeven.');
+    const fixed = (name, value) => `${name}=${value}||${value}||0.01||${value}||N`;
+    const lines = [`InpBreakevenMode=${mode}||${mode}||1||${mode}||N`];
+    if (!mode) return [...lines, fixed('InpBreakevenTrigger', 0), fixed('InpBreakevenOffset', 0)];
+    const number = (raw, positive = false) => {
+        const text = String(raw ?? '').trim().replace(',', '.');
+        if (!/^(?:\d+(?:\.\d{0,2})?|\.\d{1,2})$/.test(text)) fail('Breakeven: use valores com até duas casas decimais.');
+        const n = Number(text);
+        if (!Number.isFinite(n) || n > 100000000 || (positive && n <= 0)) fail('Breakeven: confira os valores e o passo.');
+        return n;
+    };
+    const trigger = number(values['breakeven-trigger'], true), offset = number(values['breakeven-offset']);
+    if (offset >= trigger) fail('Breakeven: proteção deve ser menor que a ativação.');
+    const ranges = [];
+    for (const [input, value, key] of [['InpBreakevenTrigger', trigger, 'activate'], ['InpBreakevenOffset', offset, 'distance']]) {
+        const raw = ['start', 'step', 'end'].map(b => values[`breakeven-${key}-${b}`]);
+        let start = value, step = 0.01, end = value;
+        if (!raw.every(v => String(v ?? '').trim() !== '' && Number(String(v).replace(',', '.')) === 0)) {
+            start = number(raw[0], key === 'activate'); step = number(raw[1], true); end = number(raw[2], key === 'activate');
+            if (end < start) fail('Breakeven: fim da otimização menor que o início.');
+        }
+        ranges.push([start, end]);
+        lines.push(`${input}=${value}||${start}||${step}||${end}||${start === end ? 'N' : 'Y'}`);
+    }
+    if (ranges[1][1] >= ranges[0][0]) fail('Breakeven: toda proteção otimizada deve ser menor que a menor ativação.');
+    return lines;
+}
+
 function indicatorSignalSetLines(root) {
     if (!root) throw new Error("Página de indicadores ausente.");
     const lines = [], types = [];
@@ -258,6 +290,7 @@ function serializeSetupSet(roots) {
         ...operationSetLines(pages.inicio || []),
         ...scheduleSetLines(pages.inicio || []),
         ...orderSetLines(pages.gestao || []),
+        ...breakevenSetLines(pages.gestao || []),
         ...indicatorSignalSetLines(roots.get('indicadores')),
         ...metadata.split("\n").map(line => `; ${line}`),
         "",
