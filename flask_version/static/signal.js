@@ -1,3 +1,34 @@
+// Indicator-specific signal capabilities. Add new indicator families here.
+const signalProfiles = {
+    RSI: {family: "RSI", levelReferences: true},
+    ADX: {family: "ADX", levelReferences: false},
+};
+
+function signalSourceInfo(source) {
+    if (source === "Valor fixo") return {family: "constant"};
+    const match = /^Indicador (\d+): (RSI|ADX)(?: |$)/.exec(source);
+    return match ? {...signalProfiles[match[2]], slot: match[1]} : {family: "price"};
+}
+
+function signalSourcesCompatible(target, reference) {
+    if (!signalChosen(target) || !signalChosen(reference)) return true;
+    const a = signalSourceInfo(target), b = signalSourceInfo(reference);
+    if (a.family === "constant" || b.family === "constant") return true;
+    if (a.family !== b.family) return false;
+    return !a.levelReferences || a.slot === b.slot;
+}
+
+function filterSignalSources(row) {
+    const target = row.querySelector('[name$="-target"]');
+    const reference = row.querySelector('[name$="-reference"]');
+    for (const option of reference.options) {
+        const compatible = signalSourcesCompatible(target.value, option.value);
+        option.hidden = !compatible || /: RSI$/.test(option.value);
+        option.disabled = !compatible;
+    }
+    if (!signalSourcesCompatible(target.value, reference.value)) reference.value = "N.usar";
+}
+
 function signalConstantSource(source) {
     return source === "Valor fixo" || /: RSI Nível (superior|médio|inferior)$/.test(source);
 }
@@ -53,6 +84,7 @@ function signalRuleErrors(rule, unit) {
     if (unit === "Porcentagem" && rule.reference === "Valor fixo" && Number(rule.fixed) === 0 && Number(rule.distance) > 0) errors.push("porcentagem exige referência diferente de zero");
     const scale = source => /: (RSI|ADX)( |$)/.test(source) ? "índice" : source === "Valor fixo" ? "fixo" : "preço";
     const targetScale = scale(rule.target), referenceScale = scale(rule.reference);
+    if (!signalSourcesCompatible(rule.target, rule.reference) && targetScale === referenceScale) errors.push("selecione fontes compatíveis com o indicador e o slot de A");
     if (signalChosen(rule.target) && signalChosen(rule.reference) && referenceScale !== "fixo" && targetScale !== referenceScale) errors.push("compare valores da mesma escala; para RSI/ADX, use um indicador compatível ou valor fixo");
     if (unit === "Pontos" && Number(rule.distance) > 0 && (targetScale === "índice" || referenceScale === "índice")) errors.push("distância em pontos só se aplica a preços");
     if (rule.comparison.startsWith("Cruzar&fechar") && (!signalConstantSource(rule.target) && rule.targetCandle === "Vela atual" || !signalConstantSource(rule.reference) && rule.referenceCandle === "Vela atual")) errors.push("cruzar e fechar exige candles fechados");
@@ -78,6 +110,7 @@ function validateSignalCard(card) {
 
 function updateSignalFields(card) {
     card.querySelectorAll(".condition-row").forEach(row => {
+        filterSignalSources(row);
         const rule = readSignalRow(row);
         const fixed = rule.reference === "Valor fixo";
         row.querySelector("[data-signal-fixed]").classList.toggle("is-hidden", !fixed);
