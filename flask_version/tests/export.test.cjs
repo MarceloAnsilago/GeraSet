@@ -102,7 +102,7 @@ test('exports the latest configuration and confirms only after closing the file'
         'InpDirection=0||0||1||0||N',
         'InpEntryStart=0||0||5||0||N', 'InpEntryEnd=1435||1435||5||1435||N',
         'InpOrderMode=0||0||1||0||N', 'InpPendingReference=0||0||1||0||N', 'InpPendingCandle=1||1||1||1||N',
-        'InpTargetUnit=0||0||1||0||N', 'InpStopLoss=0||0||0.01||0||N', 'InpStopCandleMultiplier=1||1||1||1||N',
+        'InpTargetUnit=0||0||1||0||N', 'InpStopMode=0||0||1||0||N', 'InpStopLoss=0||0||0.01||0||N', 'InpStopCandleMultiplier=1||1||1||1||N',
         'InpStopCandle=1||1||1||1||N', 'InpStopBody=0||0||1||0||N', 'InpTakeMode=1||1||1||1||N',
         'InpTakeProfit=150||150||0.01||150||N', 'InpTakeStopMultiplier=0||0||1||0||N',
         'InpBreakevenMode=0||0||1||0||N', 'InpBreakevenTrigger=0||0||0.01||0||N', 'InpBreakevenOffset=0||0||0.01||0||N',

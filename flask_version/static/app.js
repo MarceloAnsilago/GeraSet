@@ -11,12 +11,13 @@ function setupControls(root) {
     if (relocatedSetupControls.has(root)) return relocatedSetupControls.get(root);
     const controls = Array.from(root.querySelectorAll(".card input:not(.tab-radio), .card select"));
     // Append new controls to preserve existing positional saved setups.
-    return [...controls.filter(control => !control.matches("[data-condition-control], [data-candle-direction-control], [data-rsi-level-extra]")),
+    return [...controls.filter(control => !control.matches("[data-condition-control], [data-candle-direction-control], [data-rsi-level-extra], [data-stop-mode-extra]")),
         ...controls.filter(control => control.hasAttribute("data-condition-control") && !control.hasAttribute("data-signal-extra")),
         ...controls.filter(control => control.hasAttribute("data-candle-direction-control")),
         ...controls.filter(control => control.hasAttribute("data-signal-extra") && !control.hasAttribute("data-signal-normal-side")),
         ...controls.filter(control => control.hasAttribute("data-signal-normal-side")),
-        ...controls.filter(control => control.hasAttribute("data-rsi-level-extra"))];
+        ...controls.filter(control => control.hasAttribute("data-rsi-level-extra")),
+        ...controls.filter(control => control.hasAttribute("data-stop-mode-extra"))];
 }
 
 function restoreSetup(root, page) {
@@ -154,6 +155,17 @@ function bindRulesVisibility() {
     }
 
     const takeMode = document.querySelector("[data-take-mode]");
+    const stopMode = document.querySelector("[data-stop-mode]");
+    if (stopMode) {
+        const updateStopLoss = () => {
+            const groups = Array.from(document.querySelectorAll("[data-stop-candle]"));
+            const fixed = stopMode.value === "Distância fixa";
+            setVisible(groups, !fixed);
+            groups.forEach(group => group.querySelectorAll("input, select").forEach(control => { control.disabled = fixed; }));
+        };
+        stopMode.addEventListener("change", updateStopLoss);
+        updateStopLoss();
+    }
     const takeMultiplier = Array.from(document.querySelectorAll("[data-take-multiplier]"));
     const takeDistance = Array.from(document.querySelectorAll("[data-take-distance]"));
 
@@ -352,6 +364,7 @@ function relevantReviewControl(control, card) {
         if (control.closest("[data-candle-wicks]") && condition.value === "Desativado") return false;
     }
     const take = card.querySelector("[data-take-mode]");
+    if (control.closest("[data-stop-candle]") && card.querySelector("[data-stop-mode]")?.value === "Distância fixa") return false;
     if (take) {
         if (control.closest("[data-take-multiplier]") && take.value !== "Vezes o stop") return false;
         if (control.closest("[data-take-distance]") && take.value === "Vezes o stop") return false;
@@ -417,7 +430,7 @@ async function renderSetupReview() {
                     controls.filter(control => {
                         const isOptimization = Boolean(control.closest(".tab-panel-optimize"));
                         // Show fixed context (type, usage, mode, unit) alongside optimization ranges.
-                        const fixedContext = !control.closest(".tabs") || control.matches("[data-unit-selector], [data-take-mode]");
+                        const fixedContext = !control.closest(".tabs") || control.matches("[data-unit-selector], [data-take-mode], [data-stop-mode]");
                         return (isOptimization === optimization || (optimization && fixedContext)) && relevantReviewControl(control, card);
                     }).forEach(control => {
                         const entry = reviewLine(control, card);

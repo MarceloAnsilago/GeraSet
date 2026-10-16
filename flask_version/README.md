@@ -19,6 +19,14 @@ http://localhost:5000
 
 ## Exportar set
 
+Em **Alvos → Stop Loss**, selecione **Distância fixa** para usar apenas a
+distância na unidade dos alvos (pontos ou porcentagem); zero desliga o stop.
+**Distância + candle** mantém a soma da distância com o multiplicador do candle.
+Os rascunhos existentes continuam nesse modo. No modo fixo, Candle, Tamanho,
+Vezes e as otimizações de candle ficam inativos. O `.set` exporta
+`InpStopMode=1`, `InpStopLoss` e seu intervalo, com multiplicador do candle zero.
+Recompile o Uni, atualize o navegador com Ctrl+F5 e exporte um novo `.set`.
+
 O card **Alvos** exporta unidade, stop fixo, multiplicador/candle/tamanho do
 stop e o modo de take. Distância fixa usa `InpTakeMode=1` e `InpTakeProfit`;
 vezes o stop usa `InpTakeMode=0` e `InpTakeStopMultiplier`. Zero desliga o

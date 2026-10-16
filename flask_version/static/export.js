@@ -158,12 +158,15 @@ function targetSetLines(controls) {
         return `${input}=${value}||${Math.min(a,b)}||1||${Math.max(a,b)}||${a === b ? 'N' : 'Y'}`;
     };
     const mode = choice('target_take_mode', ['Vezes o stop', 'Distância fixa']);
+    // Cached templates without the selector retain the former distance + candle behavior.
+    const stopMode = values.target_stop_mode === undefined ? 0 : choice('target_stop_mode', ['Distância + candle', 'Distância fixa']);
     const candles = ['último', 'Penúltimo', 'Antepenúltimo'], sizes = ['Total com pavios', 'Corpo'];
     return [fixed('InpTargetUnit', choice('target_unit', ['Pontos', 'Porcentagem'])),
+        fixed('InpStopMode', stopMode),
         numeric('InpStopLoss', number(values.target_stop), 'stop'),
-        fixed('InpStopCandleMultiplier', number(values.target_stop_multiplier)),
-        enumRange('InpStopCandle', choice('target_candle', candles) + 1, 'candle', candles, 1),
-        enumRange('InpStopBody', choice('target_size', sizes), 'size', sizes),
+        fixed('InpStopCandleMultiplier', stopMode === 1 ? 0 : number(values.target_stop_multiplier)),
+        stopMode === 1 ? fixed('InpStopCandle', 1) : enumRange('InpStopCandle', choice('target_candle', candles) + 1, 'candle', candles, 1),
+        stopMode === 1 ? fixed('InpStopBody', 0) : enumRange('InpStopBody', choice('target_size', sizes), 'size', sizes),
         fixed('InpTakeMode', mode),
         mode === 1 ? numeric('InpTakeProfit', number(values.target_take_distance), 'take-distance') : fixed('InpTakeProfit', 0),
         mode === 0 ? numeric('InpTakeStopMultiplier', number(values.target_take_multiplier), 'take-multiplier') : fixed('InpTakeStopMultiplier', 0)];

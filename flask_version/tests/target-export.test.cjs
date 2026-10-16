@@ -48,3 +48,27 @@ test('invalid active distances, modes and ranges block export', () => {
         {'target-take-distance-start': '10', 'target-take-distance-step': '1', 'target-take-distance-end': '2'}])
         assert.throws(() => lines(values), {name: 'TargetValidationError'});
 });
+
+test('fixed stop exports distance and clears all inactive candle parameters and ranges', () => {
+    const result = lines({target_stop_mode: 'Distância fixa', target_stop: '80',
+        target_stop_multiplier: 'bad', target_candle: 'bad', target_size: 'bad',
+        'target-candle-start': 'bad', 'target-size-end': 'bad'});
+    for (const expected of ['InpStopMode=1||1||1||1||N', 'InpStopLoss=80||80||0.01||80||N',
+        'InpStopCandleMultiplier=0||0||1||0||N', 'InpStopCandle=1||1||1||1||N', 'InpStopBody=0||0||1||0||N'])
+        assert.ok(result.includes(expected), expected);
+});
+test('fixed stop zero, percent and optimized ranges are exported independently of candle settings', () => {
+    assert.ok(lines({target_stop_mode: 'Distância fixa', target_stop: '0'}).includes('InpStopLoss=0||0||0.01||0||N'));
+    const result = lines({target_stop_mode: 'Distância fixa', target_unit: 'Porcentagem', target_stop: '2',
+        'target-stop-start': '1', 'target-stop-step': '0.5', 'target-stop-end': '3'});
+    assert.ok(result.includes('InpStopLoss=2||1||0.5||3||Y'));
+    assert.ok(result.includes('InpTargetUnit=1||1||1||1||N'));
+    assert.throws(() => lines({target_stop_mode: 'invalid'}), {name: 'TargetValidationError'});
+});
+test('legacy and explicit combined stops retain candle contribution', () => {
+    for (const values of [{}, {target_stop_mode: 'Distância + candle'}]) {
+        const result = lines(values);
+        assert.ok(result.includes('InpStopMode=0||0||1||0||N'));
+        assert.ok(result.includes('InpStopCandleMultiplier=1.5||1.5||1||1.5||N'));
+    }
+});

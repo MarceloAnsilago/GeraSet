@@ -447,11 +447,13 @@
                         <div class="tab-panel tab-panel-params">
                     <label>Unidade dos alvos</label>
                     <select name="target_unit" data-unit-selector>{% for item in target_units %}<option>{{ item }}</option>{% endfor %}</select>
+                    <label>Stop Loss</label>
+                    <select name="target_stop_mode" data-stop-mode data-stop-mode-extra><option>Distância + candle</option><option>Distância fixa</option></select>
                     <div class="row">
-                        <div><label data-unit-label="Stop loss">Stop loss (pontos)</label><input name="target_stop" value="0.00"></div>
-                        <div><label>+ Vezes</label><input name="target_stop_multiplier" value="1.00"></div>
+                        <div><label data-unit-label="Distância do stop">Distância do stop (pontos)</label><input name="target_stop" value="0.00"></div>
+                        <div data-stop-candle><label>+ Vezes</label><input name="target_stop_multiplier" value="1.00"></div>
                     </div>
-                    <div class="row">
+                    <div class="row" data-stop-candle>
                         <div><label>Candle</label><select name="target_candle"><option>último</option><option>Penúltimo</option><option>Antepenúltimo</option></select></div>
                         <div><label>Tamanho</label><select name="target_size"><option>Total com pavios</option><option>Corpo</option></select></div>
                     </div>
@@ -469,7 +471,7 @@
                                 ('candle', 'Candle', ['último', 'Penúltimo', 'Antepenúltimo'], 'último'),
                                 ('size', 'Tamanho', ['Total com pavios', 'Corpo'], 'Total com pavios')
                             ] %}
-                                <div class="optimize-row">
+                                <div class="optimize-row" data-stop-candle>
                                     <div class="optimize-name" {% if key in ['measure', 'min', 'max', 'upper-wick', 'lower-wick', 'stop', 'take-distance'] %}data-unit-label="{{ {'Sobrevenda': 'Nível inferior', 'Sobrecompra': 'Nível superior'}.get(title, title) }}"{% endif %}>{{ {'Sobrevenda': 'Nível inferior', 'Sobrecompra': 'Nível superior'}.get(title, title) }}</div>
                                     <div class="optimize-grid optimize-grid-select">
                                         <label for="target-{{ key }}-start">Iniciar</label>
