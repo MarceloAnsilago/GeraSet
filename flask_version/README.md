@@ -19,6 +19,13 @@ http://localhost:5000
 
 ## Exportar set
 
+O card **Alvos** exporta unidade, stop fixo, multiplicador/candle/tamanho do
+stop e o modo de take. Distância fixa usa `InpTakeMode=1` e `InpTakeProfit`;
+vezes o stop usa `InpTakeMode=0` e `InpTakeStopMultiplier`. Zero desliga o
+take do modo escolhido. Apenas o intervalo do modo ativo é exportado.
+Atualize com Ctrl+F5, reexporte o set e carregue no Uni recompilado para
+aplicar esses campos. Rascunhos salvos mantêm a ordem dos controles.
+
 Em **Revisão e Sets**, clique em **Exportar set**. No Chrome ou Edge,
 o diálogo **Salvar como** permite escolher a pasta e o nome do arquivo `.set`.
 O app confirma o salvamento somente depois de concluir a gravação.

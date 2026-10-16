@@ -131,6 +131,44 @@ function orderSetLines(controls) {
         `InpPendingCandle=${bar}||${start}||${step}||${end}||${start === end ? 'N' : 'Y'}`];
 }
 
+function targetSetLines(controls) {
+    const values = Object.fromEntries(controls.map(c => [c.key, c.value]));
+    const fail = message => { const error = new Error(message); error.name = 'TargetValidationError'; throw error; };
+    const choice = (key, options) => {
+        const index = options.indexOf(values[key]);
+        if (index < 0) fail(`Confira ${key} em Alvos.`);
+        return index;
+    };
+    const number = raw => {
+        const text = String(raw ?? '').trim().replace(',', '.');
+        if (!/^(?:\d+(?:\.\d{0,2})?|\.\d{1,2})$/.test(text) || Number(text) > 100000000) fail('Use valores de 0 a 100000000 com até duas casas decimais em Alvos.');
+        return Number(text);
+    };
+    const fixed = (input, value) => `${input}=${value}||${value}||1||${value}||N`;
+    const numeric = (input, value, key) => {
+        const bounds = ['start', 'step', 'end'].map(b => number(values[`target-${key}-${b}`]));
+        let [start, step, end] = bounds;
+        if (bounds.every(n => n === 0)) { start = value; step = 0.01; end = value; }
+        else if (step <= 0 || end < start) fail('Confira início, passo e fim da otimização dos alvos.');
+        return `${input}=${value}||${start}||${step}||${end}||${start === end ? 'N' : 'Y'}`;
+    };
+    const enumRange = (input, value, key, options, offset = 0) => {
+        const a = choice(`target-${key}-start`, options) + offset;
+        const b = choice(`target-${key}-end`, options) + offset;
+        return `${input}=${value}||${Math.min(a,b)}||1||${Math.max(a,b)}||${a === b ? 'N' : 'Y'}`;
+    };
+    const mode = choice('target_take_mode', ['Vezes o stop', 'Distância fixa']);
+    const candles = ['último', 'Penúltimo', 'Antepenúltimo'], sizes = ['Total com pavios', 'Corpo'];
+    return [fixed('InpTargetUnit', choice('target_unit', ['Pontos', 'Porcentagem'])),
+        numeric('InpStopLoss', number(values.target_stop), 'stop'),
+        fixed('InpStopCandleMultiplier', number(values.target_stop_multiplier)),
+        enumRange('InpStopCandle', choice('target_candle', candles) + 1, 'candle', candles, 1),
+        enumRange('InpStopBody', choice('target_size', sizes), 'size', sizes),
+        fixed('InpTakeMode', mode),
+        mode === 1 ? numeric('InpTakeProfit', number(values.target_take_distance), 'take-distance') : fixed('InpTakeProfit', 0),
+        mode === 0 ? numeric('InpTakeStopMultiplier', number(values.target_take_multiplier), 'take-multiplier') : fixed('InpTakeStopMultiplier', 0)];
+}
+
 function breakevenSetLines(controls) {
     const values = Object.fromEntries(controls.map(c => [c.key, c.value]));
     const fail = message => { const e = new Error(message); e.name = 'BreakevenValidationError'; throw e; };
@@ -290,6 +328,7 @@ function serializeSetupSet(roots) {
         ...operationSetLines(pages.inicio || []),
         ...scheduleSetLines(pages.inicio || []),
         ...orderSetLines(pages.gestao || []),
+        ...targetSetLines(pages.gestao || []),
         ...breakevenSetLines(pages.gestao || []),
         ...indicatorSignalSetLines(roots.get('indicadores')),
         ...metadata.split("\n").map(line => `; ${line}`),
@@ -391,6 +430,8 @@ async function bindSetExport() {
                 ? `Corrija Horários: ${error.message}`
                 : error.name === "OrderValidationError"
                 ? `Corrija Ordem em Gestão: ${error.message}`
+                : error.name === "TargetValidationError"
+                ? `Corrija Alvos em Gestão: ${error.message}`
                 : error.name === "SignalValidationError"
                 ? `Corrija o Sinal em Indicadores antes de exportar: ${error.message}`
                 : error.name === "AbortError"

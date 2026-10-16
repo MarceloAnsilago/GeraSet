@@ -23,9 +23,16 @@ function environment({picker, fetchFails = false, signalErrors = []} = {}) {
         'schedule-entry-end-start': '23:55', 'schedule-entry-end-end': '23:55',
     }).map(([name, value]) => ({name, value, checked: false}));
     const end = {name: 'period-end', value: '10', checked: false};
+    const targets = Object.entries({target_unit: 'Pontos', target_stop: '0', target_stop_multiplier: '1',
+        target_candle: 'último', target_size: 'Total com pavios', target_take_mode: 'Distância fixa',
+        target_take_distance: '150', target_take_multiplier: '2',
+        'target-candle-start': 'último', 'target-candle-end': 'último',
+        'target-size-start': 'Total com pavios', 'target-size-end': 'Total com pavios',
+        ...Object.fromEntries(['stop', 'take-distance', 'take-multiplier'].flatMap(key => ['start', 'step', 'end'].map(b => [`target-${key}-${b}`, '0'])))
+    }).map(([name, value]) => ({name, value, checked: false}));
     const usage = {name: 'usage', value: 'Saída', checked: true};
     const roots = new Map(['inicio', 'indicadores', 'gestao'].map(page => [page, {
-        controls: page === 'inicio' ? [name, magic, lot, ...operation] : page === 'gestao' ? [end, usage, {name: 'order_mode', value: 'A mercado'}] : [end, usage],
+        controls: page === 'inicio' ? [name, magic, lot, ...operation] : page === 'gestao' ? [end, usage, {name: 'order_mode', value: 'A mercado'}, ...targets] : [end, usage],
         querySelector(selector) {
             if (selector.startsWith('[data-page=')) return this;
             if (page === 'indicadores') {
@@ -95,6 +102,9 @@ test('exports the latest configuration and confirms only after closing the file'
         'InpDirection=0||0||1||0||N',
         'InpEntryStart=0||0||5||0||N', 'InpEntryEnd=1435||1435||5||1435||N',
         'InpOrderMode=0||0||1||0||N', 'InpPendingReference=0||0||1||0||N', 'InpPendingCandle=1||1||1||1||N',
+        'InpTargetUnit=0||0||1||0||N', 'InpStopLoss=0||0||0.01||0||N', 'InpStopCandleMultiplier=1||1||1||1||N',
+        'InpStopCandle=1||1||1||1||N', 'InpStopBody=0||0||1||0||N', 'InpTakeMode=1||1||1||1||N',
+        'InpTakeProfit=150||150||0.01||150||N', 'InpTakeStopMultiplier=0||0||1||0||N',
         'InpBreakevenMode=0||0||1||0||N', 'InpBreakevenTrigger=0||0||0.01||0||N', 'InpBreakevenOffset=0||0||0.01||0||N',
         ...[1, 2, 3, 4].flatMap(i => [`InpIndicator${i}Type=-1||-1||1||-1||N`, `InpIndicator${i}Exit=0||0||1||0||N`]),
         ...[1, 2, 3, 4, 5].map(i => `InpSignal${i}=`),
