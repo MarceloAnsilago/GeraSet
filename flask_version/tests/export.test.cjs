@@ -108,6 +108,7 @@ test('exports the latest configuration and confirms only after closing the file'
         'InpBreakevenMode=0||0||1||0||N', 'InpBreakevenTrigger=0||0||0.01||0||N', 'InpBreakevenOffset=0||0||0.01||0||N',
         ...[1, 2, 3, 4].flatMap(i => [`InpIndicator${i}Type=-1||-1||1||-1||N`, `InpIndicator${i}Exit=0||0||1||0||N`]),
         ...[1, 2, 3, 4, 5].map(i => `InpSignal${i}=`),
+        'InpExibirHistogramas=true', 'InpHistogramasBarras=300',
     ]);
     assert.equal(written.pages.inicio[1].value, '12345');
     assert.equal(written.pages.inicio[2].value, '0.50');
@@ -271,4 +272,19 @@ test('invalid operation prevents writing and reports the card to fix', async () 
     await env.button.click();
     assert.equal(opened, false);
     assert.match(env.status.textContent, /Corrija Mercado e operação/);
+});
+
+
+test('histogram checkbox exports disabled and enabled states', async () => {
+    for (const checked of [false, true]) {
+        let preset = '';
+        const env = environment({picker: async () => ({createWritable: async () => ({
+            async write(contents) { preset = Buffer.from(contents).subarray(2).toString('utf16le'); }, async close() {},
+        })})});
+        const original = env.context.setupControls;
+        env.context.setupControls = root => [...original(root), {name: 'show_signal_histograms', value: 'on', checked}];
+        await env.context.bindSetExport();
+        await env.button.click();
+        assert.ok(preset.includes(`InpExibirHistogramas=${checked}`));
+    }
 });

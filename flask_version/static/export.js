@@ -334,6 +334,9 @@ function serializeSetupSet(roots) {
         ...targetSetLines(pages.gestao || []),
         ...breakevenSetLines(pages.gestao || []),
         ...indicatorSignalSetLines(roots.get('indicadores')),
+        `InpExibirHistogramas=${pages.indicadores?.find(control => control.key === 'show_signal_histograms')?.checked ?? true}`,
+        'InpHistogramasBarras=300',
+
         ...metadata.split("\n").map(line => `; ${line}`),
         "",
     ].join("\r\n");

@@ -11,19 +11,20 @@ function setupControls(root) {
     if (relocatedSetupControls.has(root)) return relocatedSetupControls.get(root);
     const controls = Array.from(root.querySelectorAll(".card input:not(.tab-radio), .card select"));
     // Append new controls to preserve existing positional saved setups.
-    return [...controls.filter(control => !control.matches("[data-condition-control], [data-candle-direction-control], [data-rsi-level-extra], [data-stop-mode-extra]")),
+    return [...controls.filter(control => !control.matches("[data-condition-control], [data-candle-direction-control], [data-rsi-level-extra], [data-stop-mode-extra], [data-histogram-extra]")),
         ...controls.filter(control => control.hasAttribute("data-condition-control") && !control.hasAttribute("data-signal-extra")),
         ...controls.filter(control => control.hasAttribute("data-candle-direction-control")),
         ...controls.filter(control => control.hasAttribute("data-signal-extra") && !control.hasAttribute("data-signal-normal-side")),
         ...controls.filter(control => control.hasAttribute("data-signal-normal-side")),
         ...controls.filter(control => control.hasAttribute("data-rsi-level-extra")),
-        ...controls.filter(control => control.hasAttribute("data-stop-mode-extra"))];
+        ...controls.filter(control => control.hasAttribute("data-stop-mode-extra")),
+        ...controls.filter(control => control.hasAttribute("data-histogram-extra"))];
 }
 
 function restoreSetup(root, page) {
     const state = readSetupState();
     let saved = state[page] || [];
-    const legacyLength = setupControls(root).filter(control => !control.hasAttribute("data-signal-extra") && !control.hasAttribute("data-rsi-level-extra")).length;
+    const legacyLength = setupControls(root).filter(control => !control.hasAttribute("data-histogram-extra")).filter(control => !control.hasAttribute("data-signal-extra") && !control.hasAttribute("data-rsi-level-extra")).length;
     if (page === "indicadores" && state.signalNormalSideVersion !== 1 && saved.length === legacyLength + 15) {
         // Remove the redundant per-condition usage from the former three-field extras.
         saved = saved.filter((_, index) => index < legacyLength || (index - legacyLength) % 3 !== 0);
