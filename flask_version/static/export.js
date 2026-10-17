@@ -334,8 +334,9 @@ function serializeSetupSet(roots) {
         ...targetSetLines(pages.gestao || []),
         ...breakevenSetLines(pages.gestao || []),
         ...indicatorSignalSetLines(roots.get('indicadores')),
-        `InpExibirHistogramas=${pages.indicadores?.find(control => control.key === 'show_signal_histograms')?.checked ?? true}`,
+        `InpExibirHistogramas=${pages.configuracoes?.find(control => control.key === 'show_signal_histograms')?.checked ?? true}`,
         'InpHistogramasBarras=300',
+        `InpExibirPainel=${pages.configuracoes?.find(control => control.key === 'show_mt5_panel')?.checked ?? true}`,
 
         ...metadata.split("\n").map(line => `; ${line}`),
         "",
@@ -386,7 +387,7 @@ async function bindSetExport() {
         : "A exportação usa o download do navegador. Para escolher a pasta, ative a opção de perguntar onde salvar os downloads.";
 
     async function loadPages() {
-        const entries = await Promise.all(["inicio", "indicadores", "gestao"].map(async page => {
+        const entries = await Promise.all(["inicio", "indicadores", "gestao", "configuracoes"].map(async page => {
             const response = await fetch(`/${page}`);
             if (!response.ok) throw new Error("Falha ao carregar o set");
             const root = new DOMParser().parseFromString(await response.text(), "text/html");

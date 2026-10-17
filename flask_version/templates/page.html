@@ -222,12 +222,6 @@
                 {% endfor %}
             </section>
 
-            <section class="card">
-                <h2>Visualização no MetaTrader 5</h2>
-                <label><input type="checkbox" name="show_signal_histograms" data-histogram-extra checked style="width:auto; min-height:0;"> Exibir histograma de sinais — uma faixa por indicador</label>
-                <p class="muted">Azul: compra. Vermelho: venda. Cinza: neutro. Recurso apenas visual.</p>
-            </section>
-
             <h2>Parâmetros dos indicadores</h2>
             <p class="muted">Cada slot usa os parâmetros do indicador e da finalidade escolhidos. Entrada e Saída possuem configurações independentes.</p>
             <section class="grid-4" data-indicator-parameters></section>
@@ -633,7 +627,12 @@
 
         {% elif active_page == 'configuracoes' %}
             <h1>Configurações</h1>
-            <div class="info">Aqui ficarão as preferências do projeto.</div>
+            <section class="card">
+                <h2>Visualização no MetaTrader 5</h2>
+                <label><input type="checkbox" name="show_signal_histograms" data-histogram-extra checked style="width:auto; min-height:0;"> Exibir histograma de sinais — uma faixa por indicador</label>
+                <label><input type="checkbox" name="show_mt5_panel" checked style="width:auto; min-height:0;"> Exibir painel do UNI</label>
+                <p class="muted">Azul: compra. Vermelho: venda. Cinza: neutro. Recurso apenas visual.</p>
+            </section>
         {% endif %}
     </main>
     <script src="{{ url_for('static', filename='signal.js') }}"></script>

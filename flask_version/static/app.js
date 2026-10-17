@@ -1,7 +1,15 @@
 const setupStorageKey = "geraset-flask-cards-v1";
 
 function readSetupState() {
-    try { return JSON.parse(localStorage.getItem(setupStorageKey)) || {}; }
+    try {
+        const state = JSON.parse(localStorage.getItem(setupStorageKey)) || {};
+        // Preserve the checkbox formerly appended to the Indicators page.
+        const previous = state.indicadores?.at(-1);
+        if (!state.mt5Visualization && previous?.value === "on" && typeof previous.checked === "boolean") {
+            state.mt5Visualization = {show_signal_histograms: previous.checked};
+        }
+        return state;
+    }
     catch { return {}; }
 }
 
@@ -35,7 +43,7 @@ function restoreSetup(root, page) {
         saved = saved.filter((_, index) => index >= 212 || !removed.has(index % 53));
     }
     if (page === "indicadores" && saved.length === legacyLength + 4) {
-        const legacyCount = setupControls(root).filter(control => !control.hasAttribute("data-condition-control") && !control.hasAttribute("data-rsi-level-extra")).length;
+        const legacyCount = setupControls(root).filter(control => !control.hasAttribute("data-histogram-extra") && !control.hasAttribute("data-condition-control") && !control.hasAttribute("data-rsi-level-extra")).length;
         saved.splice(legacyCount, 4);
     }
     setupControls(root).forEach((control, index) => {
@@ -49,7 +57,12 @@ function restoreSetup(root, page) {
             return;
         }
         const value = saved[index];
-        if (!value) return;
+        if (!value) {
+            if (page === "configuracoes" && typeof state.mt5Visualization?.[control.name] === "boolean") {
+                control.checked = state.mt5Visualization[control.name];
+            }
+            return;
+        }
         if (control.type === "radio" || control.type === "checkbox") control.checked = value.checked;
         else if (control.tagName !== "SELECT" || Array.from(control.options).some(option => option.value === value.value)) {
             control.value = value.value;
@@ -454,7 +467,7 @@ async function renderSetupReview() {
 document.addEventListener("DOMContentLoaded", () => {
     const root = document.querySelector("[data-page]");
     if (!root) return;
-    if (["inicio", "indicadores", "gestao"].includes(root.dataset.page)) {
+    if (["inicio", "indicadores", "gestao", "configuracoes"].includes(root.dataset.page)) {
         const save = () => {
             const state = readSetupState();
             state[root.dataset.page] = setupControls(root).map(control => ({value: control.value, checked: control.checked}));

@@ -48,3 +48,20 @@ test('review and optimization ignore candle fields in fixed stop mode', () => {
     mode.value = 'Distância + candle';
     assert.equal(context.relevantReviewControl(control, card), true);
 });
+
+
+test('visualization settings migrate the old histogram choice and restore independent checkboxes', () => {
+    const field = name => ({name, value: 'on', checked: true, type: 'checkbox', tagName: 'INPUT',
+        hasAttribute: () => false, matches: () => false});
+    const histogram = field('show_signal_histograms'), panel = field('show_mt5_panel');
+    const root = {querySelectorAll: selector => ['[data-crossing-source]', '[data-indicator-type]'].includes(selector) ? [] : [histogram, panel]};
+    const state = {indicadores: [{value: '14'}, {value: 'on', checked: false}]};
+    const context = environment({}, state); vm.runInContext(source, context);
+    context.restoreSetup(root, 'configuracoes');
+    assert.equal(histogram.checked, false);
+    assert.equal(panel.checked, true);
+    state.configuracoes = [{value: 'on', checked: true}, {value: 'on', checked: false}];
+    context.restoreSetup(root, 'configuracoes');
+    assert.equal(histogram.checked, true);
+    assert.equal(panel.checked, false);
+});

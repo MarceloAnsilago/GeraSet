@@ -31,8 +31,9 @@ function environment({picker, fetchFails = false, signalErrors = []} = {}) {
         ...Object.fromEntries(['stop', 'take-distance', 'take-multiplier'].flatMap(key => ['start', 'step', 'end'].map(b => [`target-${key}-${b}`, '0'])))
     }).map(([name, value]) => ({name, value, checked: false}));
     const usage = {name: 'usage', value: 'Saída', checked: true};
-    const roots = new Map(['inicio', 'indicadores', 'gestao'].map(page => [page, {
-        controls: page === 'inicio' ? [name, magic, lot, ...operation] : page === 'gestao' ? [end, usage, {name: 'order_mode', value: 'A mercado'}, ...targets] : [end, usage],
+    const roots = new Map(['inicio', 'indicadores', 'gestao', 'configuracoes'].map(page => [page, {
+        page,
+        controls: page === 'configuracoes' ? [] : page === 'inicio' ? [name, magic, lot, ...operation] : page === 'gestao' ? [end, usage, {name: 'order_mode', value: 'A mercado'}, ...targets] : [end, usage],
         querySelector(selector) {
             if (selector.startsWith('[data-page=')) return this;
             if (page === 'indicadores') {
@@ -108,13 +109,13 @@ test('exports the latest configuration and confirms only after closing the file'
         'InpBreakevenMode=0||0||1||0||N', 'InpBreakevenTrigger=0||0||0.01||0||N', 'InpBreakevenOffset=0||0||0.01||0||N',
         ...[1, 2, 3, 4].flatMap(i => [`InpIndicator${i}Type=-1||-1||1||-1||N`, `InpIndicator${i}Exit=0||0||1||0||N`]),
         ...[1, 2, 3, 4, 5].map(i => `InpSignal${i}=`),
-        'InpExibirHistogramas=true', 'InpHistogramasBarras=300',
+        'InpExibirHistogramas=true', 'InpHistogramasBarras=300', 'InpExibirPainel=true',
     ]);
     assert.equal(written.pages.inicio[1].value, '12345');
     assert.equal(written.pages.inicio[2].value, '0.50');
     assert.equal(written.pages.indicadores[0].value, '50');
     assert.equal(written.pages.indicadores[1].checked, true);
-    assert.equal(Object.keys(written.pages).length, 3);
+    assert.equal(Object.keys(written.pages).length, 4);
     assert.equal(closed, true);
     assert.equal(env.status.textContent, 'Set salvo: chosen.set');
     assert.equal(env.button.disabled, false);
@@ -282,9 +283,10 @@ test('histogram checkbox exports disabled and enabled states', async () => {
             async write(contents) { preset = Buffer.from(contents).subarray(2).toString('utf16le'); }, async close() {},
         })})});
         const original = env.context.setupControls;
-        env.context.setupControls = root => [...original(root), {name: 'show_signal_histograms', value: 'on', checked}];
+        env.context.setupControls = root => root.page === 'configuracoes' ? [{name: 'show_signal_histograms', value: 'on', checked}, {name: 'show_mt5_panel', value: 'on', checked: !checked}] : original(root);
         await env.context.bindSetExport();
         await env.button.click();
         assert.ok(preset.includes(`InpExibirHistogramas=${checked}`));
+        assert.ok(preset.includes(`InpExibirPainel=${!checked}`));
     }
 });
