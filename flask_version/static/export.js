@@ -286,12 +286,12 @@ function indicatorSignalSetLines(root) {
     return lines;
 }
 
-function serializeSetupSet(roots) {
+function serializeSetupSet(roots, state = typeof readSetupState === "function" ? readSetupState() : {}) {
     const pages = {};
     let name = "Meu setup";
     let magic = "";
     for (const [page, root] of roots) {
-        restoreSetup(root, page);
+        restoreSetup(root, page, state);
         const signalErrors = validateSignalCard(root.querySelector("[data-conditions]"));
         if (signalErrors.length) {
             const error = new Error(signalErrors.join(" "));
@@ -335,6 +335,8 @@ function serializeSetupSet(roots) {
         'InpHistogramasBarras=300',
         `InpExibirPainel=${pages.configuracoes?.find(control => control.key === 'show_mt5_panel')?.checked ?? true}`,
 
+        ...(typeof state.testerAutoStart === "boolean"
+            ? [`InpTesterAutoStart=${state.testerAutoStart}`] : []),
         ...metadata.split("\n").map(line => `; ${line}`),
         "",
     ].join("\r\n");

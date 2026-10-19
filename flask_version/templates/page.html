@@ -576,8 +576,10 @@
             <p class="caption">Confira a configuração antes de salvar ou ativar o set.</p>
             <div class="top-action">
                 <div class="info">Carregue um set salvo ou confira a configuração atual.</div>
-                <a class="btn btn-primary" href="#">Carregar set</a>
+                <button class="btn btn-primary" type="button" data-import-set>Carregar set</button>
+                <input type="file" accept=".set" data-import-file hidden>
             </div>
+            <p data-import-status role="status" aria-live="polite"></p>
             <div class="tabs">
                 <input class="tab-radio" id="review-params" name="review-tabs" type="radio" checked>
                 <input class="tab-radio" id="review-optimize" name="review-tabs" type="radio">
@@ -638,5 +640,6 @@
     <script src="{{ url_for('static', filename='signal.js') }}"></script>
     <script src="{{ url_for('static', filename='app.js') }}"></script>
     <script src="{{ url_for('static', filename='export.js') }}"></script>
+    <script src="{{ url_for('static', filename='import.js') }}"></script>
 </body>
 </html>

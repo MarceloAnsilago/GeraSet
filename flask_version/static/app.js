@@ -29,8 +29,7 @@ function setupControls(root) {
         ...controls.filter(control => control.hasAttribute("data-histogram-extra"))];
 }
 
-function restoreSetup(root, page) {
-    const state = readSetupState();
+function restoreSetup(root, page, state = readSetupState()) {
     let saved = state[page] || [];
     const legacyLength = setupControls(root).filter(control => !control.hasAttribute("data-histogram-extra")).filter(control => !control.hasAttribute("data-signal-extra") && !control.hasAttribute("data-rsi-level-extra")).length;
     if (page === "indicadores" && state.signalNormalSideVersion !== 1 && saved.length === legacyLength + 15) {

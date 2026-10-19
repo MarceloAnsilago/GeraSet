@@ -218,3 +218,11 @@ comum para linhas, escalas, constantes e offsets de buffers. A interface separa
 a fonte da linha do indicador; ADX oferece ADX, DI+ e DI-. Escolha Valor
 numérico na referência para informar um limiar. Os seletores visuais derivam
 dos campos originais, preservando os setups salvos e os códigos do Uni.
+
+
+Em Revisão e Sets, **Carregar set** importa arquivos `.set` exportados pelo
+GeraSet, incluindo UTF-16 do MT5 e UTF-8. A importação restaura todas as
+páginas por chave de campo, valida as condições e confere a coerência
+entre os inputs do Uni e os dados comentados antes de substituir o rascunho.
+Arquivos nativos sem os dados comentados do GeraSet são recusados.
+`InpTesterAutoStart` é preservado na importação e na nova exportação.
