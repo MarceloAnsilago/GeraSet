@@ -1,5 +1,35 @@
+// Indicator signal contract. Suffixes and wire offsets preserve existing .set files.
+const signalIndicatorCatalog = Object.freeze({
+    "Média Móvel": {scale: "preço", lines: [{label: "Média", suffix: "", buffer: 0}]},
+    "RSI": {scale: "índice", lines: [
+        {label: "RSI", suffix: "", buffer: 0},
+        ...["superior", "médio", "inferior"].map((level, index) =>
+            ({label: `Nível ${level}`, suffix: ` Nível ${level}`, level: index, constant: true}))]},
+    "ADX": {scale: "índice", lines: [
+        {label: "ADX", suffix: "", buffer: 0},
+        {label: "DI+", suffix: " +DI", buffer: 1},
+        {label: "DI−", suffix: " −DI", buffer: 2}]},
+});
+
+function indicatorSignalSources(type, slot) {
+    const definition = signalIndicatorCatalog[type];
+    return definition ? definition.lines.map(line => ({...line, scale: definition.scale,
+        source: `Indicador ${slot}: ${type}${line.suffix}`,
+        wire: line.constant ? 22 + (Number(slot) - 1) * 3 + line.level : 10 + (Number(slot) - 1) * 3 + line.buffer})) : [];
+}
+
+function signalSourceDefinition(source) {
+    const match = /^Indicador (\d+): (.+)$/.exec(source);
+    if (!match) return null;
+    for (const type of Object.keys(signalIndicatorCatalog)) {
+        const found = indicatorSignalSources(type, match[1]).find(line => line.source === source);
+        if (found) return found;
+    }
+    return null;
+}
+
 function signalConstantSource(source) {
-    return source === "Valor fixo" || /: RSI Nível (superior|médio|inferior)$/.test(source);
+    return source === "Valor fixo" || Boolean(signalSourceDefinition(source)?.constant);
 }
 
 function readSignalRow(row) {
@@ -51,7 +81,7 @@ function signalRuleErrors(rule, unit) {
     if (!finite(rule.distance) || Number(rule.distance) < 0) errors.push("a distância deve ser um número maior ou igual a zero");
     if (unit === "N.usar" && Number(rule.distance) !== 0) errors.push("selecione a unidade da distância ou zere a distância");
     if (unit === "Porcentagem" && rule.reference === "Valor fixo" && Number(rule.fixed) === 0 && Number(rule.distance) > 0) errors.push("porcentagem exige referência diferente de zero");
-    const scale = source => /: (RSI|ADX)( |$)/.test(source) ? "índice" : source === "Valor fixo" ? "fixo" : "preço";
+    const scale = source => signalSourceDefinition(source)?.scale || (source === "Valor fixo" ? "fixo" : "preço");
     const targetScale = scale(rule.target), referenceScale = scale(rule.reference);
     if (signalChosen(rule.target) && signalChosen(rule.reference) && referenceScale !== "fixo" && targetScale !== referenceScale) errors.push("compare valores da mesma escala; para RSI/ADX, use um indicador compatível ou valor fixo");
     if (unit === "Pontos" && Number(rule.distance) > 0 && (targetScale === "índice" || referenceScale === "índice")) errors.push("distância em pontos só se aplica a preços");

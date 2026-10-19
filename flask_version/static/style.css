@@ -843,3 +843,7 @@ button.btn:disabled {
     outline-offset: 3px;
     scroll-margin-top: 6rem;
 }
+
+/* Source and indicator line remain stacked within the existing condition grid. */
+[data-source-ui] + [data-source-ui] { margin-top: 0.35rem; }
+[data-crossing-source][hidden], [data-source-ui][hidden] { display: none; }

@@ -17,7 +17,7 @@ const relocatedSetupControls = new WeakMap();
 
 function setupControls(root) {
     if (relocatedSetupControls.has(root)) return relocatedSetupControls.get(root);
-    const controls = Array.from(root.querySelectorAll(".card input:not(.tab-radio), .card select"));
+    const controls = Array.from(root.querySelectorAll(".card input:not(.tab-radio), .card select:not([data-source-ui])"));
     // Append new controls to preserve existing positional saved setups.
     return [...controls.filter(control => !control.matches("[data-condition-control], [data-candle-direction-control], [data-rsi-level-extra], [data-stop-mode-extra], [data-histogram-extra]")),
         ...controls.filter(control => control.hasAttribute("data-condition-control") && !control.hasAttribute("data-signal-extra")),
@@ -75,9 +75,7 @@ function updateCrossingOptions(root) {
     const indicators = Array.from(root.querySelectorAll("[data-indicator-type]"))
         .filter(select => select.value !== "Não usar")
         .flatMap(select => {
-            const base = `Indicador ${select.dataset.indicatorType}: ${select.value}`;
-            if (select.value === "RSI") return [base, ...["superior", "médio", "inferior"].map(level => `${base} Nível ${level}`)];
-            return select.value === "ADX" ? [base, `${base} +DI`, `${base} −DI`] : [base];
+            return indicatorSignalSources(select.value, select.dataset.indicatorType).map(line => line.source);
         });
     root.querySelectorAll("[data-crossing-source]").forEach(select => {
         const selected = select.value;
@@ -91,6 +89,7 @@ function updateCrossingOptions(root) {
         });
         select.value = Array.from(select.options).some(option => option.value === selected) ? selected : select.options[0].value;
     });
+    root.querySelectorAll("[data-crossing-source]").forEach(select => select.signalPickerRefresh?.());
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -299,6 +298,7 @@ function bindSignalReset() {
     button.addEventListener("click", () => {
         card.querySelectorAll("select").forEach(control => { control.value = control.hasAttribute("data-signal-extra") ? control.options[0].value : "N.usar"; });
         card.querySelectorAll("input[data-condition-control]").forEach(control => { control.value = "0"; });
+        card.querySelectorAll("[data-crossing-source]").forEach(control => control.signalPickerRefresh?.());
         // Refresh unit labels, the summary and saved setup with the complete reset.
         card.querySelector("[data-unit-selector]").dispatchEvent(new Event("change", {bubbles: true}));
     });
@@ -359,6 +359,7 @@ function bindRulesSummary() {
 document.addEventListener("DOMContentLoaded", bindRulesSummary);
 
 function relevantReviewControl(control, card) {
+    if (control.hasAttribute?.("data-source-ui")) return false;
     if (control.closest("[data-retired-signal]")) return false;
     if (card.matches("[data-conditions]")) {
         const row = control.closest(".condition-row");
@@ -641,3 +642,57 @@ function separateIndicatorParameters() {
     });
 }
 document.addEventListener('DOMContentLoaded', separateIndicatorParameters);
+
+// The stored source select remains the serialization contract; these controls are views.
+function bindSignalSourcePickers() {
+    const root = document.querySelector('[data-page="indicadores"]');
+    if (!root) return;
+    root.querySelectorAll('[data-crossing-source]').forEach(source => {
+        const doc = source.ownerDocument;
+        const group = doc.createElement('select');
+        const line = doc.createElement('select');
+        group.dataset.sourceUi = '';
+        line.dataset.sourceUi = '';
+        group.id = `${source.id}-indicator`;
+        line.id = `${source.id}-line`;
+        const label = source.previousElementSibling;
+        if (label?.tagName === 'LABEL') label.htmlFor = group.id;
+        group.setAttribute('aria-label', `${label?.textContent || 'Fonte'} — indicador ou preço`);
+        line.setAttribute('aria-label', `${label?.textContent || 'Fonte'} — linha`);
+        source.hidden = true;
+        source.after(group, line);
+        const key = value => /^Indicador \d+:/.exec(value)?.[0] || value;
+        let groups;
+        const fill = (select, options) => select.replaceChildren(...options.map(([value, text]) => {
+            const option = doc.createElement('option');
+            option.value = value; option.textContent = text; return option;
+        }));
+        const fillLines = selected => {
+            const values = groups.get(group.value) || [];
+            fill(line, values.map(value => [value, signalSourceDefinition(value)?.label || value]));
+            line.value = values.includes(selected) ? selected : values[0] || '';
+            line.hidden = !group.value.startsWith('Indicador ');
+        };
+        source.signalPickerRefresh = () => {
+            groups = new Map();
+            Array.from(source.options).forEach(option => {
+                const id = key(option.value);
+                if (!groups.has(id)) groups.set(id, []);
+                groups.get(id).push(option.value);
+            });
+            fill(group, Array.from(groups, ([id, values]) => [id,
+                id.startsWith('Indicador ') ? values[0] : id === 'Valor fixo' ? 'Valor numérico' : id]));
+            group.value = key(source.value);
+            fillLines(source.value);
+        };
+        const commit = () => {
+            source.value = line.value;
+            source.dispatchEvent(new Event('change', {bubbles: true}));
+        };
+        group.addEventListener('change', () => { fillLines(''); commit(); });
+        line.addEventListener('change', commit);
+        source.addEventListener('change', source.signalPickerRefresh);
+        source.signalPickerRefresh();
+    });
+}
+document.addEventListener('DOMContentLoaded', bindSignalSourcePickers);

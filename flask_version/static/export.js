@@ -260,11 +260,8 @@ function indicatorSignalSetLines(root) {
         if (priceSources.includes(label)) return priceSources.indexOf(label);
         for (let i = 0; i < types.length; i++) {
             if (types[i] === 'Não usar') continue;
-            const base = `Indicador ${i + 1}: ${types[i]}`;
-            const buffers = types[i] === 'ADX' ? [base, `${base} +DI`, `${base} −DI`] : [base];
-            const levels = ['superior', 'médio', 'inferior'].map(level => `${base} Nível ${level}`);
-            if (types[i] === 'RSI' && levels.includes(label)) return 22 + i * 3 + levels.indexOf(label);
-            if (buffers.includes(label)) return 10 + i * 3 + buffers.indexOf(label);
+            const definition = indicatorSignalSources(types[i], i + 1).find(line => line.source === label);
+            if (definition) return definition.wire;
         }
         fail("Buffer não encontrado nos indicadores selecionados.");
     };

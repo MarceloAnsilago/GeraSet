@@ -211,3 +211,10 @@ positivos e fim >= inicio. A mercado desativa os intervalos da pendente.
 Setups salvos no navegador mantem sua ordem de campos; reexporte o .set para
 incluir estes inputs. Validacao: testes de exportacao e compilacao; envio de
 ordens deve ser verificado no testador.
+
+
+O motor de sinais usa `signalIndicatorCatalog` em `static/signal.js` como contrato
+comum para linhas, escalas, constantes e offsets de buffers. A interface separa
+a fonte da linha do indicador; ADX oferece ADX, DI+ e DI-. Escolha Valor
+numérico na referência para informar um limiar. Os seletores visuais derivam
+dos campos originais, preservando os setups salvos e os códigos do Uni.
