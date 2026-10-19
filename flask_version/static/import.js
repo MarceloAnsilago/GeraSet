@@ -32,7 +32,7 @@ function parseSetupSet(text) {
 }
 
 async function prepareSetupImport(parsed) {
-    const state = {signalDefaultsVersion: 1, signalNormalSideVersion: 1, optimizationZeroVersion: {}};
+    const state = {slotTimeframeVersion: 1, signalDefaultsVersion: 1, signalNormalSideVersion: 1, optimizationZeroVersion: {}};
     const roots = new Map(await Promise.all(['inicio', 'indicadores', 'gestao', 'configuracoes'].map(async page => {
         const response = await fetch(`/${page}`);
         if (!response.ok) throw new Error('Não foi possível carregar os campos. Tente novamente.');
@@ -40,6 +40,17 @@ async function prepareSetupImport(parsed) {
         if (!root.querySelector(`[data-page="${page}"]`)) throw new Error('Página de configuração inválida.');
         const controls = setupControls(root);
         const fields = parsed.metadata.pages[page];
+        if (page === 'indicadores') {
+            const previous = Object.fromEntries(parsed.metadata.pages.inicio.map(field => [field.key, field.value]));
+            const raw = parsed.native.get('InpStrategyTimeframe')?.split('||');
+            const labelFor = value => Object.entries(operationEnums.setup_timeframe).find(([, code]) => code === Number(value))?.[0];
+            const legacy = previous.setup_timeframe || labelFor(raw?.[0]) || 'Tempo corrente';
+            for (let slot = 1; slot <= 4; slot++) for (const bound of ['', '-start', '-end']) {
+                const key = `indicator-timeframe-${slot}${bound}`;
+                if (!fields.some(field => field.key === key)) fields.push({key, value: bound
+                    ? previous[`operation-timeframe${bound}`] || labelFor(raw?.[bound === '-start' ? 1 : 3]) || legacy : legacy});
+            }
+        }
         const apply = (control, index) => {
             const key = control.name || control.id || `${page}_${index}`;
             const field = fields.find(entry => entry.key === key &&
@@ -48,7 +59,7 @@ async function prepareSetupImport(parsed) {
             if (control.type === 'checkbox' || control.type === 'radio') control.checked = Boolean(field.checked);
             else if (control.tagName !== 'SELECT' || Array.from(control.options).some(option => option.value === field.value)) {
                 control.value = field.value;
-            } else if (control.hasAttribute('data-condition-control') || control.hasAttribute('data-indicator-type')) {
+            } else if (control.hasAttribute('data-condition-control') || control.hasAttribute('data-indicator-type') || control.hasAttribute('data-slot-timeframe-extra')) {
                 throw new Error(`Opção inválida no arquivo: ${key}.`);
             }
         };

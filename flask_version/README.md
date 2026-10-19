@@ -226,3 +226,23 @@ páginas por chave de campo, valida as condições e confere a coerência
 entre os inputs do Uni e os dados comentados antes de substituir o rascunho.
 Arquivos nativos sem os dados comentados do GeraSet são recusados.
 `InpTesterAutoStart` é preservado na importação e na nova exportação.
+
+
+O timeframe agora pertence ao slot: em Indicadores, cada slot tem abas
+Parâmetros/Otimizar e os campos Timeframe, Iniciar e Terminar. O timeframe de
+Mercado e operação fica apenas como dado oculto para migração dos rascunhos
+antigos. Ele não é mais exportado como `InpStrategyTimeframe`.
+`InpIndicator1Timeframe` a `InpIndicator4Timeframe` usam índices contíguos
+0..21 (Tempo corrente, M1, M2, M3, M4, M5, M6, M10, M12, M15, M20, M30,
+H1, H2, H3, H4, H6, H8, H12, D1, W1, MN1), permitindo otimizar apenas
+períodos válidos. Tempo corrente acompanha o gráfico/testador.
+
+Cada fonte usa os candles do seu slot; uma condição fechada é reavaliada
+quando muda a vela de qualquer fonte do seu grupo, mesmo sem nova vela no
+gráfico. Preços comparados com indicador herdam o timeframe desse indicador.
+Condições somente de preços e candles de gestão/pendentes usam o gráfico.
+Os desenhos dos indicadores são projetados no gráfico, preservando o período
+da fonte; histogramas seguem as velas do gráfico. Sets antigos importados
+herdam o timeframe global em seus slots; o Uni deve ser recompilado antes
+de usar os novos inputs. O preset binário interno do painel passa à versão
+12 e continua lendo as versões anteriores.

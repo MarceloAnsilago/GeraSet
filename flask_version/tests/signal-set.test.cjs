@@ -109,3 +109,23 @@ test('slots bind to separate entry/exit parameter groups, regardless of slot num
     assert.equal(new Set(lines.map(line => line.split('=')[0])).size, lines.length);
     assert.ok(lines.every(line => !/^InpIndicator[1-4](Rsi|Adx)/.test(line)));
 });
+
+
+test('slots export independent periods and only valid contiguous optimization choices', () => {
+    const root = fixture();
+    for (const [slot, frame] of [[1, 'M15'], [2, 'M5'], [3, 'H1']]) {
+        root.fields.set(`[name="indicator-timeframe-${slot}"]`, frame);
+        root.fields.set(`[name="indicator-timeframe-${slot}-start"]`, frame);
+        root.fields.set(`[name="indicator-timeframe-${slot}-end"]`, frame);
+    }
+    let lines = Array.from(context.indicatorSignalSetLines(root));
+    assert.ok(lines.includes('InpIndicator1Timeframe=9||9||1||9||N'));
+    assert.ok(lines.includes('InpIndicator2Timeframe=5||5||1||5||N'));
+    assert.ok(lines.includes('InpIndicator3Timeframe=12||12||1||12||N'));
+    root.fields.set('[name="indicator-timeframe-1-start"]', 'M5');
+    root.fields.set('[name="indicator-timeframe-1-end"]', 'M15');
+    lines = Array.from(context.indicatorSignalSetLines(root));
+    assert.ok(lines.includes('InpIndicator1Timeframe=9||5||1||9||Y'));
+    root.fields.set('[name="indicator-timeframe-1"]', 'M7');
+    assert.throws(() => context.indicatorSignalSetLines(root), {name: 'SignalValidationError'});
+});

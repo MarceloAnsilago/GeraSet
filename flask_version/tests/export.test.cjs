@@ -99,7 +99,7 @@ test('exports the latest configuration and confirms only after closing the file'
     assert.deepEqual(preset.split('\r\n').filter(line => line && !line.startsWith(';')), [
         'InpName=Estratégia / teste', 'InpMagic=12345||12345||1||2147483647||N',
         'InpMarket=0||0||1||0||N', 'InpTradeMode=0||0||1||0||N',
-        'InpStrategyTimeframe=0||0||1||0||N', 'InpLot=0.5||0.5||0.01||0.5||N',
+        'InpLot=0.5||0.5||0.01||0.5||N',
         'InpDirection=0||0||1||0||N',
         'InpEntryStart=0||0||5||0||N', 'InpEntryEnd=1435||1435||5||1435||N',
         'InpOrderMode=0||0||1||0||N', 'InpPendingReference=0||0||1||0||N', 'InpPendingCandle=1||1||1||1||N',
@@ -107,7 +107,7 @@ test('exports the latest configuration and confirms only after closing the file'
         'InpStopCandle=1||1||1||1||N', 'InpStopBody=0||0||1||0||N', 'InpTakeMode=1||1||1||1||N',
         'InpTakeProfit=150||150||0.01||150||N', 'InpTakeStopMultiplier=0||0||1||0||N',
         'InpBreakevenMode=0||0||1||0||N', 'InpBreakevenTrigger=0||0||0.01||0||N', 'InpBreakevenOffset=0||0||0.01||0||N',
-        ...[1, 2, 3, 4].flatMap(i => [`InpIndicator${i}Type=-1||-1||1||-1||N`, `InpIndicator${i}Exit=0||0||1||0||N`]),
+        ...[1, 2, 3, 4].flatMap(i => [`InpIndicator${i}Timeframe=0||0||1||0||N`, `InpIndicator${i}Type=-1||-1||1||-1||N`, `InpIndicator${i}Exit=0||0||1||0||N`]),
         ...[1, 2, 3, 4, 5].map(i => `InpSignal${i}=`),
         'InpExibirHistogramas=true', 'InpHistogramasBarras=300', 'InpExibirPainel=true',
     ]);
@@ -228,26 +228,24 @@ test('operation exports fixed values separately from enabled optimization bounds
     const {context} = environment();
     assert.deepEqual(Array.from(context.operationSetLines(operationControls())), [
         'InpMarket=1||1||1||1||N', 'InpTradeMode=1||1||1||1||N',
-        'InpStrategyTimeframe=16388||30||1||16388||Y', 'InpLot=2.5||2.5||0.01||2.5||N',
+        'InpLot=2.5||2.5||0.01||2.5||N',
         'InpDirection=2||0||1||2||Y',
     ]);
     const reversed = context.operationSetLines(operationControls({
         'operation-timeframe-start': 'MN1', 'operation-timeframe-end': 'Tempo corrente',
         'operation-direction-start': 'Somente venda', 'operation-direction-end': 'Somente compra',
     }));
-    assert.equal(reversed[2], 'InpStrategyTimeframe=16388||0||1||49153||Y');
-    assert.equal(reversed[4], 'InpDirection=2||1||1||2||Y');
+    assert.equal(reversed[3], 'InpDirection=2||1||1||2||Y');
     const fixed = context.operationSetLines(operationControls({
         'operation-timeframe-start': 'M5', 'operation-timeframe-end': 'M5',
     }));
-    assert.equal(fixed[2], 'InpStrategyTimeframe=16388||5||1||5||N');
 });
 
 test('operation rejects missing fields, unknown enums and invalid volume', () => {
     const {context} = environment();
     for (const overrides of [
-        {setup_market: 'other'}, {setup_mode: ''}, {setup_timeframe: 'H5'},
-        {setup_direction: 'both'}, {'operation-timeframe-end': 'H5'},
+        {setup_market: 'other'}, {setup_mode: ''},
+        {setup_direction: 'both'},
         {'operation-direction-start': ''}, ...['', '0', '-1', 'Infinity', '1||2', '1.2.3'].map(setup_lot => ({setup_lot})),
     ]) {
         assert.throws(() => context.operationSetLines(operationControls(overrides)), {name: 'OperationValidationError'});

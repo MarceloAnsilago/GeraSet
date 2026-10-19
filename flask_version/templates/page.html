@@ -64,8 +64,8 @@
                     </div>
                     <div class="row">
                         <div>
-                            <label>Timeframe</label>
-                            <select name="setup_timeframe">{% for item in timeframes %}<option {{ 'selected' if item == data.setup_timeframe else '' }}>{{ item }}</option>{% endfor %}</select>
+                            <label class="is-hidden" data-retired-timeframe>Timeframe legado</label>
+                            <select name="setup_timeframe" class="is-hidden" data-retired-timeframe>{% for item in timeframes %}<option {{ 'selected' if item == data.setup_timeframe else '' }}>{{ item }}</option>{% endfor %}</select>
                         </div>
                         <div>
                             <label>Lote</label>
@@ -81,7 +81,7 @@
                                 ('timeframe', 'Timeframe', ['Tempo corrente'] + timeframes[:-1], data.setup_timeframe),
                                 ('direction', 'Direção permitida', ['Compra e venda', 'Somente compra', 'Somente venda'], data.setup_direction)
                             ] %}
-                                <div class="optimize-row">
+                                <div class="optimize-row{% if key == 'timeframe' %} is-hidden{% endif %}" {% if key == 'timeframe' %}data-retired-timeframe{% endif %}>
                                     <div class="optimize-name">{{ {'Sobrevenda': 'Nível inferior', 'Sobrecompra': 'Nível superior'}.get(title, title) }}</div>
                                     <div class="optimize-grid optimize-grid-select">
                                         <label for="operation-{{ key }}-start">Iniciar</label>
@@ -165,6 +165,29 @@
                                 <label><input type="radio" name="indicator-usage-{{ index }}" value="Saída"> Saída</label>
                             </div>
                         </fieldset>
+                        <div class="tabs" data-slot-timeframe-tabs>
+                            <input class="tab-radio" id="slot-timeframe-params-{{ index }}" name="slot-timeframe-tabs-{{ index }}" type="radio" checked>
+                            <input class="tab-radio" id="slot-timeframe-optimize-{{ index }}" name="slot-timeframe-tabs-{{ index }}" type="radio">
+                            <div class="tab-list">
+                                <label class="tab-button" for="slot-timeframe-params-{{ index }}">Parâmetros</label>
+                                <label class="tab-button" for="slot-timeframe-optimize-{{ index }}">Otimizar</label>
+                            </div>
+                            <div class="tab-panel tab-panel-params">
+                                <label for="indicator-timeframe-{{ index }}">Timeframe do slot</label>
+                                <select id="indicator-timeframe-{{ index }}" name="indicator-timeframe-{{ index }}" data-slot-timeframe-extra data-param-label="Timeframe do slot {{ index }}">{% for item in ['Tempo corrente'] + timeframes[:-1] %}<option>{{ item }}</option>{% endfor %}</select>
+                            </div>
+                            <div class="tab-panel tab-panel-optimize">
+                                <div class="optimize-row">
+                                    <div class="optimize-name">Timeframe do slot {{ index }}</div>
+                                    <div class="optimize-grid optimize-grid-select">
+                                        <label for="indicator-timeframe-{{ index }}-start">Iniciar</label>
+                                        <label for="indicator-timeframe-{{ index }}-end">Terminar</label>
+                                        {% for bound in ['start', 'end'] %}<select id="indicator-timeframe-{{ index }}-{{ bound }}" name="indicator-timeframe-{{ index }}-{{ bound }}" data-slot-timeframe-extra>{% for item in ['Tempo corrente'] + timeframes[:-1] %}<option>{{ item }}</option>{% endfor %}</select>{% endfor %}
+                                    </div>
+                                </div>
+                                <p class="muted">Início e fim iguais deixam o timeframe fixo. Tempo corrente usa o período do gráfico/testador.</p>
+                            </div>
+                        </div>
                         <div class="tabs is-hidden" data-indicator-fields>
                             <input class="tab-radio" id="params-{{ index }}" name="indicator-tabs-{{ index }}" type="radio" checked>
                             <input class="tab-radio" id="optimize-{{ index }}" name="indicator-tabs-{{ index }}" type="radio">
@@ -223,7 +246,7 @@
             </section>
 
             <h2>Parâmetros dos indicadores</h2>
-            <p class="muted">Cada slot usa os parâmetros do indicador e da finalidade escolhidos. Entrada e Saída possuem configurações independentes.</p>
+            <p class="muted">Cada slot tem seu próprio timeframe, por exemplo Média no M15 e RSI no M5. “Anterior” usa a última vela fechada do período de cada indicador. Preços comparados com um indicador usam o período desse slot; condições somente com preços e candles de gestão usam o período do gráfico/testador.</p>
             <section class="grid-4" data-indicator-parameters></section>
 
             {% set crossing_options = ['Fechamento da vela', 'Abertura da vela', 'Máxima da vela', 'Mínima da vela', 'Abertura do dia', 'Máxima do dia', 'Mínima do dia', 'Máxima do dia anterior', 'Mínima do dia anterior'] %}

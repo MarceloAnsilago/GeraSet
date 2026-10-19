@@ -68,7 +68,6 @@ function operationSetLines(controls) {
     return [
         fixed("InpMarket", enumValue("setup_market")),
         fixed("InpTradeMode", enumValue("setup_mode")),
-        range("InpStrategyTimeframe", "setup_timeframe", "operation-timeframe"),
         fixed("InpLot", lot, 0.01),
         range("InpDirection", "setup_direction", "operation-direction"),
     ];
@@ -238,6 +237,11 @@ function indicatorSignalSetLines(root) {
         types.push(type);
         const usage = root.querySelector(`[name="indicator-usage-${i}"]:checked`)?.value;
         const exit = choices(usage, ['Entrada', 'Saída']);
+        const frameOptions = Object.keys(operationEnums.setup_timeframe);
+        const frame = root.querySelector(`[name="indicator-timeframe-${i}"]`)?.value || 'Tempo corrente';
+        const bounds = ['start', 'end'].map(bound => root.querySelector(`[name="indicator-timeframe-${i}-${bound}"]`)?.value || frame);
+        const tf = choices(frame, frameOptions), startFrame = choices(bounds[0], frameOptions), endFrame = choices(bounds[1], frameOptions);
+        lines.push(`InpIndicator${i}Timeframe=${tf}||${n < 0 ? tf : Math.min(startFrame, endFrame)}||1||${n < 0 ? tf : Math.max(startFrame, endFrame)}||${n >= 0 && startFrame !== endFrame ? 'Y' : 'N'}`);
         const instance = exit ? 'Exit' : 'Entry';
         lines.push(`InpIndicator${i}Type=${n}||${n}||1||${n}||N`, `InpIndicator${i}Exit=${exit}||${exit}||1||${exit}||N`);
         const prices = ['Close', 'Open', 'High', 'Low', 'Median', 'Typical', 'Weighted'];

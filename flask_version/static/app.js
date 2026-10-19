@@ -8,6 +8,11 @@ function readSetupState() {
         if (!state.mt5Visualization && previous?.value === "on" && typeof previous.checked === "boolean") {
             state.mt5Visualization = {show_signal_histograms: previous.checked};
         }
+        if (state.slotTimeframeVersion !== 1 && Array.isArray(state.indicadores) && Array.isArray(state.inicio)) {
+            const legacy = state.inicio[4]?.value || 'Tempo corrente';
+            const start = state.inicio[7]?.value || legacy, end = state.inicio[8]?.value || legacy;
+            state.legacySlotTimeframe = {fixed: legacy, start, end};
+        }
         return state;
     }
     catch { return {}; }
@@ -19,19 +24,20 @@ function setupControls(root) {
     if (relocatedSetupControls.has(root)) return relocatedSetupControls.get(root);
     const controls = Array.from(root.querySelectorAll(".card input:not(.tab-radio), .card select:not([data-source-ui])"));
     // Append new controls to preserve existing positional saved setups.
-    return [...controls.filter(control => !control.matches("[data-condition-control], [data-candle-direction-control], [data-rsi-level-extra], [data-stop-mode-extra], [data-histogram-extra]")),
+    return [...controls.filter(control => !control.matches("[data-condition-control], [data-candle-direction-control], [data-rsi-level-extra], [data-stop-mode-extra], [data-histogram-extra], [data-slot-timeframe-extra]")),
         ...controls.filter(control => control.hasAttribute("data-condition-control") && !control.hasAttribute("data-signal-extra")),
         ...controls.filter(control => control.hasAttribute("data-candle-direction-control")),
         ...controls.filter(control => control.hasAttribute("data-signal-extra") && !control.hasAttribute("data-signal-normal-side")),
         ...controls.filter(control => control.hasAttribute("data-signal-normal-side")),
         ...controls.filter(control => control.hasAttribute("data-rsi-level-extra")),
         ...controls.filter(control => control.hasAttribute("data-stop-mode-extra")),
-        ...controls.filter(control => control.hasAttribute("data-histogram-extra"))];
+        ...controls.filter(control => control.hasAttribute("data-histogram-extra")),
+        ...controls.filter(control => control.hasAttribute("data-slot-timeframe-extra"))];
 }
 
 function restoreSetup(root, page, state = readSetupState()) {
     let saved = state[page] || [];
-    const legacyLength = setupControls(root).filter(control => !control.hasAttribute("data-histogram-extra")).filter(control => !control.hasAttribute("data-signal-extra") && !control.hasAttribute("data-rsi-level-extra")).length;
+    const legacyLength = setupControls(root).filter(control => !control.hasAttribute("data-histogram-extra") && !control.hasAttribute("data-slot-timeframe-extra")).filter(control => !control.hasAttribute("data-signal-extra") && !control.hasAttribute("data-rsi-level-extra")).length;
     if (page === "indicadores" && state.signalNormalSideVersion !== 1 && saved.length === legacyLength + 15) {
         // Remove the redundant per-condition usage from the former three-field extras.
         saved = saved.filter((_, index) => index < legacyLength || (index - legacyLength) % 3 !== 0);
@@ -42,7 +48,7 @@ function restoreSetup(root, page, state = readSetupState()) {
         saved = saved.filter((_, index) => index >= 212 || !removed.has(index % 53));
     }
     if (page === "indicadores" && saved.length === legacyLength + 4) {
-        const legacyCount = setupControls(root).filter(control => !control.hasAttribute("data-histogram-extra") && !control.hasAttribute("data-condition-control") && !control.hasAttribute("data-rsi-level-extra")).length;
+        const legacyCount = setupControls(root).filter(control => !control.hasAttribute("data-histogram-extra") && !control.hasAttribute("data-slot-timeframe-extra") && !control.hasAttribute("data-condition-control") && !control.hasAttribute("data-rsi-level-extra")).length;
         saved.splice(legacyCount, 4);
     }
     setupControls(root).forEach((control, index) => {
@@ -55,7 +61,9 @@ function restoreSetup(root, page, state = readSetupState()) {
             control.value = "N.usar";
             return;
         }
-        const value = saved[index];
+        const legacyFrame = control.hasAttribute("data-slot-timeframe-extra") && state.slotTimeframeVersion !== 1
+            ? state.legacySlotTimeframe?.[control.name.endsWith("-start") ? "start" : control.name.endsWith("-end") ? "end" : "fixed"] : null;
+        const value = saved[index] || (legacyFrame ? {value: legacyFrame} : null);
         if (!value) {
             if (page === "configuracoes" && typeof state.mt5Visualization?.[control.name] === "boolean") {
                 control.checked = state.mt5Visualization[control.name];
@@ -213,6 +221,8 @@ function updateIndicatorSummary(select, fields, summary) {
         return;
     }
     const usage = select.closest(".indicator-card").querySelector("[data-indicator-usage] input:checked");
+    const timeframe = select.closest(".indicator-card").querySelector(`[name="indicator-timeframe-${select.dataset.indicatorType}"]`)?.value || "Tempo corrente";
+    addLine(`Timeframe: ${timeframe}`);
     addLine(`Usar como: ${usage.value === "Saída" ? "Saída" : "Entrada"}`);
     fields.querySelectorAll(".tab-panel-params [data-indicator-kind]").forEach((group) => {
         if (group.dataset.indicatorKind !== select.value) return;
@@ -247,6 +257,7 @@ function bindIndicatorsVisibility() {
         select.addEventListener("change", update);
         select.closest(".indicator-card").querySelector("[data-indicator-usage]")
             .addEventListener("change", () => updateIndicatorSummary(select, fields, summary));
+        select.closest(".indicator-card").querySelector("[data-slot-timeframe-tabs]")?.addEventListener("change", () => updateIndicatorSummary(select, fields, summary));
         const parameters = fields.querySelector(".tab-panel-params");
         parameters.addEventListener("input", () => updateIndicatorSummary(select, fields, summary));
         parameters.addEventListener("change", () => updateIndicatorSummary(select, fields, summary));
@@ -359,7 +370,8 @@ document.addEventListener("DOMContentLoaded", bindRulesSummary);
 
 function relevantReviewControl(control, card) {
     if (control.hasAttribute?.("data-source-ui")) return false;
-    if (control.closest("[data-retired-signal]")) return false;
+    if (control.closest("[data-retired-signal], [data-retired-timeframe]")) return false;
+    if (control.hasAttribute?.("data-slot-timeframe-extra") && card.querySelector("[data-indicator-type]")?.value === "Não usar") return false;
     if (card.matches("[data-conditions]")) {
         const row = control.closest(".condition-row");
         if (row && !signalRowActive(readSignalRow(row))) return false;
@@ -473,6 +485,7 @@ document.addEventListener("DOMContentLoaded", () => {
             state[root.dataset.page] = setupControls(root).map(control => ({value: control.value, checked: control.checked}));
             state.optimizationZeroVersion = {...state.optimizationZeroVersion, [root.dataset.page]: 1};
             if (root.dataset.page === "indicadores") {
+                state.slotTimeframeVersion = 1;
                 state.signalDefaultsVersion = 1;
                 state.signalNormalSideVersion = 1;
             }
@@ -632,7 +645,8 @@ function separateIndicatorParameters() {
             const usage = slotCard.querySelector('[data-indicator-usage] input:checked').value;
             const active = select.value !== 'Não usar';
             const instance = select.value === 'Média Móvel' ? `${select.value} — Slot ${slot}` : `${select.value} — ${usage}`;
-            heading.textContent = `${instance} (slot ${slot})`;
+            const timeframe = slotCard.querySelector(`[name="indicator-timeframe-${slot}"]`)?.value || "Tempo corrente";
+            heading.textContent = `${instance} (slot ${slot}, ${timeframe})`;
             link.textContent = active ? `Parâmetros: ${instance}` : 'Sem indicador vinculado.';
             group.classList.toggle('is-hidden', !active);
         };

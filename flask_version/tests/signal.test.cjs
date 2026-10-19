@@ -178,3 +178,23 @@ test('new fields preserve old saved control positions and survive another save a
     assert.equal(levels[0].value, '55');
 
 });
+
+
+test('legacy global timeframe migrates to slot controls without shifting stored indicator fields', () => {
+    const stored = {};
+    const app = vm.createContext({document: {addEventListener() {}}, window: {addEventListener() {}},
+        localStorage: {getItem: key => stored[key]}});
+    vm.runInContext(fs.readFileSync(path.join(__dirname, '../static/app.js'), 'utf8'), app);
+    const inicio = Array.from({length: 9}, () => ({value: ''}));
+    inicio[4].value = 'H4'; inicio[7].value = 'M5'; inicio[8].value = 'H1';
+    stored['geraset-flask-cards-v1'] = JSON.stringify({inicio, indicadores: [{value: 'ADX'}]});
+    const state = app.readSetupState();
+    assert.equal(state.indicadores.length, 1);
+    assert.equal(state.legacySlotTimeframe.fixed, 'H4');
+    assert.equal(state.legacySlotTimeframe.start, 'M5');
+    assert.equal(state.legacySlotTimeframe.end, 'H1');
+    // Once the new slot fields are saved, the hidden legacy value cannot override them.
+    state.slotTimeframeVersion = 1; delete state.legacySlotTimeframe;
+    stored['geraset-flask-cards-v1'] = JSON.stringify(state);
+    assert.equal(app.readSetupState().legacySlotTimeframe, undefined);
+});
