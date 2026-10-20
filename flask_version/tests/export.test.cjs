@@ -81,6 +81,10 @@ test('exports the latest configuration and confirms only after closing the file'
                 const bytes = Buffer.from(contents);
                 assert.equal(bytes.readUInt16LE(0), 0xfeff);
                 preset = bytes.subarray(2).toString('utf16le');
+                const bridgeContract = JSON.parse(fs.readFileSync(path.join(__dirname, '../../mt5_bridge/contracts/uni_inputs.json'), 'utf8'));
+                for (const line of preset.split('\r\n')) {
+                    if (line.startsWith('Inp')) assert.ok(bridgeContract[line.split('=')[0]], `Bridge must accept exported ${line.split('=')[0]}`);
+                }
                 const comments = preset.split('\r\n').filter(line => line.startsWith('; ')).slice(1);
                 written = JSON.parse(comments.map(line => line.slice(2)).join('\n'));
             },

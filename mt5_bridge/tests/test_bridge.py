@@ -154,6 +154,14 @@ def test_receipt_encoding_and_overrides(preset):
     with pytest.raises(BridgeError):parse_set(base64.b64encode(raw).decode(),2)
 
 
+def test_static_visual_inputs_from_geraset(preset):
+    text=preset+'InpExibirPainel=true\nInpExibirHistogramas=false\nInpHistogramasBarras=300\n'
+    _,values,_,_=parse_set(base64.b64encode(text.encode()).decode(),1048576)
+    assert values['InpHistogramasBarras']=='300'
+    invalid=text.replace('InpHistogramasBarras=300','InpHistogramasBarras=300||100||100||300||Y')
+    with pytest.raises(BridgeError,match='estático'):parse_set(base64.b64encode(invalid.encode()).decode(),1048576)
+
+
 def test_report_errors_and_locale(tmp_path):
     path=tmp_path/'x.htm';path.write_text(HTML.replace('1 234.56','1.234,56'))
     assert read_report(path)['metrics']['net_profit']['value']=='1234.56'

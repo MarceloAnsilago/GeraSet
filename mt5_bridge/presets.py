@@ -25,8 +25,12 @@ def parse_set(encoded: str, limit: int):
         if not line or line.startswith(';'):
             continue
         match = re.fullmatch(r'(Inp\w+)=(.*)', line)
-        if not match or match[1] not in CONTRACT or match[1] in values:
-            raise BridgeError('INVALID_SET', 'Input desconhecido, duplicado ou linha inválida no .set.')
+        if not match:
+            raise BridgeError('INVALID_SET', 'Linha inválida no .set; use o formato Input=valor.')
+        if match[1] not in CONTRACT:
+            raise BridgeError('INVALID_SET', f'Input não reconhecido pelo contrato do Bridge: {match[1]}.')
+        if match[1] in values:
+            raise BridgeError('INVALID_SET', f'Input duplicado no .set: {match[1]}.')
         key, value = match.groups()
         parts = value.split('||')
         if len(parts) not in (1,5):
@@ -48,6 +52,8 @@ def parse_set(encoded: str, limit: int):
             if parts[4] not in ('Y','N') or kind == 'string':
                 raise BridgeError('INVALID_SET', f'Otimização inválida em {key}.')
             if parts[4] == 'Y':
+                if not CONTRACT[key].get('optimizable',True):
+                    raise BridgeError('INVALID_SET', f'O input estático {key} não permite otimização.')
                 start, step, stop = [number(p,key,kind) for p in parts[1:4]]
                 if step <= 0 or stop < start:
                     raise BridgeError('INVALID_SET', f'Intervalo crescente e passo positivo exigidos em {key}.')
@@ -63,7 +69,7 @@ def parse_set(encoded: str, limit: int):
 def number(value, key, kind):
     try:
         result = Decimal(value)
-        if not result.is_finite() or (result and abs(result.adjusted())>20) or (kind in ('int','long','enum','bool') and result != result.to_integral_value()):
+        if not result.is_finite() or (result and abs(result.adjusted())>20) or (kind in ('int','long','enum','bool','color') and result != result.to_integral_value()):
             raise ValueError()
         return result
     except (InvalidOperation, ValueError) as exc:

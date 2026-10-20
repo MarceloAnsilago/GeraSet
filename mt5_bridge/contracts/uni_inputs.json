@@ -253,5 +253,93 @@
   },
   "InpSignal10": {
     "kind": "string"
+  },
+  "InpSeparatorRsiEntry": {
+    "kind": "string",
+    "optimizable": false
+  },
+  "InpSeparatorRsiExit": {
+    "kind": "string",
+    "optimizable": false
+  },
+  "InpSeparatorAdxEntry": {
+    "kind": "string",
+    "optimizable": false
+  },
+  "InpSeparatorAdxExit": {
+    "kind": "string",
+    "optimizable": false
+  },
+  "InpSeparatorMa1": {
+    "kind": "string",
+    "optimizable": false
+  },
+  "InpSeparatorMa2": {
+    "kind": "string",
+    "optimizable": false
+  },
+  "InpSeparatorMa3": {
+    "kind": "string",
+    "optimizable": false
+  },
+  "InpSeparatorMa4": {
+    "kind": "string",
+    "optimizable": false
+  },
+  "InpExibirPainel": {
+    "kind": "bool",
+    "optimizable": false
+  },
+  "InpExibirHistogramas": {
+    "kind": "bool",
+    "optimizable": false
+  },
+  "InpHistogramasBarras": {
+    "kind": "int",
+    "optimizable": false
+  },
+  "InpShowPriceMarkers": {
+    "kind": "bool",
+    "optimizable": false
+  },
+  "InpMarkerShowProfit": {
+    "kind": "bool",
+    "optimizable": false
+  },
+  "InpMarkerEntryColor": {
+    "kind": "color",
+    "optimizable": false
+  },
+  "InpMarkerStopColor": {
+    "kind": "color",
+    "optimizable": false
+  },
+  "InpMarkerTakeColor": {
+    "kind": "color",
+    "optimizable": false
+  },
+  "InpMarkerPendingColor": {
+    "kind": "color",
+    "optimizable": false
+  },
+  "InpMarkerBreakevenColor": {
+    "kind": "color",
+    "optimizable": false
+  },
+  "InpMarkerTextColor": {
+    "kind": "color",
+    "optimizable": false
+  },
+  "InpMarkerProfitColor": {
+    "kind": "color",
+    "optimizable": false
+  },
+  "InpMarkerLossColor": {
+    "kind": "color",
+    "optimizable": false
+  },
+  "InpMarkerFontSize": {
+    "kind": "int",
+    "optimizable": false
   }
 }
