@@ -34,7 +34,7 @@ def test_real_executor_with_fake_os_process(settings,payload,monkeypatch,mode,ex
             receipt=settings.data_dir/'MQL5/Profiles/Tester'/config['Tester']['ExpertParameters']
             assert receipt.exists() and 'InpTesterAutoStart=true' in receipt.read_text(encoding='utf-16')
             if mode in ('ok','incomplete'):
-                target=settings.terminal.parent/Path(config['Tester']['Report'].replace('\\','/'))
+                target=settings.data_dir/Path(config['Tester']['Report'].replace('\\','/'))
                 target.write_text(HTML if mode=='ok' else '<html>',encoding='utf-8')
         def poll(self):return self.returncode
         def wait(self,timeout=None):return self.returncode

@@ -25,8 +25,21 @@ SHA-256 do EA usado: `b8eeaf22fdcf297eb9f51982f959d061a1bbf173e060b7ea2bbe8c05a1
 
 Evidências locais (ignoradas pelo Git): `mt5_bridge/data/real-check-summary.json`, banco e diretórios UUID em `mt5_bridge/data/real-check/`, logs em `mt5_bridge/data/terminal-isolado/logs/`. Não são fixtures nem resultados aprovados.
 
-## Aceitação ainda pendente
+## Validação real posterior com o MT5 habitual
 
-Configurar uma conta de demonstração e histórico válido na instalação dedicada, fechar o terminal e repetir pelo Bridge: um backtest e uma otimização curta. Conferir relatórios HTML/XML originais, entradas efetivas, operações e passes contra o MT5. Depois verificar forward, genética e símbolos adicionais conforme necessidade. O sucesso dos testes simulados e da inicialização real não substitui essa aceitação.
+Em 20/10/2026, o iniciador foi corrigido para usar o terminal habitual não portátil e descobrir sua pasta de dados por `origin.txt`. A tentativa anterior no isolado foi cancelada pelo Bridge. O EA não foi alterado.
 
-Não foi alterado o EA de produção nem reivindicada equivalência numérica de resultados reais nesta etapa.
+O caminho relativo de relatórios foi corrigido para a pasta de dados, conforme observado no terminal instalado, build 6276. Travas ficam na pasta temporária do usuário; não há gravação de relatórios ou travas em Program Files.
+
+| Job real | Execução | Resultado |
+|---|---|---|
+| `1301d30b-7639-4deb-bdf7-9f51b7d5ee67` | Backtest do set recebido, EURUSD M5, 15–20/10/2026 | `completed`, HTML e quatro imagens coletados; 1 operação, líquido −73,70 USD |
+| `ab2d14fa-691b-43af-b404-21a123994116` | Cópia do mesmo set, otimização completa com dois valores de lote | `completed`, XML coletado com 2 passes; journal confirma 2 tarefas locais, sem cloud/remotos |
+
+Os arquivos originais e de execução estão em `mt5_bridge/data/<UUID>/`, com hashes no manifesto e configuração persistida. A cópia de otimização não altera o setup do navegador. Os números acima descrevem o teste, sem julgamento da qualidade da estratégia. A suíte atual tem 31 testes Python aprovados, incluindo pasta de instalação separada dos dados.
+
+## Verificações adicionais
+
+Forward, algoritmo genético, outros símbolos e equivalência detalhada contra execução manual ainda exigem verificação própria. As tentativas anteriores no isolado foram preservadas e não substituem a evidência real posterior acima.
+
+Não foi alterado o EA de produção nem reivindicada equivalência numérica com uma execução manual independente.

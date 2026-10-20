@@ -4,6 +4,8 @@
 !/flask_version/
 !/mt5_bridge/
 !/BRIDGE_ARCHITECTURE.md
+!/iniciar-flask.bat
+!/iniciar-servicos.py
 /mt5_bridge/data/
 /mt5_bridge/.env
 /mt5_bridge/.venv/

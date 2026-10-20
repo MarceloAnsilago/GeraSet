@@ -97,8 +97,8 @@ class MT5Runner:
             shutil.copy2(preset_path,work/'execution.set')
             report_dir=s.data_dir/'geraset_reports'/job['id'];report_dir.mkdir(parents=True,exist_ok=True)
             report=report_dir/('report.xml' if job['kind']=='optimize' else 'report.htm')
-            try:relative=os.path.relpath(report,s.terminal.parent)
-            except ValueError:relative=str(report)  # Explicit server-controlled path across volumes.
+            # Non-portable MT5 resolves tester report paths under its user data folder.
+            relative=str(report.relative_to(s.data_dir))
             config=work/'tester.ini'
             config.write_text(build_ini(s,request,job['kind'],preset_name,relative),encoding='utf-16')
             monitor=LogMonitor(s.data_dir)
