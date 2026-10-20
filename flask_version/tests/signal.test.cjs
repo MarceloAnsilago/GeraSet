@@ -100,101 +100,16 @@ test('purpose is inherited from indicators and mixed purposes block export', () 
     assert.match(context.signalSummaryLines(card([prices]))[0], /Entrada/);
 });
 
-test('new fields preserve old saved control positions and survive another save and restore', () => {
-    const stored = {};
-    const appContext = vm.createContext({
-        document: {addEventListener() {}}, window: {addEventListener() {}},
-        localStorage: {getItem: key => stored[key], setItem: (key, value) => { stored[key] = value; }},
-    });
-    vm.runInContext(fs.readFileSync(path.join(__dirname, '../static/app.js'), 'utf8'), appContext);
-    function control(value, attributes = []) {
-        return {
-            value, type: 'text', tagName: 'INPUT', checked: false,
-            hasAttribute: attribute => attributes.includes(attribute),
-            matches(selector) {
-                if (selector === '.tab-panel-optimize input[type="number"]') return false;
-                if (selector.startsWith('[data-conditions]')) return false;
-                return attributes.some(attribute => selector.includes(`[${attribute}]`));
-            },
-        };
-    }
-    const original = [control('14'), control('Se', ['data-condition-control']), control('30', ['data-condition-control'])];
-    const extras = [control('Entrada', ['data-condition-control', 'data-signal-extra']), control('Compra e venda', ['data-condition-control', 'data-signal-extra']), control('0', ['data-condition-control', 'data-signal-extra'])];
-    const root = {querySelectorAll: selector => ['[data-crossing-source]', '[data-indicator-type]'].includes(selector) ? [] : [original[0], original[1], ...extras, original[2]]};
-    const state = {indicadores: original.map(item => ({value: item.value, checked: false})), optimizationZeroVersion: {indicadores: 1}, signalDefaultsVersion: 1};
-    stored['geraset-flask-cards-v1'] = JSON.stringify(state);
-    original.forEach(item => { item.value = 'changed'; });
-    appContext.restoreSetup(root, 'indicadores');
-    assert.deepEqual(original.map(item => item.value), ['14', 'Se', '30']);
-    assert.deepEqual(extras.map(item => item.value), ['Entrada', 'Compra e venda', '0']);
-    extras[0].value = 'Saída';
-    extras[1].value = 'Somente venda';
-    extras[2].value = '25';
-    state.indicadores = appContext.setupControls(root).map(item => ({value: item.value, checked: false}));
-    stored['geraset-flask-cards-v1'] = JSON.stringify(state);
-    extras.forEach(item => { item.value = 'changed'; });
-    appContext.restoreSetup(root, 'indicadores');
-    assert.deepEqual(extras.map(item => item.value), ['Saída', 'Somente venda', '25']);
-
-    const retained = Array.from({length: 5}, () => [
-        control('Compra e venda', ['data-condition-control', 'data-signal-extra']),
-        control('0', ['data-condition-control', 'data-signal-extra']),
-    ]).flat();
-    const migratedRoot = {querySelectorAll: selector => ['[data-crossing-source]', '[data-indicator-type]'].includes(selector) ? [] : [...original, ...retained]};
-    state.indicadores = [...original.map(item => ({value: item.value})),
-        ...Array.from({length: 5}, (_, index) => [
-            {value: 'Saída'}, {value: 'Somente venda'}, {value: String(index + 10)},
-        ]).flat()];
-    stored['geraset-flask-cards-v1'] = JSON.stringify(state);
-    appContext.restoreSetup(migratedRoot, 'indicadores');
-    assert.deepEqual(retained.map(item => item.value), ['Somente venda', '10', 'Somente venda', '11', 'Somente venda', '12', 'Somente venda', '13', 'Somente venda', '14']);
-
-    // New side fields append after every existing field; 15 extras are no longer
-    // mistaken for the legacy layout that contained a usage field per row.
-    const sides = Array.from({length: 5}, () => control('', ['data-condition-control', 'data-signal-extra', 'data-signal-normal-side']));
-    const nextRoot = {querySelectorAll: selector => ['[data-crossing-source]', '[data-indicator-type]'].includes(selector) ? [] : [...sides, ...original, ...retained]};
-    state.indicadores = [...original, ...retained].map(item => ({value: item.value}));
-    stored['geraset-flask-cards-v1'] = JSON.stringify(state);
-    appContext.restoreSetup(nextRoot, 'indicadores');
-    assert.deepEqual(sides.map(item => item.value), ['', '', '', '', '']);
-    sides.forEach((item, i) => { item.value = i % 2 ? 'Venda' : 'Compra'; });
-    state.indicadores = appContext.setupControls(nextRoot).map(item => ({value: item.value}));
-    state.signalNormalSideVersion = 1;
-    stored['geraset-flask-cards-v1'] = JSON.stringify(state);
-    sides.forEach(item => { item.value = ''; });
-    appContext.restoreSetup(nextRoot, 'indicadores');
-    assert.deepEqual(sides.map(item => item.value), ['Compra', 'Venda', 'Compra', 'Venda', 'Compra']);
-    assert.equal(retained[1].value, '10');
-    const levels = Array.from({length: 16}, () => control('50', ['data-rsi-level-extra']));
-    const levelRoot = {querySelectorAll: selector => ['[data-crossing-source]', '[data-indicator-type]'].includes(selector) ? [] : [...levels, ...sides, ...original, ...retained]};
-    appContext.restoreSetup(levelRoot, 'indicadores');
-    assert.deepEqual(sides.map(item => item.value), ['Compra', 'Venda', 'Compra', 'Venda', 'Compra']);
-    assert.ok(levels.every(item => item.value === '50'));
-    levels[0].value = '55';
-    state.indicadores = appContext.setupControls(levelRoot).map(item => ({value: item.value}));
-    stored['geraset-flask-cards-v1'] = JSON.stringify(state);
-    levels[0].value = '0';
-    appContext.restoreSetup(levelRoot, 'indicadores');
-    assert.equal(levels[0].value, '55');
-
-});
-
-
-test('legacy global timeframe migrates to slot controls without shifting stored indicator fields', () => {
-    const stored = {};
-    const app = vm.createContext({document: {addEventListener() {}}, window: {addEventListener() {}},
-        localStorage: {getItem: key => stored[key]}});
-    vm.runInContext(fs.readFileSync(path.join(__dirname, '../static/app.js'), 'utf8'), app);
-    const inicio = Array.from({length: 9}, () => ({value: ''}));
-    inicio[4].value = 'H4'; inicio[7].value = 'M5'; inicio[8].value = 'H1';
-    stored['geraset-flask-cards-v1'] = JSON.stringify({inicio, indicadores: [{value: 'ADX'}]});
-    const state = app.readSetupState();
-    assert.equal(state.indicadores.length, 1);
-    assert.equal(state.legacySlotTimeframe.fixed, 'H4');
-    assert.equal(state.legacySlotTimeframe.start, 'M5');
-    assert.equal(state.legacySlotTimeframe.end, 'H1');
-    // Once the new slot fields are saved, the hidden legacy value cannot override them.
-    state.slotTimeframeVersion = 1; delete state.legacySlotTimeframe;
-    stored['geraset-flask-cards-v1'] = JSON.stringify(state);
-    assert.equal(app.readSetupState().legacySlotTimeframe, undefined);
+test('current saved controls round trip without migrations or inferred timeframes', () => {
+ const stored={};
+ const app=vm.createContext({document:{addEventListener(){}},window:{addEventListener(){}},localStorage:{getItem:key=>stored[key]}});
+ vm.runInContext(fs.readFileSync(path.join(__dirname,'../static/app.js'),'utf8'),app);
+ function control(value,attributes=[]) { return {value,type:'text',tagName:'INPUT',hasAttribute:a=>attributes.includes(a),matches:s=>attributes.some(a=>s.includes(`[${a}]`))}; }
+ const controls=[control('14'),control('Se',['data-condition-control']),control('H1',['data-slot-timeframe-extra']),control('M5',['data-slot-timeframe-extra'])];
+ const root={querySelectorAll:s=>['[data-crossing-source]','[data-indicator-type]'].includes(s)?[]:controls};
+ const state={indicadores:app.setupControls(root).map(c=>({value:c.value}))};
+ stored['geraset-flask-cards-v1']=JSON.stringify(state);
+ controls.forEach(c=>c.value='changed');app.restoreSetup(root,'indicadores');
+ assert.deepEqual(controls.map(c=>c.value),['14','Se','H1','M5']);
+ assert.equal(app.readSetupState().legacySlotTimeframe,undefined);
 });

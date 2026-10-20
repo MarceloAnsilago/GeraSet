@@ -96,6 +96,7 @@ test('exports the latest configuration and confirms only after closing the file'
     await env.button.click();
     assert.equal(options.suggestedName, 'Estratégia _ teste.set');
     assert.equal(written.format, 'geraset');
+    assert.equal(written.version, 2);
     assert.deepEqual(preset.split('\r\n').filter(line => line && !line.startsWith(';')), [
         'InpName=Estratégia / teste', 'InpMagic=12345||12345||1||2147483647||N',
         'InpMarket=0||0||1||0||N', 'InpTradeMode=0||0||1||0||N',
@@ -253,15 +254,11 @@ test('operation rejects missing fields, unknown enums and invalid volume', () =>
     assert.throws(() => context.operationSetLines([]), {name: 'OperationValidationError'});
 });
 
-test('cached legacy templates export unnamed market, mode and lot controls', () => {
-    const {context} = environment();
-    const controls = operationControls();
-    const legacyKeys = {setup_market: 'inicio_2', setup_mode: 'inicio_3', setup_lot: 'inicio_5'};
-    const legacy = controls.map(control => ({...control, key: legacyKeys[control.key] || control.key}));
-    assert.deepEqual(Array.from(context.operationSetLines(legacy)), Array.from(context.operationSetLines(controls)));
-    // Stale unnamed fields must not override explicit fields or hide invalid values.
-    assert.throws(() => context.operationSetLines([...legacy, {key: 'setup_lot', value: '0'}]), {name: 'OperationValidationError'});
+test('removed unnamed operation fields are rejected', () => {
+    const {context}=environment();
+    assert.throws(()=>context.operationSetLines([{key:'inicio_0',value:'Forex'}]),{name:'OperationValidationError'});
 });
+
 
 test('invalid operation prevents writing and reports the card to fix', async () => {
     let opened = false;

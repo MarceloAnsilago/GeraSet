@@ -20,7 +20,7 @@ function environment() {
     return {context, button, input, status, writes, reloads: () => reloads};
 }
 function preset() {
-    const metadata = {format: 'geraset', version: 1, pages: Object.fromEntries(['inicio', 'indicadores', 'gestao', 'configuracoes'].map(page => [page, [{key: 'field', value: '25'}]]))};
+    const metadata = {format: 'geraset', version: 2, pages: Object.fromEntries(['inicio', 'indicadores', 'gestao', 'configuracoes'].map(page => [page, [{key: 'field', value: '25'}]]))};
     return 'InpSignal1=1,0,1,11,1,0,9,0,25,0,0\r\n' + JSON.stringify(metadata, null, 2).split('\n').map(line => '; ' + line).join('\r\n');
 }
 
@@ -35,26 +35,24 @@ test('reads UTF-16LE MT5 presets and UTF-8 with the same metadata and signal', (
 
 test('rejects native-only, truncated and unsupported metadata without executing comments', () => {
     const {context} = environment();
-    for (const text of ['InpSignal1=abc', '; {\n; broken', preset().replace('"version": 1', '"version": 99'), preset().replace('"gestao": [', '"missing": [')]) {
+    for (const text of ['InpSignal1=abc', '; {\n; broken', preset().replace('"version": 2', '"version": 99'), preset().replace('"gestao": [', '"missing": [')]) {
         assert.throws(() => context.parseSetupSet(text));
     }
 });
 
-test('legacy presets without Configurações load defaults, while malformed settings still fail', () => {
+test('old versions and missing, empty or malformed current settings are rejected', () => {
     const {context} = environment();
-    const original = context.parseSetupSet(preset());
-    for (const settings of [undefined, []]) {
-        const metadata = JSON.parse(JSON.stringify(original.metadata));
-        if (settings === undefined) delete metadata.pages.configuracoes;
-        else metadata.pages.configuracoes = settings;
-        const text = JSON.stringify(metadata,null,2).split('\n').map(line=>'; '+line).join('\n');
-        assert.equal(context.parseSetupSet(text).metadata.pages.configuracoes.length,0);
+    const original=context.parseSetupSet(preset());
+    const encode=metadata=>JSON.stringify(metadata,null,2).split('\n').map(line=>'; '+line).join('\n');
+    for(const settings of [undefined,[],null,{},[{key:'broken',value:42}]]) {
+        const metadata=JSON.parse(JSON.stringify(original.metadata));
+        if(settings===undefined) delete metadata.pages.configuracoes; else metadata.pages.configuracoes=settings;
+        assert.throws(()=>context.parseSetupSet(encode(metadata)));
     }
-    for (const settings of [null,{},[{key:'broken',value:42}]]) {
-        const metadata = JSON.parse(JSON.stringify(original.metadata));metadata.pages.configuracoes=settings;
-        assert.throws(()=>context.parseSetupSet(JSON.stringify(metadata,null,2).split('\n').map(line=>'; '+line).join('\n')));
-    }
+    original.metadata.version=1;
+    assert.throws(()=>context.parseSetupSet(encode(original.metadata)),/Formato antigo/);
 });
+
 
 test('failed validation leaves the saved draft untouched and allows retry', async () => {
     const env = environment();

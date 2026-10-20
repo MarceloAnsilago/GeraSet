@@ -31,35 +31,15 @@ test('price/MA direction mirrors with high/low counterparts',()=>{
  assert.equal(result.comparison,'Maior que');assert.equal(result.reference,'Indicador 1: Média Móvel');
  assert.equal(context.mirrorBuyRule({...base,target:'Máxima da vela',reference:'Mínima do dia'}).rule.target,'Mínima da vela');
 });
-test('legacy mixed rows compare by purpose and side but changed thresholds or order are rejected',()=>{
- const a='1,0,1,10,1,0,9,0,30,0,0',b='1,1,-1,13,1,1,9,0,70,0,0';
- const old=new Map([['InpSignal1',a],['InpSignal2',b]]),next=new Map([['InpSignal1',a],['InpSignal6',b]]);
- assert.equal(JSON.stringify(context.canonicalSignalGroups(old)),JSON.stringify(context.canonicalSignalGroups(next)));
- next.set('InpSignal6',b.replace(',70,',',65,'));
- assert.notEqual(JSON.stringify(context.canonicalSignalGroups(old)),JSON.stringify(context.canonicalSignalGroups(next)));
+test('current native inputs must preserve exact rule positions, values and management policy',()=>{
+ const expected=new Map([['InpSignal1','1,0,1,10,1,0,9,0,30,0,0'],['InpSignal6','1,1,-1,13,1,1,9,0,70,0,0'],['InpPendingMirrorSell','true']]);
+ context.validateSetupInputs(new Map(expected),expected);
+ const changed=new Map(expected);changed.set('InpPendingMirrorSell','false');assert.throws(()=>context.validateSetupInputs(changed,expected));
+ const moved=new Map(expected);moved.set('InpSignal2',moved.get('InpSignal6'));moved.delete('InpSignal6');assert.throws(()=>context.validateSetupInputs(moved,expected));
 });
 
-test('migration moves legacy Inverter rules to the resulting bank and preserves AND order and sources',()=>{
- const rows=[];
- const root={querySelectorAll:()=>rows,querySelector:()=>({closest:()=>({querySelector:()=>({value:'Entrada'})})})};
- for(let i=0;i<10;i++) {
-  const values=new Map();
-  for(const key of ['operator','target','target-candle','comparison','reference','reference-candle','distance','normal-side','sense','fixed'])
-   values.set(key,{value:key==='distance'||key==='fixed'?'0':key==='normal-side'?(i<5?'Compra':'Venda'):key==='sense'?'Normal':'N.usar'});
-  const note={value:''};
-  rows.push({dataset:{signalSide:i<5?'Compra':'Venda'},closest:()=>root,querySelector:s=>s==='[data-mirror-note]'?note:values.get(/name\$="-([^"]+)"/.exec(s)[1])});
- }
- context.writeSignalBankRow(rows[0],{...base,sense:'Inverter'});
- context.writeSignalBankRow(rows[1],{...base,comparison:'Maior que'});
- context.writeSignalBankRow(rows[2],{...base,sense:'Inverter',operator:'E',distance:'0'});
- context.normalizeSignalBanks(root);
- const buy=context.readSignalRow(rows[0]),sell=context.readSignalRow(rows[5]),and=context.readSignalRow(rows[6]);
- assert.equal(buy.comparison,'Maior que');assert.equal(sell.comparison,'Menor que');
- assert.equal(sell.normalSide,'Venda');assert.equal(sell.sense,'Normal');assert.equal(and.operator,'E');
- assert.equal(sell.reference,base.reference);
- context.normalizeSignalBanks(root);
- assert.equal(context.readSignalRow(rows[6]).operator,'E');
-});
+
+
 
 test('overwrite requires inline confirmation, cancel preserves sale, and ambiguous rules require valid explicit review',()=>{
  const listeners=[];

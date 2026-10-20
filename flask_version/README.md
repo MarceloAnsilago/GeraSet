@@ -248,13 +248,13 @@ de usar os novos inputs. O preset binário interno do painel passa à versão
 12 e continua lendo as versões anteriores.
 
 
-### Compatibilidade de Carregar set
+### Formato atual dos sets
 
-Sets antigos do GeraSet que ainda não tinham a página Configurações podem ser
-carregados: os novos controles usam seus valores padrão. Dados malformados
-continuam sendo rejeitados antes de substituir o rascunho. Foram conferidos pelo
-botão Carregar set os arquivos antigos helo world07 rsi.set e helo world08 rsi.set,
-com preservação das condições de entrada e saída nas abas Compra/Venda.
+O GeraSet exporta e carrega apenas o formato atual, versao 2, com as quatro
+paginas e as dez condicoes nas posicoes atuais. Versoes anteriores sao
+rejeitadas com orientacao para criar um novo set. Nao ha migracao automatica
+de campos, finalidades, timeframes, comparacoes ou referencias antigas.
+Os dados nativos devem coincidir exatamente com os campos salvos no arquivo.
 
 ### Abas Compra/Venda e Espelhar compra
 
@@ -272,10 +272,6 @@ fica destacada; complete a comparacao e clique Concluir revisao. A exportacao
 nao aceita pendencias ativas. A direcao permitida na pagina inicial continua
 controlando quais entradas o UNI pode executar; espelhar nao muda essa escolha.
 
-Setups antigos com regras misturadas ou Inverter sao organizados pelo sinal
-resultante, preservando ordem e finalidade. Na importacao, os sinais nativos
-sao comparados por grupos, pois os numeros das linhas podem mudar na migracao.
-A migracao e a troca de comparacoes contam com testes de regressao.
 Use o UniEA atualizado para os novos inputs InpSignal6..InpSignal10.
 
 Validacao: 70 testes JavaScript passaram. RSI abaixo do nivel inferior gerou
@@ -296,9 +292,8 @@ O botao Espelhar compra em Sinais tambem a ativa; ela pode ser desmarcada em
 Gestao. Desligada, ambos os lados continuam usando a mesma referencia.
 
 O set exporta InpPendingMirrorSell; o UniEA atualizado le esse input (padrao
-false para compatibilidade) e aplica a troca ao preco OHLC antes de selecionar
-Stop/Limit. Sets antigos carregam sem ativar a opcao, mesmo se o rascunho
-anterior estava espelhado. Conferido com helo world08 rsi.set.
+false quando desmarcado) e aplica a troca ao preco OHLC antes de selecionar
+Stop/Limit. Desmarcada, a opcao usa a mesma referencia nos dois lados.
 
 Stop por candle no motor utiliza o tamanho do candle como distancia, nao a
 minima/maxima como ancora. Stop/take, breakeven, trailing e stop movel calculam
@@ -311,3 +306,8 @@ Validacao: 72 testes JavaScript, 55 verificacoes matematicas de ordens/gestao e
 ou avisos. No navegador: minima/maxima, persistencia, integracao do botao,
 revisao da opcao e importacao legada conferidas. Sem ordens reais e sem novo
 teste visual de ponta a ponta no MT5 nesta etapa.
+
+
+Validacao da simplificacao do formato: 70 testes JavaScript passaram, cobrindo
+exports em versao 2, rejeicao das anteriores, restauracao do rascunho atual,
+integridade dos parametros, sinais espelhados e opcao de gestao.

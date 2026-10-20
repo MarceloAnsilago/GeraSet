@@ -33,13 +33,6 @@ const operationEnums = {
 
 function operationSetLines(controls) {
     const values = Object.fromEntries(controls.map(control => [control.key, control.value]));
-    // Older cached inicio templates had three unnamed controls. These are their
-    // original storage positions; prefer explicit names whenever present.
-    for (const [name, legacyKey] of Object.entries({
-        setup_market: "inicio_2", setup_mode: "inicio_3", setup_lot: "inicio_5",
-    })) {
-        if (!(name in values) && legacyKey in values) values[name] = values[legacyKey];
-    }
     const fail = message => {
         const error = new Error(message);
         error.name = "OperationValidationError";
@@ -100,10 +93,6 @@ function scheduleSetLines(controls) {
 
 function orderSetLines(controls) {
     const values = Object.fromEntries(controls.map(control => [control.key, control.value]));
-    // Original positions of the three formerly unnamed controls.
-    for (const [name, index] of [['order_mode', 0], ['pending_reference', 1], ['pending_bar', 2]]) {
-        if (!(name in values) && `gestao_${index}` in values) values[name] = values[`gestao_${index}`];
-    }
     const fail = message => { const error = new Error(message); error.name = 'OrderValidationError'; throw error; };
     const choice = (key, options) => { const index = options.indexOf(values[key]); if (index < 0) fail(`Confira ${key}.`); return index; };
     const integer = (key, min = 1) => {
@@ -326,7 +315,7 @@ function serializeSetupSet(roots, state = typeof readSetupState === "function" ?
     }
     if (!magic) throw new Error("Identificação do setup ausente.");
     // Preserve the full draft as comments; only mapped inputs are applied by MT5.
-    const metadata = JSON.stringify({format: "geraset", version: 1, name, pages}, null, 2);
+    const metadata = JSON.stringify({format: "geraset", version: 2, name, pages}, null, 2);
     const text = [
         "; GeraSet -> UniEA: identificacao, mercado e operacao, horarios",
         `InpName=${name}`,

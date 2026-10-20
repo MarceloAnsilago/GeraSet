@@ -2,18 +2,8 @@ const setupStorageKey = "geraset-flask-cards-v1";
 
 function readSetupState() {
     try {
-        const state = JSON.parse(localStorage.getItem(setupStorageKey)) || {};
-        // Preserve the checkbox formerly appended to the Indicators page.
-        const previous = state.indicadores?.at(-1);
-        if (!state.mt5Visualization && previous?.value === "on" && typeof previous.checked === "boolean") {
-            state.mt5Visualization = {show_signal_histograms: previous.checked};
-        }
-        if (state.slotTimeframeVersion !== 1 && Array.isArray(state.indicadores) && Array.isArray(state.inicio)) {
-            const legacy = state.inicio[4]?.value || 'Tempo corrente';
-            const start = state.inicio[7]?.value || legacy, end = state.inicio[8]?.value || legacy;
-            state.legacySlotTimeframe = {fixed: legacy, start, end};
-        }
-        return state;
+        const state = JSON.parse(localStorage.getItem(setupStorageKey));
+        return state && typeof state === 'object' && !Array.isArray(state) ? state : {};
     }
     catch { return {}; }
 }
@@ -25,7 +15,7 @@ function setupControls(root) {
     const allControls = Array.from(root.querySelectorAll(".card input:not(.tab-radio), .card select:not([data-source-ui])"));
     const bankExtra = control => control.hasAttribute("data-signal-bank-extra") || control.hasAttribute("data-management-extra") || control.closest?.('[data-signal-side="Venda"]');
     const controls = allControls.filter(control => !bankExtra(control));
-    // Append new controls to preserve existing positional saved setups.
+    // Persist controls in a stable order for the current layout.
     return [...controls.filter(control => !control.matches("[data-condition-control], [data-candle-direction-control], [data-rsi-level-extra], [data-stop-mode-extra], [data-histogram-extra], [data-slot-timeframe-extra]")),
         ...controls.filter(control => control.hasAttribute("data-condition-control") && !control.hasAttribute("data-signal-extra")),
         ...controls.filter(control => control.hasAttribute("data-candle-direction-control")),
@@ -39,51 +29,22 @@ function setupControls(root) {
 }
 
 function restoreSetup(root, page, state = readSetupState()) {
-    let saved = state[page] || [];
-    const legacyLength = setupControls(root).filter(control => !control.hasAttribute("data-signal-bank-extra") && !control.closest?.('[data-signal-side="Venda"]') && !control.hasAttribute("data-histogram-extra") && !control.hasAttribute("data-slot-timeframe-extra")).filter(control => !control.hasAttribute("data-signal-extra") && !control.hasAttribute("data-rsi-level-extra")).length;
-    if (page === "indicadores" && state.signalNormalSideVersion !== 1 && saved.length === legacyLength + 15) {
-        // Remove the redundant per-condition usage from the former three-field extras.
-        saved = saved.filter((_, index) => index < legacyLength || (index - legacyLength) % 3 !== 0);
-    }
-    if (page === "indicadores" && saved.length === legacyLength + 36) {
-        // Previous indicator cards had one signal and two optimization bounds per kind.
-        const removed = new Set([8, 13, 16, 30, 31, 43, 44, 51, 52]);
-        saved = saved.filter((_, index) => index >= 212 || !removed.has(index % 53));
-    }
-    if (page === "indicadores" && saved.length === legacyLength + 4) {
-        const legacyCount = setupControls(root).filter(control => !control.hasAttribute("data-signal-bank-extra") && !control.closest?.('[data-signal-side="Venda"]') && !control.hasAttribute("data-histogram-extra") && !control.hasAttribute("data-slot-timeframe-extra") && !control.hasAttribute("data-condition-control") && !control.hasAttribute("data-rsi-level-extra")).length;
-        saved.splice(legacyCount, 4);
-    }
+    const saved = state[page] || [];
     setupControls(root).forEach((control, index) => {
-        if (state.optimizationZeroVersion?.[page] !== 1 && control.matches('.tab-panel-optimize input[type="number"]')) {
-            control.value = "0";
-            return;
-        }
         if (control.hasAttribute("data-crossing-source")) updateCrossingOptions(root);
-        if (page === "indicadores" && state.signalDefaultsVersion !== 1 && control.matches("[data-conditions] select:not([data-signal-extra])")) {
-            control.value = "N.usar";
-            return;
-        }
-        const legacyFrame = control.hasAttribute("data-slot-timeframe-extra") && state.slotTimeframeVersion !== 1
-            ? state.legacySlotTimeframe?.[control.name.endsWith("-start") ? "start" : control.name.endsWith("-end") ? "end" : "fixed"] : null;
-        const value = saved[index] || (legacyFrame ? {value: legacyFrame} : null);
+        const value = saved[index];
         if (page === 'gestao' && control.name === 'pending_mirror_sell') {
             control.checked = state.pendingMirrorSell ?? value?.checked ?? false;
             return;
         }
-        if (!value) {
-            if (page === "configuracoes" && typeof state.mt5Visualization?.[control.name] === "boolean") {
-                control.checked = state.mt5Visualization[control.name];
-            }
-            return;
-        }
+        if (!value) return;
         if (control.type === "radio" || control.type === "checkbox") control.checked = value.checked;
         else if (control.tagName !== "SELECT" || Array.from(control.options).some(option => option.value === value.value)) {
             control.value = value.value;
         }
     });
     updateCrossingOptions(root);
-    if (page === "indicadores" && typeof normalizeSignalBanks === "function") normalizeSignalBanks(root);
+    if (page === "indicadores" && typeof initializeSignalBankDirections === "function") initializeSignalBankDirections(root);
 }
 
 function updateCrossingOptions(root) {
@@ -327,7 +288,7 @@ function bindSignalReset() {
         card.querySelectorAll("input[data-condition-control]").forEach(control => { control.value = "0"; });
         card.querySelectorAll("[data-crossing-source]").forEach(control => control.signalPickerRefresh?.());
         card.querySelectorAll('[data-mirror-note], [data-mirror-source]').forEach(control => { control.value = ''; });
-        normalizeSignalBanks(card.closest('[data-page]'));
+        initializeSignalBankDirections(card.closest('[data-page]'));
         // Refresh unit labels, the summary and saved setup with the complete reset.
         card.querySelector("[data-unit-selector]").dispatchEvent(new Event("change", {bubbles: true}));
     });
@@ -503,12 +464,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const state = readSetupState();
             state[root.dataset.page] = setupControls(root).map(control => ({value: control.value, checked: control.checked}));
             if (root.dataset.page === 'gestao') state.pendingMirrorSell = Boolean(root.querySelector('[name="pending_mirror_sell"]')?.checked);
-            state.optimizationZeroVersion = {...state.optimizationZeroVersion, [root.dataset.page]: 1};
-            if (root.dataset.page === "indicadores") {
-                state.slotTimeframeVersion = 1;
-                state.signalDefaultsVersion = 1;
-                state.signalNormalSideVersion = 1;
-            }
             localStorage.setItem(setupStorageKey, JSON.stringify(state));
         };
         root.addEventListener("input", save);
@@ -585,7 +540,6 @@ async function bindPassageCounter() {
                         if (selects.length === 2) selects[1].value = selects[0].value;
                     });
                     state[page] = setupControls(root).map(control => ({value: control.value, checked: control.checked}));
-                    state.optimizationZeroVersion = {...state.optimizationZeroVersion, [page]: 1};
                 });
                 localStorage.setItem(setupStorageKey, JSON.stringify(state));
                 update();

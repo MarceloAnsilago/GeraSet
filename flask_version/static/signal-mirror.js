@@ -61,22 +61,10 @@ function writeSignalBankRow(row, rule = {}) {
     row.querySelector('[data-mirror-note]').value = rule.mirrorNote || '';
 }
 
-// Existing five-row setups can contain both sides and Inverter. Preserve their
-// resulting direction while moving them into the new banks, without changing logic.
-function normalizeSignalBanks(root) {
+// Direction is defined by the current bank, never inferred from an old set.
+function initializeSignalBankDirections(root) {
     const rows = Array.from(root.querySelectorAll('.condition-row'));
     if (!rows.length || !rows[0].dataset?.signalSide) return;
-    const rules = rows.map(readSignalRow);
-    const move = rules.some((rule, i) => signalRowActive(rule) && signalResultSide(rule) && signalResultSide(rule) !== rows[i].dataset.signalSide);
-    if (move) {
-        const banks = {Compra: [], Venda: []};
-        rules.forEach((rule, i) => {
-            if (signalRowActive(rule)) banks[signalResultSide(rule) || rows[i].dataset.signalSide].push(rule);
-        });
-        if (banks.Compra.length > 5 || banks.Venda.length > 5) throw new Error('Cada direção admite até cinco condições.');
-        for (const side of ['Compra','Venda']) rows.filter(row => row.dataset.signalSide === side)
-            .forEach((row, i) => writeSignalBankRow(row, banks[side][i] ? {...banks[side][i], normalSide: side, sense: 'Normal'} : {}));
-    }
     rows.forEach(row => {
         row.querySelector('[name$="-normal-side"]').value = row.dataset.signalSide;
         row.querySelector('[name$="-sense"]').value = 'Normal';

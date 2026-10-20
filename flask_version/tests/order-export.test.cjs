@@ -28,9 +28,8 @@ test('invalid pending settings fail instead of silently using native defaults', 
         assert.throws(() => lines(values), {name: 'OrderValidationError'});
     assert.throws(() => context.orderSetLines([]), {name: 'OrderValidationError'});
 });
-test('cached templates retain their original unnamed order fields', () => {
-    const result = context.orderSetLines([{key: 'gestao_0', value: 'A mercado'}]);
-    assert.equal(result[0], 'InpOrderMode=0||0||1||0||N');
+test('removed unnamed order fields are rejected', () => {
+    assert.throws(()=>context.orderSetLines([{key:'gestao_0',value:'A mercado'}]),{name:'OrderValidationError'});
 });
 
 

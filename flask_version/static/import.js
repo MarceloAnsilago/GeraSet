@@ -16,16 +16,12 @@ function parseSetupSet(text) {
         metadata = JSON.parse(lines.slice(start).filter(line => /^;/.test(line))
             .map(line => line.replace(/^;\s?/, '')).join('\n'));
     } catch { throw new Error('Os dados do GeraSet no arquivo estão incompletos ou inválidos.'); }
-    const pages = ['inicio', 'indicadores', 'gestao'];
-    // Configurações was introduced after the first GeraSet presets.
-    // Missing/empty legacy settings use today's defaults; malformed data still fails.
-    if (metadata.pages && metadata.pages.configuracoes === undefined) metadata.pages.configuracoes = [];
-    if (metadata.format !== 'geraset' || metadata.version !== 1 || !metadata.pages ||
-        !pages.every(page => Array.isArray(metadata.pages[page]) && metadata.pages[page].length > 0 &&
-            validSetupFields(metadata.pages[page])) || !Array.isArray(metadata.pages.configuracoes) ||
-        !validSetupFields(metadata.pages.configuracoes)) {
-        throw new Error('Formato ou versão do GeraSet não suportado.');
-    }
+    if (!metadata || metadata.format !== 'geraset' || metadata.version !== 2)
+        throw new Error('Formato antigo ou incompatível. Crie e exporte um novo set no GeraSet atual.');
+    const pages = ['inicio', 'indicadores', 'gestao', 'configuracoes'];
+    if (!metadata.pages || !pages.every(page => Array.isArray(metadata.pages[page]) &&
+        metadata.pages[page].length > 0 && validSetupFields(metadata.pages[page])))
+        throw new Error('O set atual deve conter todas as páginas com seus campos válidos.');
     const native = new Map();
     lines.forEach(line => {
         const match = /^(Inp\w+)=(.*)$/.exec(line);
@@ -40,7 +36,7 @@ function validSetupFields(fields) {
 }
 
 async function prepareSetupImport(parsed) {
-    const state = {slotTimeframeVersion: 1, signalDefaultsVersion: 1, signalNormalSideVersion: 1, optimizationZeroVersion: {}};
+    const state = {};
     const roots = new Map(await Promise.all(['inicio', 'indicadores', 'gestao', 'configuracoes'].map(async page => {
         const response = await fetch(`/${page}`);
         if (!response.ok) throw new Error('Não foi possível carregar os campos. Tente novamente.');
@@ -48,17 +44,6 @@ async function prepareSetupImport(parsed) {
         if (!root.querySelector(`[data-page="${page}"]`)) throw new Error('Página de configuração inválida.');
         const controls = setupControls(root);
         const fields = parsed.metadata.pages[page];
-        if (page === 'indicadores') {
-            const previous = Object.fromEntries(parsed.metadata.pages.inicio.map(field => [field.key, field.value]));
-            const raw = parsed.native.get('InpStrategyTimeframe')?.split('||');
-            const labelFor = value => Object.entries(operationEnums.setup_timeframe).find(([, code]) => code === Number(value))?.[0];
-            const legacy = previous.setup_timeframe || labelFor(raw?.[0]) || 'Tempo corrente';
-            for (let slot = 1; slot <= 4; slot++) for (const bound of ['', '-start', '-end']) {
-                const key = `indicator-timeframe-${slot}${bound}`;
-                if (!fields.some(field => field.key === key)) fields.push({key, value: bound
-                    ? previous[`operation-timeframe${bound}`] || labelFor(raw?.[bound === '-start' ? 1 : 3]) || legacy : legacy});
-            }
-        }
         const apply = (control, index) => {
             const key = control.name || control.id || `${page}_${index}`;
             const field = fields.find(entry => entry.key === key &&
@@ -75,10 +60,9 @@ async function prepareSetupImport(parsed) {
         controls.forEach((control, index) => { if (control.hasAttribute('data-indicator-type')) apply(control, index); });
         updateCrossingOptions(root);
         controls.forEach(apply);
-        if (page === "indicadores" && typeof normalizeSignalBanks === "function") normalizeSignalBanks(root);
+        if (page === "indicadores" && typeof initializeSignalBankDirections === "function") initializeSignalBankDirections(root);
         if (page === 'gestao') state.pendingMirrorSell = Boolean(root.querySelector('[name="pending_mirror_sell"]')?.checked);
         state[page] = controls.map(control => ({value: control.value, checked: control.checked}));
-        state.optimizationZeroVersion[page] = 1;
         return [page, root];
     })));
     const tester = parsed.native.get('InpTesterAutoStart');
@@ -88,28 +72,17 @@ async function prepareSetupImport(parsed) {
     }
     // Validate with the same rules used by export, before changing localStorage.
     const exported = parseSetupSet(decodeSetupSet(serializeSetupSet(roots, state).contents));
-    // Migrating a mixed five-row setup changes row numbers, but not rule order
-    // within each purpose/direction. Compare those groups rather than positions.
-    if (JSON.stringify(canonicalSignalGroups(parsed.native)) !== JSON.stringify(canonicalSignalGroups(exported.native)))
-        throw new Error('Os sinais diferem dos dados salvos pelo GeraSet. Reexporte o arquivo.');
-    for (const [key, value] of parsed.native) {
-        if (/^InpSignal\d+$/.test(key)) continue;
-        if (exported.native.has(key) && exported.native.get(key) !== value) {
-            throw new Error(`O parâmetro ${key} difere dos dados salvos pelo GeraSet. Reexporte o arquivo com os dados atualizados.`);
-        }
-    }
+    validateSetupInputs(parsed.native, exported.native);
     return state;
 }
 
-function canonicalSignalGroups(native) {
-    const groups = new Map();
-    [...native].filter(([key,value]) => /^InpSignal\d+$/.test(key) && value)
-        .sort(([a],[b]) => Number(a.slice(9)) - Number(b.slice(9))).forEach(([,value]) => {
-            const fields = value.split(','), key = `${fields[1]}|${fields[2]}`;
-            if (!groups.has(key)) groups.set(key, []);
-            groups.get(key).push(value);
-        });
-    return [...groups].sort(([a],[b]) => a.localeCompare(b));
+function validateSetupInputs(actual, expected) {
+    for (const [key, value] of expected) {
+        if (actual.get(key) !== value)
+            throw new Error(`O parâmetro ${key} está ausente ou difere dos dados salvos. Crie um novo set no GeraSet atual.`);
+    }
+    if (actual.size !== expected.size)
+        throw new Error('O arquivo contém parâmetros incompatíveis com o formato atual.');
 }
 
 function bindSetImport() {
