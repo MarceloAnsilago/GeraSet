@@ -10,7 +10,10 @@ from test_bridge import HTML
 
 @pytest.mark.parametrize('mode,expected',[('ok','completed'),('missing','failed'),('incomplete','failed'),('timeout','failed'),('start_error','failed')])
 def test_real_executor_with_fake_os_process(settings,payload,monkeypatch,mode,expected):
-    settings=replace(settings,timeout_seconds=.02)
+    # Installed executables and user data must not be assumed to share a folder.
+    data=settings.work_dir.parent/'user-data'
+    expert=data/'MQL5/Experts/Uni/UniEA.ex5';expert.parent.mkdir(parents=True);expert.write_bytes(b'test EA')
+    settings=replace(settings,timeout_seconds=.02,data_dir=data,expert=expert,portable=False)
     monkeypatch.setattr('mt5_bridge.runner.psutil.process_iter',lambda *args:[])
     handles=[]
     class ProcessInfo:
@@ -44,3 +47,5 @@ def test_real_executor_with_fake_os_process(settings,payload,monkeypatch,mode,ex
         assert result['error']['code']=={'missing':'REPORT_MISSING','incomplete':'INCOMPLETE_REPORT','timeout':'TIMEOUT','start_error':'START_FAILED'}[mode]
     assert not list((settings.data_dir/'MQL5/Profiles/Tester').glob('geraset_*.set'))
     if mode=='timeout':assert handles[0].returncode==-15
+    assert not (settings.terminal.parent/'geraset_reports').exists()
+    assert not (settings.terminal.parent/'.geraset-tester.lock').exists()

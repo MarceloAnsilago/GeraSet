@@ -6,6 +6,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import time
+import tempfile
 import psutil
 from .errors import BridgeError
 from .ini import build_ini
@@ -82,7 +83,8 @@ class MT5Runner:
 
     def execute(self, job, values, callback, cancelled):
         s=self.settings;self.ensure_ready()
-        with file_lock(s.terminal.parent/'.geraset-tester.lock'):
+        installation_hash=hashlib.sha256(os.path.normcase(str(s.terminal)).encode()).hexdigest()
+        with file_lock(Path(tempfile.gettempdir())/'geraset-mt5-locks'/f'{installation_hash}.lock'):
             self.ensure_ready()
             work=s.work_dir/job['id']
             original=(work/'original.set').read_bytes()
@@ -93,9 +95,10 @@ class MT5Runner:
             preset_name=f'geraset_{job["id"]}.set';preset_path=preset_dir/preset_name
             preset_path.write_bytes(execution_set(values,request.enable_test_entries))
             shutil.copy2(preset_path,work/'execution.set')
-            report_dir=s.terminal.parent/'geraset_reports'/job['id'];report_dir.mkdir(parents=True,exist_ok=True)
+            report_dir=s.data_dir/'geraset_reports'/job['id'];report_dir.mkdir(parents=True,exist_ok=True)
             report=report_dir/('report.xml' if job['kind']=='optimize' else 'report.htm')
-            relative=str(report.relative_to(s.terminal.parent))
+            try:relative=os.path.relpath(report,s.terminal.parent)
+            except ValueError:relative=str(report)  # Explicit server-controlled path across volumes.
             config=work/'tester.ini'
             config.write_text(build_ini(s,request,job['kind'],preset_name,relative),encoding='utf-16')
             monitor=LogMonitor(s.data_dir)

@@ -97,6 +97,9 @@ class Manager:
         except BridgeError as exc:
             self.store.update(job['id'],state='cancelled' if exc.code=='CANCELLED' else 'failed',finished_at=now(),
                               error={'code':exc.code,'message':exc.message})
+        except PermissionError:
+            self.store.update(job['id'],state='failed',finished_at=now(),error={
+                'code':'FILE_PERMISSION','message':'Sem permissão para gravar arquivos de teste. Confira o diretório de dados e relatórios do MT5.'})
         except Exception as exc:
             logger.error(json.dumps({'event':'job_error','job_id':job['id'],'type':type(exc).__name__}))
             self.store.update(job['id'],state='failed',finished_at=now(),error={'code':'INTERNAL_ERROR','message':'Falha interna; consulte o log local do bridge.'})
