@@ -8,7 +8,14 @@ async function bindBridge() {
     const field=name=>card.querySelector(`[name="bridge-${name}"]`);
     const request=async(path,options={})=>{
         const response=await fetch('/bridge'+path,{...options,headers:{'Content-Type':'application/json','X-GeraSet-CSRF':csrf,...options.headers}});
-        const body=await response.json();
+        if(!response.headers.get('content-type')?.includes('application/json')){
+            throw new Error(response.status===404
+                ? 'A integração do Bridge não está carregada no Flask. Reinicie o servidor GeraSet e atualize a página.'
+                : `O servidor retornou uma resposta inesperada (HTTP ${response.status}). Confira o servidor GeraSet.`);
+        }
+        let body;
+        try{body=await response.json();}
+        catch{throw new Error('O servidor retornou JSON inválido. Confira os logs do GeraSet.');}
         if(!response.ok)throw new Error(body.error?.message||'Falha de comunicação com o Bridge.');
         return body.data;
     };

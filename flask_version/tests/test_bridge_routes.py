@@ -57,3 +57,11 @@ def test_artifact_attachment_and_routes(client):
 def test_client_rejects_external_or_embedded_credentials():
     for url in ('http://example.com','https://127.0.0.1','http://u:p@localhost','http://localhost/path'):
         with pytest.raises(BridgeUnavailable):HTTPBridgeClient(url,'token')
+
+
+def test_flask_package_entrypoint():
+    import subprocess
+    result=subprocess.run([sys.executable,'-c',
+        'from flask_version.app import app; r=app.test_client().get("/bridge/session"); assert r.status_code==200 and r.is_json'],
+        cwd=Path(__file__).resolve().parents[2],capture_output=True,text=True)
+    assert result.returncode==0,result.stderr

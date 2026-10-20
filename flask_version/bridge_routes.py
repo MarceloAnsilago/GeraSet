@@ -4,7 +4,10 @@ import re
 import secrets
 from uuid import UUID
 from flask import Blueprint, current_app, jsonify, request, send_file, session
-from bridge_client import HTTPBridgeClient, BridgeUnavailable
+if __package__:
+    from .bridge_client import HTTPBridgeClient, BridgeUnavailable
+else:
+    from bridge_client import HTTPBridgeClient, BridgeUnavailable
 
 bridge=Blueprint('bridge',__name__,url_prefix='/bridge')
 

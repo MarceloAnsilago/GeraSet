@@ -3,7 +3,10 @@ from __future__ import annotations
 from flask import Flask, redirect, render_template, request, url_for
 import os
 import secrets
-from bridge_routes import bridge
+if __package__:
+    from .bridge_routes import bridge
+else:
+    from bridge_routes import bridge
 
 
 app = Flask(__name__)
