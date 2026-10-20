@@ -847,3 +847,10 @@ button.btn:disabled {
 /* Source and indicator line remain stacked within the existing condition grid. */
 [data-source-ui] + [data-source-ui] { margin-top: 0.35rem; }
 [data-crossing-source][hidden], [data-source-ui][hidden] { display: none; }
+
+.signal-side-tabs { display:flex; gap:0.5rem; margin:1rem 0; }
+.signal-side-tabs [aria-selected="true"] { background:var(--primary, #1d4ed8); color:white; }
+[data-signal-panel][hidden], [data-signal-mirror-tools][hidden], .signal-mirror-warning[hidden] { display:none; }
+[data-signal-mirror-tools] { margin-bottom:1rem; }
+.condition-row:has(.signal-mirror-warning:not([hidden])) { flex-wrap:wrap; }
+.condition-row > .signal-mirror-warning { flex:1 0 100%; padding:0.7rem; border:1px solid #b45309; border-radius:0.4rem; background:#fffbeb; color:#78350f; }

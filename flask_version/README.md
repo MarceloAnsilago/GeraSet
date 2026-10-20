@@ -175,7 +175,7 @@ e exporta cada configuração ao grupo correspondente. Sinais e buffers continua
 endereçados pelo slot. Apenas MA permite repetir a mesma finalidade.
 Arquivos .set anteriores com InpIndicatorNRsi/Adx devem ser reexportados pelo
 Flask para usar os novos nomes; os valores salvos no navegador são preservados. Os buffers A/Da e candles são gravados nos inputs
-`InpSignal1` a `InpSignal5`; condições vazias limpam os respectivos inputs.
+`InpSignal1` a `InpSignal10`; condições vazias limpam os respectivos inputs.
 Os novos inputs `InpIndicator1Exit` a `InpIndicator4Exit` preservam Entrada/Saída.
 
 Grupos com Vela atual são avaliados a cada tick; grupos somente com candles
@@ -246,3 +246,32 @@ da fonte; histogramas seguem as velas do gráfico. Sets antigos importados
 herdam o timeframe global em seus slots; o Uni deve ser recompilado antes
 de usar os novos inputs. O preset binário interno do painel passa à versão
 12 e continua lendo as versões anteriores.
+
+
+### Abas Compra/Venda e Espelhar compra
+
+Cada direcao possui cinco condicoes. A finalidade Entrada/Saida continua vindo
+dos indicadores; Saida/Compra fecha vendas, Saida/Venda fecha compras.
+O botao Espelhar compra na aba Venda cria uma copia independente e editavel.
+Antes de substituir uma venda preenchida, exige confirmacao dentro da pagina.
+Alteracoes posteriores na compra ou nos parametros exibem um aviso de copia
+desatualizada; nao modificam silenciosamente a venda.
+
+O espelhamento troca superior/inferior do RSI e inverte comparacoes direcionais,
+troca DI+/DI- preservando a comparacao e mantem filtros de forca ADX. Um valor
+fixo RSI, combinacao ambigua ou grupo somente de forca exige revisao. A linha
+fica destacada; complete a comparacao e clique Concluir revisao. A exportacao
+nao aceita pendencias ativas. A direcao permitida na pagina inicial continua
+controlando quais entradas o UNI pode executar; espelhar nao muda essa escolha.
+
+Setups antigos com regras misturadas ou Inverter sao organizados pelo sinal
+resultante, preservando ordem e finalidade. Na importacao, os sinais nativos
+sao comparados por grupos, pois os numeros das linhas podem mudar na migracao.
+A migracao e a troca de comparacoes contam com testes de regressao.
+Use o UniEA atualizado para os novos inputs InpSignal6..InpSignal10.
+
+Validacao: 70 testes JavaScript passaram. RSI abaixo do nivel inferior gerou
+venda acima do superior no navegador e persistiu apos recarregar. Confirmacao,
+cancelamento, revisao obrigatoria e aviso de copia alterada tambem cobertos por
+testes de eventos com DOM simulado. Sem nova validacao visual de dez condicoes
+no MetaTrader nesta etapa.

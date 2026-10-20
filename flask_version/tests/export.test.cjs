@@ -108,7 +108,7 @@ test('exports the latest configuration and confirms only after closing the file'
         'InpTakeProfit=150||150||0.01||150||N', 'InpTakeStopMultiplier=0||0||1||0||N',
         'InpBreakevenMode=0||0||1||0||N', 'InpBreakevenTrigger=0||0||0.01||0||N', 'InpBreakevenOffset=0||0||0.01||0||N',
         ...[1, 2, 3, 4].flatMap(i => [`InpIndicator${i}Timeframe=0||0||1||0||N`, `InpIndicator${i}Type=-1||-1||1||-1||N`, `InpIndicator${i}Exit=0||0||1||0||N`]),
-        ...[1, 2, 3, 4, 5].map(i => `InpSignal${i}=`),
+        ...Array.from({length: 10}, (_, i) => `InpSignal${i + 1}=`),
         'InpExibirHistogramas=true', 'InpHistogramasBarras=300', 'InpExibirPainel=true',
     ]);
     assert.equal(written.pages.inicio[1].value, '12345');

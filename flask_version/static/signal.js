@@ -44,6 +44,7 @@ function readSignalRow(row) {
             ?.closest(".indicator-card").querySelector("[data-indicator-usage] input:checked")?.value;
     }).filter(Boolean));
     rule.usage = usages.size > 1 ? "Conflito de finalidade" : [...usages][0] || "Entrada";
+    if (row.dataset?.signalSide) rule.mirrorNote = row.querySelector('[data-mirror-note]')?.value || '';
     return rule;
 }
 
@@ -70,6 +71,7 @@ function signalRowActive(rule) {
 
 function signalRuleErrors(rule, unit) {
     const errors = [];
+    if (rule.mirrorNote) errors.push(`revise o espelhamento: ${rule.mirrorNote}`);
     if (!["Compra", "Venda"].includes(rule.normalSide)) errors.push("selecione Compra ou Venda em Sinal normal");
     if (!["Normal", "Inverter"].includes(rule.sense)) errors.push("selecione Normal ou Inverter em Sentido");
     const finite = value => value.trim() !== "" && Number.isFinite(Number(value));

@@ -22,7 +22,9 @@ const relocatedSetupControls = new WeakMap();
 
 function setupControls(root) {
     if (relocatedSetupControls.has(root)) return relocatedSetupControls.get(root);
-    const controls = Array.from(root.querySelectorAll(".card input:not(.tab-radio), .card select:not([data-source-ui])"));
+    const allControls = Array.from(root.querySelectorAll(".card input:not(.tab-radio), .card select:not([data-source-ui])"));
+    const bankExtra = control => control.hasAttribute("data-signal-bank-extra") || control.closest?.('[data-signal-side="Venda"]');
+    const controls = allControls.filter(control => !bankExtra(control));
     // Append new controls to preserve existing positional saved setups.
     return [...controls.filter(control => !control.matches("[data-condition-control], [data-candle-direction-control], [data-rsi-level-extra], [data-stop-mode-extra], [data-histogram-extra], [data-slot-timeframe-extra]")),
         ...controls.filter(control => control.hasAttribute("data-condition-control") && !control.hasAttribute("data-signal-extra")),
@@ -32,12 +34,13 @@ function setupControls(root) {
         ...controls.filter(control => control.hasAttribute("data-rsi-level-extra")),
         ...controls.filter(control => control.hasAttribute("data-stop-mode-extra")),
         ...controls.filter(control => control.hasAttribute("data-histogram-extra")),
-        ...controls.filter(control => control.hasAttribute("data-slot-timeframe-extra"))];
+        ...controls.filter(control => control.hasAttribute("data-slot-timeframe-extra")),
+        ...allControls.filter(bankExtra)];
 }
 
 function restoreSetup(root, page, state = readSetupState()) {
     let saved = state[page] || [];
-    const legacyLength = setupControls(root).filter(control => !control.hasAttribute("data-histogram-extra") && !control.hasAttribute("data-slot-timeframe-extra")).filter(control => !control.hasAttribute("data-signal-extra") && !control.hasAttribute("data-rsi-level-extra")).length;
+    const legacyLength = setupControls(root).filter(control => !control.hasAttribute("data-signal-bank-extra") && !control.closest?.('[data-signal-side="Venda"]') && !control.hasAttribute("data-histogram-extra") && !control.hasAttribute("data-slot-timeframe-extra")).filter(control => !control.hasAttribute("data-signal-extra") && !control.hasAttribute("data-rsi-level-extra")).length;
     if (page === "indicadores" && state.signalNormalSideVersion !== 1 && saved.length === legacyLength + 15) {
         // Remove the redundant per-condition usage from the former three-field extras.
         saved = saved.filter((_, index) => index < legacyLength || (index - legacyLength) % 3 !== 0);
@@ -48,7 +51,7 @@ function restoreSetup(root, page, state = readSetupState()) {
         saved = saved.filter((_, index) => index >= 212 || !removed.has(index % 53));
     }
     if (page === "indicadores" && saved.length === legacyLength + 4) {
-        const legacyCount = setupControls(root).filter(control => !control.hasAttribute("data-histogram-extra") && !control.hasAttribute("data-slot-timeframe-extra") && !control.hasAttribute("data-condition-control") && !control.hasAttribute("data-rsi-level-extra")).length;
+        const legacyCount = setupControls(root).filter(control => !control.hasAttribute("data-signal-bank-extra") && !control.closest?.('[data-signal-side="Venda"]') && !control.hasAttribute("data-histogram-extra") && !control.hasAttribute("data-slot-timeframe-extra") && !control.hasAttribute("data-condition-control") && !control.hasAttribute("data-rsi-level-extra")).length;
         saved.splice(legacyCount, 4);
     }
     setupControls(root).forEach((control, index) => {
@@ -76,6 +79,7 @@ function restoreSetup(root, page, state = readSetupState()) {
         }
     });
     updateCrossingOptions(root);
+    if (page === "indicadores" && typeof normalizeSignalBanks === "function") normalizeSignalBanks(root);
 }
 
 function updateCrossingOptions(root) {
@@ -309,6 +313,8 @@ function bindSignalReset() {
         card.querySelectorAll("select").forEach(control => { control.value = control.hasAttribute("data-signal-extra") ? control.options[0].value : "N.usar"; });
         card.querySelectorAll("input[data-condition-control]").forEach(control => { control.value = "0"; });
         card.querySelectorAll("[data-crossing-source]").forEach(control => control.signalPickerRefresh?.());
+        card.querySelectorAll('[data-mirror-note], [data-mirror-source]').forEach(control => { control.value = ''; });
+        normalizeSignalBanks(card.closest('[data-page]'));
         // Refresh unit labels, the summary and saved setup with the complete reset.
         card.querySelector("[data-unit-selector]").dispatchEvent(new Event("change", {bubbles: true}));
     });
@@ -709,3 +715,5 @@ function bindSignalSourcePickers() {
     });
 }
 document.addEventListener('DOMContentLoaded', bindSignalSourcePickers);
+
+document.addEventListener("DOMContentLoaded", () => bindSignalBanks());

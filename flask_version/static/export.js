@@ -274,7 +274,7 @@ function indicatorSignalSetLines(root) {
     const unit = choices(card.querySelector('[data-unit-selector]').value, ['N.usar', 'Pontos', 'Porcentagem']);
     const candles = ['Vela atual', 'Anterior', 'Penúltima', 'Antepenúltima'];
     const comparisons = ['Maior que', 'Menor que', 'Maior ou igual que', 'Menor ou igual que', 'Igual que', 'Diferente de', 'Toque', 'Cruzar p/ cima de', 'Cruzar p/ baixo de', 'Cruzar&fechar acima de', 'Cruzar&fechar abaixo de'];
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 10; i++) {
         const rule = rows[i] ? readSignalRow(rows[i]) : null;
         let payload = '';
         if (rule && signalRowActive(rule)) {

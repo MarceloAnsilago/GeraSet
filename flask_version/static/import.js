@@ -67,6 +67,7 @@ async function prepareSetupImport(parsed) {
         controls.forEach((control, index) => { if (control.hasAttribute('data-indicator-type')) apply(control, index); });
         updateCrossingOptions(root);
         controls.forEach(apply);
+        if (page === "indicadores" && typeof normalizeSignalBanks === "function") normalizeSignalBanks(root);
         state[page] = controls.map(control => ({value: control.value, checked: control.checked}));
         state.optimizationZeroVersion[page] = 1;
         return [page, root];
@@ -78,12 +79,28 @@ async function prepareSetupImport(parsed) {
     }
     // Validate with the same rules used by export, before changing localStorage.
     const exported = parseSetupSet(decodeSetupSet(serializeSetupSet(roots, state).contents));
+    // Migrating a mixed five-row setup changes row numbers, but not rule order
+    // within each purpose/direction. Compare those groups rather than positions.
+    if (JSON.stringify(canonicalSignalGroups(parsed.native)) !== JSON.stringify(canonicalSignalGroups(exported.native)))
+        throw new Error('Os sinais diferem dos dados salvos pelo GeraSet. Reexporte o arquivo.');
     for (const [key, value] of parsed.native) {
+        if (/^InpSignal\d+$/.test(key)) continue;
         if (exported.native.has(key) && exported.native.get(key) !== value) {
             throw new Error(`O parâmetro ${key} difere dos dados salvos pelo GeraSet. Reexporte o arquivo com os dados atualizados.`);
         }
     }
     return state;
+}
+
+function canonicalSignalGroups(native) {
+    const groups = new Map();
+    [...native].filter(([key,value]) => /^InpSignal\d+$/.test(key) && value)
+        .sort(([a],[b]) => Number(a.slice(9)) - Number(b.slice(9))).forEach(([,value]) => {
+            const fields = value.split(','), key = `${fields[1]}|${fields[2]}`;
+            if (!groups.has(key)) groups.set(key, []);
+            groups.get(key).push(value);
+        });
+    return [...groups].sort(([a],[b]) => a.localeCompare(b));
 }
 
 function bindSetImport() {
