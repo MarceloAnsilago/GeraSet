@@ -248,6 +248,14 @@ de usar os novos inputs. O preset binário interno do painel passa à versão
 12 e continua lendo as versões anteriores.
 
 
+### Compatibilidade de Carregar set
+
+Sets antigos do GeraSet que ainda não tinham a página Configurações podem ser
+carregados: os novos controles usam seus valores padrão. Dados malformados
+continuam sendo rejeitados antes de substituir o rascunho. Foram conferidos pelo
+botão Carregar set os arquivos antigos helo world07 rsi.set e helo world08 rsi.set,
+com preservação das condições de entrada e saída nas abas Compra/Venda.
+
 ### Abas Compra/Venda e Espelhar compra
 
 Cada direcao possui cinco condicoes. A finalidade Entrada/Saida continua vindo

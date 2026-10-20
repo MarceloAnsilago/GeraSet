@@ -40,6 +40,22 @@ test('rejects native-only, truncated and unsupported metadata without executing 
     }
 });
 
+test('legacy presets without Configurações load defaults, while malformed settings still fail', () => {
+    const {context} = environment();
+    const original = context.parseSetupSet(preset());
+    for (const settings of [undefined, []]) {
+        const metadata = JSON.parse(JSON.stringify(original.metadata));
+        if (settings === undefined) delete metadata.pages.configuracoes;
+        else metadata.pages.configuracoes = settings;
+        const text = JSON.stringify(metadata,null,2).split('\n').map(line=>'; '+line).join('\n');
+        assert.equal(context.parseSetupSet(text).metadata.pages.configuracoes.length,0);
+    }
+    for (const settings of [null,{},[{key:'broken',value:42}]]) {
+        const metadata = JSON.parse(JSON.stringify(original.metadata));metadata.pages.configuracoes=settings;
+        assert.throws(()=>context.parseSetupSet(JSON.stringify(metadata,null,2).split('\n').map(line=>'; '+line).join('\n')));
+    }
+});
+
 test('failed validation leaves the saved draft untouched and allows retry', async () => {
     const env = environment();
     env.context.prepareSetupImport = async () => { throw new Error('Invalid signal'); };

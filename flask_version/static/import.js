@@ -16,11 +16,14 @@ function parseSetupSet(text) {
         metadata = JSON.parse(lines.slice(start).filter(line => /^;/.test(line))
             .map(line => line.replace(/^;\s?/, '')).join('\n'));
     } catch { throw new Error('Os dados do GeraSet no arquivo estão incompletos ou inválidos.'); }
-    const pages = ['inicio', 'indicadores', 'gestao', 'configuracoes'];
+    const pages = ['inicio', 'indicadores', 'gestao'];
+    // Configurações was introduced after the first GeraSet presets.
+    // Missing/empty legacy settings use today's defaults; malformed data still fails.
+    if (metadata.pages && metadata.pages.configuracoes === undefined) metadata.pages.configuracoes = [];
     if (metadata.format !== 'geraset' || metadata.version !== 1 || !metadata.pages ||
         !pages.every(page => Array.isArray(metadata.pages[page]) && metadata.pages[page].length > 0 &&
-            metadata.pages[page].every(field => field && typeof field.key === 'string' &&
-                typeof field.value === 'string' && (field.checked === undefined || typeof field.checked === 'boolean')))) {
+            validSetupFields(metadata.pages[page])) || !Array.isArray(metadata.pages.configuracoes) ||
+        !validSetupFields(metadata.pages.configuracoes)) {
         throw new Error('Formato ou versão do GeraSet não suportado.');
     }
     const native = new Map();
@@ -29,6 +32,11 @@ function parseSetupSet(text) {
         if (match) native.set(match[1], match[2]);
     });
     return {metadata, native};
+}
+
+function validSetupFields(fields) {
+    return fields.every(field => field && typeof field.key === 'string' &&
+        typeof field.value === 'string' && (field.checked === undefined || typeof field.checked === 'boolean'));
 }
 
 async function prepareSetupImport(parsed) {
