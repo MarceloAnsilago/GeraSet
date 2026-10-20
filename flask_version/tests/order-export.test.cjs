@@ -12,7 +12,7 @@ function lines(overrides = {}) {
     return Array.from(context.orderSetLines(Object.entries(values).map(([key, value]) => ({key, value}))));
 }
 test('order exports fixed values independently of optimization bounds', () => {
-    assert.deepEqual(lines(), ['InpOrderMode=1||1||1||1||N', 'InpPendingReference=3||0||1||0||N', 'InpPendingCandle=3||3||1||3||N']);
+    assert.deepEqual(lines(), ['InpOrderMode=1||1||1||1||N', 'InpPendingReference=3||0||1||0||N', 'InpPendingCandle=3||3||1||3||N', 'InpPendingMirrorSell=false']);
     const result = lines({'pending-reference-start': 'Fechamento', 'pending-reference-end': 'Mínima', 'pending-bar-start': '1', 'pending-bar-step': '2', 'pending-bar-end': '9'});
     assert.ok(result.includes('InpPendingReference=3||1||1||3||Y'));
     assert.ok(result.includes('InpPendingCandle=3||1||2||9||Y'));
@@ -21,7 +21,7 @@ test('all OHLC references preserve Uni numeric values', () => {
     ['Máxima', 'Mínima', 'Abertura', 'Fechamento'].forEach((value, index) => assert.ok(lines({pending_reference: value})[1].startsWith(`InpPendingReference=${index}||`)));
 });
 test('market orders disable hidden pending optimization and ignore invalid hidden fields', () => {
-    assert.deepEqual(lines({order_mode: 'A mercado', pending_bar: 'bad', 'pending-bar-step': 'bad'}), ['InpOrderMode=0||0||1||0||N', 'InpPendingReference=0||0||1||0||N', 'InpPendingCandle=1||1||1||1||N']);
+    assert.deepEqual(lines({order_mode: 'A mercado', pending_bar: 'bad', 'pending-bar-step': 'bad'}), ['InpOrderMode=0||0||1||0||N', 'InpPendingReference=0||0||1||0||N', 'InpPendingCandle=1||1||1||1||N', 'InpPendingMirrorSell=false']);
 });
 test('invalid pending settings fail instead of silently using native defaults', () => {
     for (const values of [{order_mode: ''}, {pending_reference: 'Distância'}, {pending_bar: '0'}, {pending_bar: '1.5'}, {pending_bar: '100001'}, {'pending-bar-start': '1'}, {'pending-bar-start': '4', 'pending-bar-step': '1', 'pending-bar-end': '2'}])
@@ -31,4 +31,16 @@ test('invalid pending settings fail instead of silently using native defaults', 
 test('cached templates retain their original unnamed order fields', () => {
     const result = context.orderSetLines([{key: 'gestao_0', value: 'A mercado'}]);
     assert.equal(result[0], 'InpOrderMode=0||0||1||0||N');
+});
+
+
+test('pending mirror is opt-in, exported independently of OHLC optimization and preserved for market orders', () => {
+    const controls=[{key:'order_mode',value:'Pendente'}, {key:'pending_reference',value:'Mínima'}, {key:'pending_bar',value:'2'},
+        {key:'pending-reference-start',value:'Máxima'},{key:'pending-reference-end',value:'Fechamento'},
+        ...['start','step','end'].map(bound=>({key:`pending-bar-${bound}`,value:'0'})),
+        {key:'pending_mirror_sell',value:'on',checked:true}];
+    let output=Array.from(context.orderSetLines(controls));
+    assert.ok(output.includes('InpPendingMirrorSell=true'));assert.ok(output.includes('InpPendingReference=1||0||1||3||Y'));
+    controls[0].value='A mercado';assert.ok(Array.from(context.orderSetLines(controls)).includes('InpPendingMirrorSell=true'));
+    controls.at(-1).checked=false;assert.ok(Array.from(context.orderSetLines(controls)).includes('InpPendingMirrorSell=false'));
 });

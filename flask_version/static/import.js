@@ -76,6 +76,7 @@ async function prepareSetupImport(parsed) {
         updateCrossingOptions(root);
         controls.forEach(apply);
         if (page === "indicadores" && typeof normalizeSignalBanks === "function") normalizeSignalBanks(root);
+        if (page === 'gestao') state.pendingMirrorSell = Boolean(root.querySelector('[name="pending_mirror_sell"]')?.checked);
         state[page] = controls.map(control => ({value: control.value, checked: control.checked}));
         state.optimizationZeroVersion[page] = 1;
         return [page, root];

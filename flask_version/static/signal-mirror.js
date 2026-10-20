@@ -101,7 +101,7 @@ function bindSignalBanks() {
         });
         status.textContent = source.value && source.value !== fingerprint()
             ? 'Compra ou parâmetros alterados após o espelhamento. A venda continua independente; confira ou espelhe novamente.'
-            : source.value ? 'Venda espelhada. Revise as pendências destacadas; você pode editar a cópia.' : 'Copie as condições de compra quando houver uma transformação definida.';
+            : source.value ? 'Venda espelhada. A referência da pendente foi marcada para espelhamento; confira em Gestão. Revise as pendências destacadas; você pode editar a cópia.' : 'Copie as condições de compra quando houver uma transformação definida.';
     };
     card.querySelectorAll('[data-signal-tab]').forEach(button => button.addEventListener('click', () => {
         card.querySelectorAll('[data-signal-tab]').forEach(tab => tab.setAttribute('aria-selected', String(tab === button)));
@@ -126,6 +126,11 @@ function bindSignalBanks() {
         }
         rows('Venda').forEach((row,i) => writeSignalBankRow(row, mirrored[i]?.rule));
         source.value = fingerprint();
+        if (typeof readSetupState === 'function' && typeof localStorage !== 'undefined') {
+            const state = readSetupState();
+            state.pendingMirrorSell = true;
+            localStorage.setItem(setupStorageKey, JSON.stringify(state));
+        }
         card.dispatchEvent(new Event('change', {bubbles:true}));
         refresh();
     };

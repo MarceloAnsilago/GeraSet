@@ -380,6 +380,9 @@
                             <input name="pending_bar" type="number" value="1" min="1" max="100000" step="1">
                         </div>
                     </div>
+                        <label><input type="checkbox" name="pending_mirror_sell" data-management-extra data-param-label="Espelhar referência da pendente na venda" style="width:auto; min-height:0;"> Espelhar referência da pendente na venda</label>
+                        <p class="muted" data-pending-mirror-preview aria-live="polite"></p>
+                        <p class="muted">A referência acima vale para a compra. Com o espelhamento marcado, a venda troca Máxima por Mínima e Mínima por Máxima; Abertura e Fechamento permanecem iguais. Vela e intervalos de otimização são compartilhados. O botão Espelhar compra, em Sinais, também ativa esta opção.</p>
                         <p class="muted">Vela 1 representa a última vela fechada do período da estratégia. A pendente usa o preço escolhido; Stop ou Limit é definido automaticamente conforme o lado do sinal e o preço de mercado.</p>
                         </div>
                         <div class="tab-panel tab-panel-optimize">

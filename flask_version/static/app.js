@@ -23,7 +23,7 @@ const relocatedSetupControls = new WeakMap();
 function setupControls(root) {
     if (relocatedSetupControls.has(root)) return relocatedSetupControls.get(root);
     const allControls = Array.from(root.querySelectorAll(".card input:not(.tab-radio), .card select:not([data-source-ui])"));
-    const bankExtra = control => control.hasAttribute("data-signal-bank-extra") || control.closest?.('[data-signal-side="Venda"]');
+    const bankExtra = control => control.hasAttribute("data-signal-bank-extra") || control.hasAttribute("data-management-extra") || control.closest?.('[data-signal-side="Venda"]');
     const controls = allControls.filter(control => !bankExtra(control));
     // Append new controls to preserve existing positional saved setups.
     return [...controls.filter(control => !control.matches("[data-condition-control], [data-candle-direction-control], [data-rsi-level-extra], [data-stop-mode-extra], [data-histogram-extra], [data-slot-timeframe-extra]")),
@@ -67,6 +67,10 @@ function restoreSetup(root, page, state = readSetupState()) {
         const legacyFrame = control.hasAttribute("data-slot-timeframe-extra") && state.slotTimeframeVersion !== 1
             ? state.legacySlotTimeframe?.[control.name.endsWith("-start") ? "start" : control.name.endsWith("-end") ? "end" : "fixed"] : null;
         const value = saved[index] || (legacyFrame ? {value: legacyFrame} : null);
+        if (page === 'gestao' && control.name === 'pending_mirror_sell') {
+            control.checked = state.pendingMirrorSell ?? value?.checked ?? false;
+            return;
+        }
         if (!value) {
             if (page === "configuracoes" && typeof state.mt5Visualization?.[control.name] === "boolean") {
                 control.checked = state.mt5Visualization[control.name];
@@ -157,8 +161,17 @@ function bindRulesVisibility() {
     if (orderSelect) {
         const updateOrder = () => {
             setVisible(pendingFields, orderSelect.value === "Pendente");
+            const preview = document.querySelector('[data-pending-mirror-preview]');
+            if (preview) {
+                const reference = document.querySelector('[name="pending_reference"]').value;
+                const mirror = document.querySelector('[name="pending_mirror_sell"]').checked;
+                const sell = mirror ? ({'Máxima':'Mínima','Mínima':'Máxima'}[reference] || reference) : reference;
+                preview.textContent = `Compra: ${reference}. Venda: ${sell}.`;
+            }
         };
         orderSelect.addEventListener("change", updateOrder);
+        document.querySelector('[name="pending_reference"]')?.addEventListener('change', updateOrder);
+        document.querySelector('[name="pending_mirror_sell"]')?.addEventListener('change', updateOrder);
         updateOrder();
     }
 
@@ -421,7 +434,7 @@ function reviewLine(control, card) {
         title = row ? `${unitLabel.dataset.unitLabel} — ${row.querySelectorAll("label")[Array.from(row.querySelectorAll("input, select")).indexOf(control)].textContent.trim()}` : (control.dataset.paramLabel || unitLabel.dataset.unitLabel);
         title += unit?.value === "Porcentagem" ? " (% porcentagem)" : " (pontos)";
     }
-    return {title, value: control.tagName === "SELECT" ? control.selectedOptions[0]?.textContent : control.value};
+    return {title, value: control.type === 'checkbox' ? (control.checked ? 'Sim' : 'Não') : control.tagName === "SELECT" ? control.selectedOptions[0]?.textContent : control.value};
 }
 
 async function renderSetupReview() {
@@ -489,6 +502,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const save = () => {
             const state = readSetupState();
             state[root.dataset.page] = setupControls(root).map(control => ({value: control.value, checked: control.checked}));
+            if (root.dataset.page === 'gestao') state.pendingMirrorSell = Boolean(root.querySelector('[name="pending_mirror_sell"]')?.checked);
             state.optimizationZeroVersion = {...state.optimizationZeroVersion, [root.dataset.page]: 1};
             if (root.dataset.page === "indicadores") {
                 state.slotTimeframeVersion = 1;

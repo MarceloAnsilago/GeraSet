@@ -78,10 +78,12 @@ test('overwrite requires inline confirmation, cancel preserves sale, and ambiguo
  context.document.querySelector=()=>card;context.Event=class {};
  context.writeSignalBankRow(rows[0],{...base,reference:'Valor fixo',fixed:'35'});
  context.writeSignalBankRow(rows[5],{...base,normalSide:'Venda',comparison:'Maior que'});
+ let policy={};context.setupStorageKey='test';context.readSetupState=()=>JSON.parse(JSON.stringify(policy));
+ context.localStorage={setItem(key,value){policy=JSON.parse(value);}};
  context.bindSignalBanks();
  controls['[data-mirror-buy]'].click();assert.equal(controls['[data-mirror-confirm]'].hidden,false);
- controls['[data-mirror-cancel]'].click();assert.equal(context.readSignalRow(rows[5]).reference,base.reference);
- controls['[data-mirror-buy]'].click();controls['[data-mirror-replace]'].click();
+ controls['[data-mirror-cancel]'].click();assert.equal(context.readSignalRow(rows[5]).reference,base.reference);assert.equal(policy.pendingMirrorSell,undefined);
+ controls['[data-mirror-buy]'].click();controls['[data-mirror-replace]'].click();assert.equal(policy.pendingMirrorSell,true);
  let sale=context.readSignalRow(rows[5]);assert.equal(sale.fixed,'35');assert.equal(sale.comparison,'N.usar');assert.ok(sale.mirrorNote);
  rows[5].querySelector('[data-mirror-reviewed]').click();assert.ok(context.readSignalRow(rows[5]).mirrorNote);
  rows[5].querySelector('[name$="-comparison"]').value='Maior que';

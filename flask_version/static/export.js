@@ -113,7 +113,9 @@ function orderSetLines(controls) {
     };
     const mode = choice('order_mode', ['A mercado', 'Pendente']);
     const fixed = (name, value) => `${name}=${value}||${value}||1||${value}||N`;
-    if (mode === 0) return [fixed('InpOrderMode', 0), fixed('InpPendingReference', 0), fixed('InpPendingCandle', 1)];
+    const mirror = controls.find(control => control.key === 'pending_mirror_sell')?.checked ?? false;
+    const mirrorLine = `InpPendingMirrorSell=${Boolean(mirror)}`;
+    if (mode === 0) return [fixed('InpOrderMode', 0), fixed('InpPendingReference', 0), fixed('InpPendingCandle', 1), mirrorLine];
     const options = ['Máxima', 'Mínima', 'Abertura', 'Fechamento'];
     const reference = choice('pending_reference', options);
     const a = choice('pending-reference-start', options), b = choice('pending-reference-end', options);
@@ -127,7 +129,7 @@ function orderSetLines(controls) {
     }
     return [fixed('InpOrderMode', mode),
         `InpPendingReference=${reference}||${Math.min(a, b)}||1||${Math.max(a, b)}||${a === b ? 'N' : 'Y'}`,
-        `InpPendingCandle=${bar}||${start}||${step}||${end}||${start === end ? 'N' : 'Y'}`];
+        `InpPendingCandle=${bar}||${start}||${step}||${end}||${start === end ? 'N' : 'Y'}`, mirrorLine];
 }
 
 function targetSetLines(controls) {
