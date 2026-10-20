@@ -1,0 +1,257 @@
+{
+  "InpName": {
+    "kind": "string"
+  },
+  "InpMagic": {
+    "kind": "long"
+  },
+  "InpMarket": {
+    "kind": "enum"
+  },
+  "InpTradeMode": {
+    "kind": "enum"
+  },
+  "InpLot": {
+    "kind": "double"
+  },
+  "InpDirection": {
+    "kind": "enum"
+  },
+  "InpEntryStart": {
+    "kind": "int"
+  },
+  "InpEntryEnd": {
+    "kind": "int"
+  },
+  "InpOrderMode": {
+    "kind": "enum"
+  },
+  "InpPendingReference": {
+    "kind": "enum"
+  },
+  "InpPendingCandle": {
+    "kind": "int"
+  },
+  "InpPendingMirrorSell": {
+    "kind": "bool"
+  },
+  "InpCandleFilter": {
+    "kind": "enum"
+  },
+  "InpTargetUnit": {
+    "kind": "enum"
+  },
+  "InpStopMode": {
+    "kind": "enum"
+  },
+  "InpStopLoss": {
+    "kind": "double"
+  },
+  "InpTakeMode": {
+    "kind": "enum"
+  },
+  "InpTakeProfit": {
+    "kind": "double"
+  },
+  "InpStopCandleMultiplier": {
+    "kind": "double"
+  },
+  "InpStopCandle": {
+    "kind": "int"
+  },
+  "InpStopBody": {
+    "kind": "bool"
+  },
+  "InpTakeStopMultiplier": {
+    "kind": "double"
+  },
+  "InpBreakevenMode": {
+    "kind": "enum"
+  },
+  "InpBreakevenTrigger": {
+    "kind": "double"
+  },
+  "InpBreakevenOffset": {
+    "kind": "double"
+  },
+  "InpTrailingMode": {
+    "kind": "enum"
+  },
+  "InpTrailingTrigger": {
+    "kind": "double"
+  },
+  "InpTrailingDistance": {
+    "kind": "double"
+  },
+  "InpTrailingStep": {
+    "kind": "double"
+  },
+  "InpMovingStopMode": {
+    "kind": "enum"
+  },
+  "InpMovingStopTrigger": {
+    "kind": "double"
+  },
+  "InpMovingStopDistance": {
+    "kind": "double"
+  },
+  "InpMovingStopStep": {
+    "kind": "double"
+  },
+  "InpAutoStart": {
+    "kind": "bool"
+  },
+  "InpTesterAutoStart": {
+    "kind": "bool"
+  },
+  "InpIndicator1Type": {
+    "kind": "enum"
+  },
+  "InpIndicator1Timeframe": {
+    "kind": "enum"
+  },
+  "InpIndicator1Exit": {
+    "kind": "enum"
+  },
+  "InpIndicator2Type": {
+    "kind": "enum"
+  },
+  "InpIndicator2Timeframe": {
+    "kind": "enum"
+  },
+  "InpIndicator2Exit": {
+    "kind": "enum"
+  },
+  "InpIndicator3Type": {
+    "kind": "enum"
+  },
+  "InpIndicator3Timeframe": {
+    "kind": "enum"
+  },
+  "InpIndicator3Exit": {
+    "kind": "enum"
+  },
+  "InpIndicator4Type": {
+    "kind": "enum"
+  },
+  "InpIndicator4Timeframe": {
+    "kind": "enum"
+  },
+  "InpIndicator4Exit": {
+    "kind": "enum"
+  },
+  "InpRsiEntryPeriod": {
+    "kind": "int"
+  },
+  "InpRsiEntryPrice": {
+    "kind": "enum"
+  },
+  "InpRsiEntryUpper": {
+    "kind": "double"
+  },
+  "InpRsiEntryMiddle": {
+    "kind": "double"
+  },
+  "InpRsiEntryLower": {
+    "kind": "double"
+  },
+  "InpRsiExitPeriod": {
+    "kind": "int"
+  },
+  "InpRsiExitPrice": {
+    "kind": "enum"
+  },
+  "InpRsiExitUpper": {
+    "kind": "double"
+  },
+  "InpRsiExitMiddle": {
+    "kind": "double"
+  },
+  "InpRsiExitLower": {
+    "kind": "double"
+  },
+  "InpAdxEntryPeriod": {
+    "kind": "int"
+  },
+  "InpAdxExitPeriod": {
+    "kind": "int"
+  },
+  "InpIndicator1MaPeriod": {
+    "kind": "int"
+  },
+  "InpIndicator1MaMethod": {
+    "kind": "enum"
+  },
+  "InpIndicator1MaPrice": {
+    "kind": "enum"
+  },
+  "InpIndicator1MaShift": {
+    "kind": "int"
+  },
+  "InpIndicator2MaPeriod": {
+    "kind": "int"
+  },
+  "InpIndicator2MaMethod": {
+    "kind": "enum"
+  },
+  "InpIndicator2MaPrice": {
+    "kind": "enum"
+  },
+  "InpIndicator2MaShift": {
+    "kind": "int"
+  },
+  "InpIndicator3MaPeriod": {
+    "kind": "int"
+  },
+  "InpIndicator3MaMethod": {
+    "kind": "enum"
+  },
+  "InpIndicator3MaPrice": {
+    "kind": "enum"
+  },
+  "InpIndicator3MaShift": {
+    "kind": "int"
+  },
+  "InpIndicator4MaPeriod": {
+    "kind": "int"
+  },
+  "InpIndicator4MaMethod": {
+    "kind": "enum"
+  },
+  "InpIndicator4MaPrice": {
+    "kind": "enum"
+  },
+  "InpIndicator4MaShift": {
+    "kind": "int"
+  },
+  "InpSignal1": {
+    "kind": "string"
+  },
+  "InpSignal2": {
+    "kind": "string"
+  },
+  "InpSignal3": {
+    "kind": "string"
+  },
+  "InpSignal4": {
+    "kind": "string"
+  },
+  "InpSignal5": {
+    "kind": "string"
+  },
+  "InpSignal6": {
+    "kind": "string"
+  },
+  "InpSignal7": {
+    "kind": "string"
+  },
+  "InpSignal8": {
+    "kind": "string"
+  },
+  "InpSignal9": {
+    "kind": "string"
+  },
+  "InpSignal10": {
+    "kind": "string"
+  }
+}

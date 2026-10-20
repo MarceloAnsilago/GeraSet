@@ -630,6 +630,37 @@
                 <input type="file" accept=".set" data-import-file hidden>
             </div>
             <p data-import-status role="status" aria-live="polite"></p>
+            <section class="card" data-bridge>
+                <h2>Testes e otimização no MT5</h2>
+                <p class="muted">Executa o set atual no Testador por um Bridge local. A exportação manual continua disponível quando ele está desligado.</p>
+                <button type="button" class="btn" data-bridge-connect>Verificar conexão</button>
+                <p data-bridge-status role="status" aria-live="polite">Verificando Bridge...</p>
+                <form data-bridge-form>
+                    <div class="grid-3">
+                        <div><label>Operação</label><select name="bridge-operation"><option value="backtest">Backtest</option><option value="optimize">Otimização</option></select></div>
+                        <div><label>Símbolo autorizado no Bridge</label><input name="bridge-symbol" value="EURUSD" required maxlength="40"></div>
+                        <div><label>Timeframe do teste</label><select name="bridge-timeframe">{% for frame in timeframes if frame != 'Tempo corrente' %}<option {{ 'selected' if frame == 'M5' else '' }}>{{ frame }}</option>{% endfor %}</select></div>
+                        <div><label>Data inicial</label><input name="bridge-from" type="date" required></div>
+                        <div><label>Data final exclusiva</label><input name="bridge-to" type="date" required></div>
+                        <div><label>Modelo de ticks</label><select name="bridge-model"><option value="1">OHLC por minuto</option><option value="0">Todos os ticks</option><option value="2">Somente abertura</option><option value="4">Ticks reais</option></select></div>
+                        <div><label>Depósito</label><input name="bridge-deposit" type="number" min="0.01" step="any" value="10000" required></div>
+                        <div><label>Moeda</label><select name="bridge-currency"><option>USD</option><option>BRL</option><option>EUR</option></select></div>
+                        <div><label>Alavancagem (1:)</label><input name="bridge-leverage" type="number" min="1" max="1000" value="100" required></div>
+                        <div><label>Atraso de execução (ms)</label><input name="bridge-delay" type="number" min="0" max="600000" value="0" required></div>
+                        <div><label>Algoritmo de otimização</label><select name="bridge-optimization"><option value="1">Completo</option><option value="2">Genético</option></select></div>
+                        <div><label>Critério</label><select name="bridge-criterion"><option value="0">Saldo máximo</option><option value="1">Saldo × fator de lucro</option><option value="2">Saldo × payoff</option><option value="3">Saldo × (100 − drawdown)</option><option value="4">Saldo × recuperação</option><option value="5">Saldo × Sharpe</option><option value="6">OnTester</option><option value="7">Complexo</option></select></div>
+                        <div><label>Forward</label><select name="bridge-forward"><option value="0">Desativado</option><option value="1">Metade</option><option value="2">Um terço</option><option value="3">Um quarto</option><option value="4">Personalizado</option></select></div>
+                        <div><label>Data forward personalizada</label><input name="bridge-forward-date" type="date"></div>
+                    </div>
+                    <label><input type="checkbox" name="bridge-entries" checked style="width:auto; min-height:0;"> Habilitar entradas exclusivamente no Testador</label>
+                    <p class="muted">A otimização usa os intervalos marcados em Otimizar. Horários, pontos e histórico pertencem ao símbolo e servidor configurados; confira os dados de B3 ou Forex.</p>
+                    <button type="submit" class="btn btn-primary" data-bridge-run>Executar set atual</button>
+                    <button type="button" class="btn" data-bridge-cancel disabled>Cancelar tarefa</button>
+                </form>
+                <div data-bridge-current aria-live="polite"></div>
+                <div data-bridge-results style="overflow:auto; max-height:30rem;"></div>
+                <h3>Histórico de tarefas</h3><div data-bridge-history></div>
+            </section>
             <div class="tabs">
                 <input class="tab-radio" id="review-params" name="review-tabs" type="radio" checked>
                 <input class="tab-radio" id="review-optimize" name="review-tabs" type="radio">
@@ -692,5 +723,6 @@
     <script src="{{ url_for('static', filename='app.js') }}"></script>
     <script src="{{ url_for('static', filename='export.js') }}"></script>
     <script src="{{ url_for('static', filename='import.js') }}"></script>
+    <script src="{{ url_for('static', filename='bridge.js') }}"></script>
 </body>
 </html>

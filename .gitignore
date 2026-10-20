@@ -1,0 +1,20 @@
+﻿# Apenas a aplicacao Flask e versionada. Configuracoes locais ficam nesta maquina.
+/*
+!/.gitignore
+!/flask_version/
+!/mt5_bridge/
+!/BRIDGE_ARCHITECTURE.md
+/mt5_bridge/data/
+/mt5_bridge/.env
+/mt5_bridge/.venv/
+/mt5_bridge/**/__pycache__/
+/mt5_bridge/.pytest_cache/
+/mt5_bridge/**/*.pyc
+/flask_version/**/__pycache__/
+/flask_version/**/*.py[cod]
+/flask_version/**/.env
+/flask_version/**/.env.*
+!/flask_version/**/.env.example
+/flask_version/**/.venv/
+/flask_version/**/node_modules/
+/flask_version/**/.pytest_cache/
