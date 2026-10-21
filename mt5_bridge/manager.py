@@ -85,11 +85,15 @@ class Manager:
         def callback(stage,**updates):
             latest=self.store.get(job['id']);progress=dict(latest['progress'],stage=stage)
             count=updates.pop('completed_passes',None)
+            reported=updates.pop('reported_percent',None)
             visual_pause=updates.pop('visual_pause',None)
             if visual_pause is not None:progress['visual_pause']=visual_pause
             if count is not None:
                 progress['completed_passes']=count
                 total=progress['total_passes'];progress['percent']=round(100*count/total,2) if total and count<=total else None
+            if reported is not None:
+                progress['percent']=reported
+                progress['source']='mt5_journal'
             self.store.update(job['id'],state=stage,progress=progress,**updates)
         try:
             values=json.loads((path/'inputs.json').read_text(encoding='utf-8'))

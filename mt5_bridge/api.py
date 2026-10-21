@@ -15,6 +15,7 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 from .errors import BridgeError
 from .manager import Manager
 from .models import JobRequest
+from .monitor import reported_percent
 from .runner import MT5Runner
 from .settings import Settings
 
@@ -118,7 +119,11 @@ def create_app(settings:Settings|None=None,runner=None,start_worker=True):
         job=manager.store.get(str(job_id))
         start=datetime.fromisoformat(job['started_at'] or job['created_at'])
         end=datetime.fromisoformat(job['finished_at']) if job['finished_at'] else datetime.now(timezone.utc)
-        return data(dict(job['progress'],state=job['state'],elapsed_seconds=round((end-start).total_seconds(),1),messages=job['messages'],error=job['error']))
+        observed=dict(job['progress'])
+        if observed.get('percent') is None:
+            observed['percent']=reported_percent(job['messages'])
+            if observed['percent'] is not None:observed['source']='mt5_journal'
+        return data(dict(observed,state=job['state'],elapsed_seconds=round((end-start).total_seconds(),1),messages=job['messages'],error=job['error']))
 
     @app.get('/api/v1/jobs/{job_id}/results')
     def results(job_id:UUID):

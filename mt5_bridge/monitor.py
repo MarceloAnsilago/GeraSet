@@ -2,12 +2,23 @@ from pathlib import Path
 import re
 
 
+def reported_percent(messages):
+    values=[]
+    for message in messages:
+        match=re.search(r'\bAutoTesting\s+processing\s+(\d+(?:[.,]\d+)?)\s*%',message,re.I)
+        if match:
+            value=float(match[1].replace(',','.'))
+            if 0<=value<=100:values.append(value)
+    return max(values) if values else None
+
+
 class LogMonitor:
     """Incremental bounded reads. Never scans full journals on every tick."""
     def __init__(self,data_dir):
         self.roots=[data_dir/'logs',data_dir/'Tester/logs']
         self.offsets={str(p):p.stat().st_size for p in self.paths()}
         self.passes=set();self.messages=[];self.error=None
+        self.percent=None
 
     def paths(self):
         result=[]
@@ -40,4 +51,6 @@ class LogMonitor:
                                      (r'initialization.*failed|test failed','TEST_FAILED')]:
                     if re.search(pattern,message,re.I):self.error={'code':code,'message':message}
         self.messages=(self.messages+fresh)[-30:]
+        observed=reported_percent(fresh)
+        if observed is not None:self.percent=max(self.percent or 0,observed)
         return self.messages

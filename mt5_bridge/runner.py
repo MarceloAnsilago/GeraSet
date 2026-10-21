@@ -137,7 +137,7 @@ class MT5Runner:
                             except (OSError,psutil.Error):pause_state='pause_unconfirmed'
                         else:pause_state='pause_unconfirmed'
                     callback('running',messages=messages,completed_passes=len(monitor.passes) or None,
-                             visual_pause=pause_state)
+                             visual_pause=pause_state,reported_percent=monitor.percent)
                     time.sleep(.1 if visual and pause_state in ('waiting_window','pause_requested') else s.poll_seconds)
                 monitor.poll()
                 if cancelled():raise BridgeError('CANCELLED','Cancelada antes da coleta.')

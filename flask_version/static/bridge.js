@@ -1,3 +1,30 @@
+function renderBridgeProgress(progress,documentRef=document) {
+    const block=documentRef.createElement('div');block.className='bridge-progress';
+    const states={queued:'Na fila',preparing:'Preparando teste',running:'Em execução',collecting_results:'Coletando resultados',completed:'Concluído',failed:'Falhou',cancelled:'Cancelado'};
+    const ended=['completed','failed','cancelled'].includes(progress.state);
+    const percent=progress.state==='completed'?100
+        :typeof progress.percent==='number'&&Number.isFinite(progress.percent)&&progress.percent>=0&&progress.percent<=100?progress.percent:null;
+    const label=documentRef.createElement('p');
+    const seconds=Math.max(0,Math.floor(progress.elapsed_seconds||0));
+    const elapsed=seconds>=3600?`${Math.floor(seconds/3600)}h ${Math.floor(seconds%3600/60)}min` : seconds>=60?`${Math.floor(seconds/60)}min ${seconds%60}s`:`${seconds}s`;
+    label.textContent=`${states[progress.state]||progress.state} · ${elapsed}${percent!==null?' · '+percent.toLocaleString('pt-BR')+'%':''}`;
+    const bar=documentRef.createElement('progress');bar.max=100;bar.setAttribute('aria-label','Progresso da tarefa');
+    if(percent!==null)bar.value=percent;
+    else if(ended)bar.value=0;
+    if(progress.state==='failed'||progress.state==='cancelled')block.className+=' bridge-progress-stopped';
+    const hint=documentRef.createElement('p');hint.className='muted';
+    hint.textContent=progress.state==='completed'?'Execução concluída.'
+        :ended?(percent===null?'Execução encerrada sem porcentagem informada.':`Execução encerrada em ${percent.toLocaleString('pt-BR')}%.`)
+        :percent===null?'Aguardando o MT5 informar o progresso...':'Progresso informado pelo testador.';
+    block.append(label,bar,hint);
+    if(progress.total_passes!=null){
+        const passes=documentRef.createElement('p');passes.className='muted';
+        passes.textContent=progress.completed_passes!=null?`Passes observados: ${progress.completed_passes} / ${progress.total_passes}`:`Combinações previstas: ${progress.total_passes.toLocaleString('pt-BR')}`;
+        block.appendChild(passes);
+    }
+    return block;
+}
+
 async function bindBridge() {
     const card=document.querySelector('[data-bridge]');
     if(!card)return;
@@ -93,7 +120,7 @@ async function bindBridge() {
         polling=true;
         try{
             const progress=await request(`/jobs/${active}/progress`);
-            current.replaceChildren(message(`${progress.state} · ${progress.elapsed_seconds}s · etapa: ${progress.stage}`));
+            current.replaceChildren(renderBridgeProgress(progress));
             if(progress.visual_pause){
                 const labels={waiting_window:'Aguardando a janela visual do MT5...',pause_requested:'Pausa inicial solicitada; aguardando confirmação.',
                     paused:'Pausa inicial confirmada. Vá ao MT5 e clique em Iniciar para acompanhar a estratégia.',
@@ -102,9 +129,10 @@ async function bindBridge() {
                     window_closed:'A janela visual foi fechada. Feche o terminal para liberar a próxima tarefa.'};
                 current.appendChild(message(labels[progress.visual_pause]||progress.visual_pause));
             }
-            if(progress.completed_passes!=null)current.appendChild(message(`Passes observados: ${progress.completed_passes}${progress.total_passes!=null?' / '+progress.total_passes:''}`));
-            if(progress.percent!=null)current.appendChild(message(`Progresso observado: ${progress.percent}%`));
-            progress.messages.slice(-5).forEach(text=>current.appendChild(message(text)));
+            if(progress.messages.length){
+                const log=document.createElement('details'),summary=document.createElement('summary');summary.textContent='Diário do testador';
+                log.appendChild(summary);progress.messages.slice(-5).forEach(text=>log.appendChild(message(text)));current.appendChild(log);
+            }
             if(progress.error)current.appendChild(message(`${progress.error.code}: ${progress.error.message}`));
             card.querySelector('[data-bridge-cancel]').disabled=terminal.has(progress.state);
             if(progress.state==='completed')await showResult(active);
