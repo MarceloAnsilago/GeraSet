@@ -6,6 +6,11 @@
 !/BRIDGE_ARCHITECTURE.md
 !/iniciar-flask.bat
 !/iniciar-servicos.py
+!/iniciar-remoto.py
+!/Dockerfile
+!/.dockerignore
+!/fly.toml
+!/REMOTE.md
 /mt5_bridge/data/
 /mt5_bridge/.env
 /mt5_bridge/.venv/
@@ -20,3 +25,24 @@
 /flask_version/**/.venv/
 /flask_version/**/node_modules/
 /flask_version/**/.pytest_cache/
+
+# Credenciais e dados locais, inclusive dentro das pastas de codigo liberadas acima.
+/comando.txt
+/comandos.txt
+**/.env
+**/.env.*
+!**/.env.example
+**/*secrets*.json
+**/acesso-remoto.txt
+**/remote-agent.json
+**/*.pem
+**/*.key
+**/*.p12
+**/*.pfx
+**/*.sqlite
+**/*.sqlite3
+**/*.sqlite-*
+**/*.sqlite3-*
+**/*.db
+**/*.db-*
+**/*.log

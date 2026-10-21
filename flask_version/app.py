@@ -13,6 +13,17 @@ app = Flask(__name__)
 app.secret_key = os.getenv('GERASET_FLASK_SECRET') or secrets.token_hex(32)
 app.config.update(MAX_CONTENT_LENGTH=1500000, SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE='Lax')
 app.register_blueprint(bridge)
+if __package__:
+    from .remote import configure_remote
+else:
+    from flask_version.remote import configure_remote
+configure_remote(app)
+
+
+@app.get('/healthz')
+def healthz():
+    return {'status': 'ok'}
+
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 
 PAGES = {
