@@ -34,6 +34,12 @@ No processo Flask, configure `GERASET_BRIDGE_URL=http://127.0.0.1:8765`, `GERASE
 
 ## API
 
+O limite de duração do backtest é `BRIDGE_TIMEOUT_SECONDS` (padrão: 1800 segundos).
+A otimização usa um limite separado, `BRIDGE_OPTIMIZATION_TIMEOUT_SECONDS`:
+o padrão `0` permite executar até terminar ou até o usuário cancelar. Um valor
+positivo configura o limite em segundos. Alterações de ambiente exigem reiniciar
+o Bridge. O limite de 10.000 combinações continua independente da duração.
+
 ### Sessão visual
 
 Em **Revisão**, preencha símbolo, timeframe, datas e condições do teste e clique em

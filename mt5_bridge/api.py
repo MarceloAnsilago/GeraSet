@@ -92,6 +92,8 @@ def create_app(settings:Settings|None=None,runner=None,start_worker=True):
                      'tick_models':[0,1,2,4],'optimization_modes':[1,2],'optimization_criteria':list(range(8)),
                      'forward_modes':list(range(5)),'max_queue':settings.max_queue,'max_passes':settings.max_passes,
                      'visual_sessions':True,'visual_initial_pause':'native_menu_confirmed_when_available',
+                     'backtest_timeout_seconds':settings.timeout_seconds,
+                     'optimization_timeout_seconds':settings.optimization_timeout_seconds,
                      'max_set_bytes':settings.max_set_bytes,'transport':'terminal_ini','progress_source':'bounded incremental journals',
                      'live_trading':False,'partial_metrics':False,'mcp_availability':'not_verified'})
 

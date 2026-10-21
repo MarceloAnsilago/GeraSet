@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from pathlib import Path
 import os
+import math
 
 
 @dataclass(frozen=True)
@@ -17,6 +18,7 @@ class Settings:
     login: int | None = None
     poll_seconds: float = 2
     timeout_seconds: float = 1800
+    optimization_timeout_seconds: float = 0
     max_queue: int = 10
     max_passes: int = 10000
     max_set_bytes: int = 1024 * 1024
@@ -30,6 +32,8 @@ class Settings:
             raise ValueError('Configuração do servidor inválida.')
         if self.max_queue < 1 or self.max_passes < 1 or self.timeout_seconds <= 0:
             raise ValueError('Limites do bridge inválidos.')
+        if self.optimization_timeout_seconds < 0 or not math.isfinite(self.optimization_timeout_seconds):
+            raise ValueError('Timeout de otimização inválido: use zero (sem limite) ou segundos positivos.')
 
     @classmethod
     def from_env(cls):
@@ -44,5 +48,6 @@ class Settings:
                    server=os.getenv('MT5_SERVER', ''), login=int(os.environ['MT5_LOGIN']) if os.getenv('MT5_LOGIN') else None,
                    poll_seconds=float(os.getenv('BRIDGE_POLL_SECONDS', '2')),
                    timeout_seconds=float(os.getenv('BRIDGE_TIMEOUT_SECONDS', '1800')),
+                   optimization_timeout_seconds=float(os.getenv('BRIDGE_OPTIMIZATION_TIMEOUT_SECONDS', '0')),
                    max_queue=int(os.getenv('BRIDGE_MAX_QUEUE', '10')),
                    max_passes=int(os.getenv('BRIDGE_MAX_PASSES', '10000')))

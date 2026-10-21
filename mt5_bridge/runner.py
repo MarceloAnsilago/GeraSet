@@ -123,11 +123,13 @@ class MT5Runner:
                 callback('running',owner=owner)
                 start=time.monotonic()
                 visual = job['kind'] == 'visual'
+                timeout = s.optimization_timeout_seconds if job['kind'] == 'optimize' else s.timeout_seconds
                 pause = VisualPause(process.pid, s.terminal) if visual else None
                 pause_state = None
                 while process.poll() is None:
                     if cancelled():raise BridgeError('CANCELLED','Cancelamento solicitado; encerrando somente o terminal desta tarefa.')
-                    if not visual and time.monotonic()-start>s.timeout_seconds:raise BridgeError('TIMEOUT','Tempo limite excedido.')
+                    if not visual and timeout and time.monotonic()-start>timeout:
+                        raise BridgeError('TIMEOUT',f'Tempo limite de {timeout:g} segundos excedido.')
                     messages=monitor.poll()
                     if visual and pause_state not in ('paused','pause_unconfirmed','unsupported'):
                         if time.monotonic()-start < 60:
