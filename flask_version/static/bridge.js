@@ -25,10 +25,53 @@ async function bindBridge() {
         results.replaceChildren(message(value.session==='visual'
             ? 'Sessão visual encerrada. Os arquivos disponíveis estão abaixo.'
             : 'Resultados disponíveis. Valores ausentes não foram estimados.'));
-        const pre=document.createElement('pre');pre.textContent=JSON.stringify(value,null,2);results.appendChild(pre);
+        const reports=artifacts.filter(artifact=>/\.html?$/i.test(artifact.name));
+        reports.forEach(artifact=>{
+            const heading=document.createElement('h3');heading.textContent=artifact.name;results.appendChild(heading);
+            const frame=document.createElement('iframe');
+            frame.title=`Relatório MT5: ${artifact.name}`;frame.className='bridge-report';
+            frame.setAttribute('sandbox','');
+            frame.src=`/bridge/jobs/${id}/preview/${encodeURIComponent(artifact.id)}`;
+            results.appendChild(frame);
+        });
+        function showPasses(report,label){
+            (report?.worksheets||[]).forEach((sheet,index)=>{
+                const heading=document.createElement('h3');heading.textContent=`${label} · ${sheet.passes.length} passes`;results.appendChild(heading);
+                const wrap=document.createElement('div');wrap.className='bridge-table-wrap';
+                const table=document.createElement('table');table.className='bridge-pass-table';
+                const head=document.createElement('thead'), row=document.createElement('tr');
+                sheet.columns.forEach(column=>{const th=document.createElement('th');th.textContent=column;row.appendChild(th);});
+                head.appendChild(row);table.appendChild(head);
+                const body=document.createElement('tbody');table.appendChild(body);wrap.appendChild(table);results.appendChild(wrap);
+                const controls=document.createElement('div');controls.className='bridge-report-pages';
+                const previous=document.createElement('button'),next=document.createElement('button'),info=document.createElement('span');
+                previous.type=next.type='button';previous.className=next.className='btn';previous.textContent='Anterior';next.textContent='Próxima';
+                let page=0;
+                function render(){
+                    body.replaceChildren();
+                    sheet.passes.slice(page*100,(page+1)*100).forEach(pass=>{
+                        const tr=document.createElement('tr');
+                        sheet.columns.forEach(column=>{const td=document.createElement('td');td.textContent=pass[column]??'';tr.appendChild(td);});
+                        body.appendChild(tr);
+                    });
+                    previous.disabled=page===0;next.disabled=(page+1)*100>=sheet.passes.length;
+                    info.textContent=`Página ${page+1} de ${Math.max(1,Math.ceil(sheet.passes.length/100))}`;
+                }
+                previous.addEventListener('click',()=>{page--;render();});next.addEventListener('click',()=>{page++;render();});
+                controls.append(previous,info,next);results.appendChild(controls);render();
+            });
+        }
+        showPasses(value,'Otimização');showPasses(value.forward,'Forward');
+        if(!reports.length&&!value.worksheets?.length){
+            results.appendChild(message(value.session==='visual'?'Esta sessão não gerou relatório para exibir.':'Relatório original indisponível para visualização. Consulte os detalhes abaixo.'));
+        }
+        const details=document.createElement('details'),summary=document.createElement('summary');summary.textContent='Detalhes dos resultados';
+        const pre=document.createElement('pre');pre.textContent=JSON.stringify(value,null,2);details.append(summary,pre);results.appendChild(details);
+        const downloads=document.createElement('details'),downloadSummary=document.createElement('summary');downloadSummary.textContent='Baixar relatórios e arquivos';
+        downloads.appendChild(downloadSummary);results.appendChild(downloads);
         artifacts.forEach(artifact=>{
             const link=document.createElement('a');link.textContent=`Baixar ${artifact.name}`;
-            link.href=`/bridge/jobs/${id}/artifacts/${encodeURIComponent(artifact.id)}`;link.className='btn';results.appendChild(link);
+            link.href=`/bridge/jobs/${id}/artifacts/${encodeURIComponent(artifact.id)}`;link.className='btn';downloads.appendChild(link);
         });
     }
     async function refreshHistory(){

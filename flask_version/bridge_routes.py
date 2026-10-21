@@ -74,3 +74,24 @@ def artifact(job_id,artifact_id):
     response=send_file(io.BytesIO(body),mimetype=mime,as_attachment=True,download_name=artifact_id)
     response.headers['X-Content-Type-Options']='nosniff'
     return response
+
+
+@bridge.get('/jobs/<uuid:job_id>/preview/<artifact_id>')
+def preview(job_id,artifact_id):
+    if not re.fullmatch(r'[A-Za-z0-9_.-]{1,100}',artifact_id):
+        return jsonify(error={'code':'NOT_FOUND','message':'Artefato inválido.'}),404
+    extension=artifact_id.rsplit('.',1)[-1].lower()
+    types={'htm':'text/html','html':'text/html','png':'image/png','gif':'image/gif'}
+    if extension not in types:
+        return jsonify(error={'code':'PREVIEW_UNAVAILABLE','message':'Visualização indisponível para este arquivo.'}),415
+    body,_=client().call('GET',f'/jobs/{job_id}/artifacts/{artifact_id}',raw=True)
+    if extension in ('htm','html'):
+        if body.startswith((b'\xff\xfe',b'\xfe\xff')):body=body.decode('utf-16').encode('utf-8')
+        else:
+            try:body=body.decode('utf-8-sig').encode('utf-8')
+            except UnicodeError:body=body.decode('cp1252').encode('utf-8')
+    response=send_file(io.BytesIO(body),mimetype=types[extension],as_attachment=False,download_name=artifact_id)
+    if extension in ('htm','html'):response.headers['Content-Type']='text/html; charset=utf-8'
+    response.headers['X-Content-Type-Options']='nosniff'
+    response.headers['Content-Security-Policy']="sandbox; default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'"
+    return response

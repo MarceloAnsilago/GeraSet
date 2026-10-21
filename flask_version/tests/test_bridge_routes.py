@@ -61,6 +61,32 @@ def test_client_rejects_external_or_embedded_credentials():
         with pytest.raises(BridgeUnavailable):HTTPBridgeClient(url,'token')
 
 
+def test_inline_report_is_isolated_and_download_stays_available(client):
+    client,transport=client;job='00000000-0000-0000-0000-000000000001'
+    response=client.get(f'/bridge/jobs/{job}/preview/report.htm')
+    assert response.status_code==200
+    assert response.headers['Content-Disposition'].startswith('inline;')
+    assert response.headers['Content-Type']=='text/html; charset=utf-8'
+    assert response.data==b'<html>report</html>'
+    policy=response.headers['Content-Security-Policy']
+    assert "sandbox; default-src 'none'" in policy and "img-src 'self'" in policy
+    assert 'allow-scripts' not in policy and "base-uri 'none'" in policy
+    assert response.headers['X-Content-Type-Options']=='nosniff'
+    assert transport.calls[-1]==('GET',f'/jobs/{job}/artifacts/report.htm',None)
+    assert client.get(f'/bridge/jobs/{job}/artifacts/report.htm').headers['Content-Disposition'].startswith('attachment;')
+    for name in ('execution.set','tester.ini','inputs.json','journal.log','report.svg','report.xml'):
+        assert client.get(f'/bridge/jobs/{job}/preview/{name}').status_code==415
+
+
+@pytest.mark.parametrize('encoding',['utf-16','cp1252','utf-8'])
+def test_inline_report_normalizes_mt5_encoding(client,encoding):
+    client,transport=client;job='00000000-0000-0000-0000-000000000001'
+    original='<html><img src="report.png">Negociação</html>'
+    transport.call=lambda *args,**kwargs:(original.encode(encoding),'application/octet-stream')
+    response=client.get(f'/bridge/jobs/{job}/preview/report.htm')
+    assert response.status_code==200 and response.data.decode('utf-8')==original
+
+
 def test_flask_package_entrypoint():
     import subprocess
     result=subprocess.run([sys.executable,'-c',
