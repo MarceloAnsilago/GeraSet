@@ -56,6 +56,13 @@ def test_artifact_attachment_and_routes(client):
     assert client.get('/bridge/jobs/not-a-uuid').status_code==404
 
 
+def test_curve_proxy_validates_pagination(client):
+    client,transport=client;job='00000000-0000-0000-0000-000000000001'
+    assert client.get(f'/bridge/jobs/{job}/curves?offset=100&limit=50').status_code==200
+    assert transport.calls[-1]==('GET',f'/jobs/{job}/curves?offset=100&limit=50',None)
+    assert client.get(f'/bridge/jobs/{job}/curves?offset=../test').status_code==400
+
+
 def test_client_rejects_external_or_embedded_credentials():
     for url in ('http://example.com','https://127.0.0.1','http://u:p@localhost','http://localhost/path'):
         with pytest.raises(BridgeUnavailable):HTTPBridgeClient(url,'token')

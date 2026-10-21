@@ -58,7 +58,7 @@ class Manager:
         return job
 
     def artifacts(self,path):
-        allowed={'.set','.ini','.htm','.html','.xml','.png','.gif','.json','.log'}
+        allowed={'.set','.ini','.htm','.html','.xml','.png','.gif','.json','.jsonl','.log'}
         return [{'id':p.name,'name':p.name,'bytes':p.stat().st_size,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()}
                 for p in sorted(path.iterdir()) if p.is_file() and p.suffix in allowed and p.stat().st_size<=50*1024*1024]
 

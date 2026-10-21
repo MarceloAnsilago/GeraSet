@@ -662,6 +662,7 @@
                     <button type="button" class="btn" data-bridge-cancel disabled>Cancelar tarefa</button>
                 </form>
                 <div data-bridge-current aria-live="polite"></div>
+                <div data-bridge-curves></div>
                 <div data-bridge-results></div>
                 <h3>Histórico de tarefas</h3><div data-bridge-history></div>
             </section>
@@ -727,6 +728,7 @@
     <script src="{{ url_for('static', filename='app.js') }}"></script>
     <script src="{{ url_for('static', filename='export.js') }}"></script>
     <script src="{{ url_for('static', filename='import.js') }}"></script>
+    <script src="{{ url_for('static', filename='curves.js') }}"></script>
     <script src="{{ url_for('static', filename='bridge.js') }}"></script>
 </body>
 </html>

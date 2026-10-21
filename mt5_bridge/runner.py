@@ -94,7 +94,9 @@ class MT5Runner:
             request=JobRequest(**dict(job['config'],set_base64=base64.b64encode(original).decode()))
             preset_dir=s.data_dir/'MQL5/Profiles/Tester';preset_dir.mkdir(parents=True,exist_ok=True)
             preset_name=f'geraset_{job["id"]}.set';preset_path=preset_dir/preset_name
-            preset_path.write_bytes(execution_set(values,request.enable_test_entries))
+            effective_values=dict(values)
+            if job['kind']=='optimize':effective_values['InpCurveSession']=job['id']
+            preset_path.write_bytes(execution_set(effective_values,request.enable_test_entries))
             shutil.copy2(preset_path,work/'execution.set')
             report_dir=s.data_dir/'geraset_reports'/job['id'];report_dir.mkdir(parents=True,exist_ok=True)
             report=report_dir/('report.xml' if job['kind']=='optimize' else 'report.htm')
@@ -143,6 +145,9 @@ class MT5Runner:
                 if cancelled():raise BridgeError('CANCELLED','Cancelada antes da coleta.')
                 callback('collecting_results',messages=monitor.messages)
                 files=[]
+                curve_file=s.data_dir/'MQL5/Files/GeraSetCurves'/f"{job['id']}.jsonl"
+                if job['kind']=='optimize' and curve_file.is_file():
+                    shutil.copy2(curve_file,work/'curves.jsonl');files.append('curves.jsonl')
                 for source in sorted(report_dir.iterdir()):
                     if source.is_file() and source.suffix.lower() in ('.htm','.html','.xml','.png','.gif'):
                         target=work/source.name;shutil.copy2(source,target);files.append(target.name)

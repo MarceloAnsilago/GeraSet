@@ -31,6 +31,32 @@ async function bindBridge() {
     const status=card.querySelector('[data-bridge-status]'), current=card.querySelector('[data-bridge-current]');
     const results=card.querySelector('[data-bridge-results]'), history=card.querySelector('[data-bridge-history]');
     let csrf='',active=null,polling=false,stopped=false;
+    let curveJob=null,curveOffset=0,curvePlot=null;
+    const curveRoot=card.querySelector('[data-bridge-curves]');
+    async function updateCurves(id,progress){
+        if(curveJob!==id){
+            curvePlot?.destroy();curvePlot=null;curveOffset=0;curveJob=id;curveRoot.replaceChildren();
+        }
+        curveRoot.hidden=progress.kind!=='optimize';
+        if(curveRoot.hidden)return false;
+        let page;
+        try{
+            for(let batch=0;batch<4;batch++){
+                page=await request(`/jobs/${id}/curves?offset=${curveOffset}&limit=500`);
+                if(!curvePlot)curvePlot=new GeraSetCurvePlot(curveRoot);
+                curvePlot.add(page.curves);curveOffset=page.offset;
+                if(!page.more)break;
+            }
+            if(terminal.has(progress.state)&&(!page.available||curveOffset===0)){
+                curvePlot?.destroy();curvePlot=null;
+                curveRoot.replaceChildren(message('Esta tarefa não possui curvas por passe. A coleta está disponível nas novas otimizações com o UniEA atualizado.'));
+            }
+            return page.more;
+        }catch(error){
+            if(!curvePlot)curveRoot.replaceChildren(message(`Curvas indisponíveis: ${error.message}`));
+            return false;
+        }
+    }
     const terminal=new Set(['completed','failed','cancelled']);
     const field=name=>card.querySelector(`[name="bridge-${name}"]`);
     const runButton=card.querySelector('[data-bridge-run]');
@@ -134,10 +160,12 @@ async function bindBridge() {
                 log.appendChild(summary);progress.messages.slice(-5).forEach(text=>log.appendChild(message(text)));current.appendChild(log);
             }
             if(progress.error)current.appendChild(message(`${progress.error.code}: ${progress.error.message}`));
+            const moreCurves=await updateCurves(active,progress);
             card.querySelector('[data-bridge-cancel]').disabled=terminal.has(progress.state);
             if(progress.state==='completed')await showResult(active);
             if(terminal.has(progress.state))await refreshHistory();
             else setTimeout(poll,2000);
+            if(terminal.has(progress.state)&&moreCurves)setTimeout(poll,2000);
         }catch(error){status.textContent=error.message;setTimeout(poll,5000);}
         finally{polling=false;}
     }
@@ -183,7 +211,7 @@ async function bindBridge() {
         }catch(error){status.textContent=error.message;}
         finally{buttons.forEach(button=>button.disabled=false);}
     });
-    window.addEventListener('pagehide',()=>{stopped=true;});
+    window.addEventListener('pagehide',()=>{stopped=true;curvePlot?.destroy();});
     connect();
 }
 document.addEventListener('DOMContentLoaded',bindBridge);

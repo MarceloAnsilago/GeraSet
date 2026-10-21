@@ -34,6 +34,31 @@ No processo Flask, configure `GERASET_BRIDGE_URL=http://127.0.0.1:8765`, `GERASE
 
 ## API
 
+### Curvas por passe
+
+Novas otimizações enviam curvas de **saldo realizado** do UniEA por frames do MT5.
+Cada passe envia até 128 pares de data/saldo no seu encerramento, incluindo o saldo
+inicial e final. Os valores incluem custos e são amostrados do histórico de deals;
+o gráfico não representa equity flutuante nem todos os extremos entre amostras.
+O critério customizado anterior (zero) é preservado.
+
+O Bridge adiciona `InpCurveSession` apenas à cópia de execução da otimização.
+O terminal reúne os agentes em `MQL5/Files/GeraSetCurves/<UUID>.jsonl`, sem gravação
+concorrente pelos agentes. Na conclusão, o arquivo é preservado como `curves.jsonl`.
+`GET /api/v1/jobs/{id}/curves?offset=0&limit=200` permite leitura incremental
+autenticada (até 500 curvas por consulta). Use o offset retornado na próxima
+consulta. Linhas ainda incompletas aguardam a próxima leitura.
+
+Em Revisão, o gráfico adiciona uma linha por passe recebido e permite destacar
+um passe pelo identificador. Os frames podem chegar agrupados após a conclusão
+dos passes. A coleta vale para execuções novas com o EA compilado atualizado;
+relatórios antigos não contêm as curvas. Em modo genético, o identificador do
+frame pode diferir da numeração geração/indivíduo mostrada na tabela do MT5.
+
+Validação local: tarefa `7858ff11-2d15-45aa-aef3-ef30309993dc`, quatro passes.
+Foram recebidas quatro curvas, com saldos finais correspondentes ao relatório
+XML (9987,05 e 9994,95), sem erros de compilação do EA.
+
 O limite de duração do backtest é `BRIDGE_TIMEOUT_SECONDS` (padrão: 1800 segundos).
 A otimização usa um limite separado, `BRIDGE_OPTIMIZATION_TIMEOUT_SECONDS`:
 o padrão `0` permite executar até terminar ou até o usuário cancelar. Um valor

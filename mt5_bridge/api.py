@@ -16,6 +16,7 @@ from .errors import BridgeError
 from .manager import Manager
 from .models import JobRequest
 from .monitor import reported_percent
+from .curves import read_curves
 from .runner import MT5Runner
 from .settings import Settings
 
@@ -123,13 +124,20 @@ def create_app(settings:Settings|None=None,runner=None,start_worker=True):
         if observed.get('percent') is None:
             observed['percent']=reported_percent(job['messages'])
             if observed['percent'] is not None:observed['source']='mt5_journal'
-        return data(dict(observed,state=job['state'],elapsed_seconds=round((end-start).total_seconds(),1),messages=job['messages'],error=job['error']))
+        return data(dict(observed,state=job['state'],kind=job['kind'],elapsed_seconds=round((end-start).total_seconds(),1),messages=job['messages'],error=job['error']))
 
     @app.get('/api/v1/jobs/{job_id}/results')
     def results(job_id:UUID):
         job=manager.store.get(str(job_id))
         if job['state']!='completed':raise BridgeError('RESULTS_NOT_READY','Resultados ainda não disponíveis; consulte o estado.',409)
         return data(job['results'])
+
+    @app.get('/api/v1/jobs/{job_id}/curves')
+    def curves(job_id:UUID,offset:int=Query(0,ge=0),limit:int=Query(200,ge=1,le=500)):
+        job=manager.store.get(str(job_id))
+        path=settings.work_dir/str(job_id)/'curves.jsonl'
+        if not path.is_file():path=settings.data_dir/'MQL5/Files/GeraSetCurves'/f'{job_id}.jsonl'
+        return data(dict(read_curves(path,offset,limit),state=job['state']))
 
     @app.get('/api/v1/jobs/{job_id}/artifacts')
     def artifacts(job_id:UUID):return data(manager.store.get(str(job_id))['artifacts'])

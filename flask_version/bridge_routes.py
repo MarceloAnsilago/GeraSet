@@ -59,8 +59,14 @@ def job(job_id):return jsonify(client().call('GET',f'/jobs/{job_id}'))
 
 @bridge.get('/jobs/<uuid:job_id>/<part>')
 def job_part(job_id,part):
-    if part not in ('progress','results','artifacts'):return jsonify(error={'code':'NOT_FOUND','message':'Consulta desconhecida.'}),404
-    return jsonify(client().call('GET',f'/jobs/{job_id}/{part}'))
+    if part not in ('progress','results','artifacts','curves'):return jsonify(error={'code':'NOT_FOUND','message':'Consulta desconhecida.'}),404
+    suffix=''
+    if part=='curves':
+        offset=request.args.get('offset','0');limit=request.args.get('limit','200')
+        if not offset.isascii() or not offset.isdigit() or not limit.isascii() or not limit.isdigit():
+            return jsonify(error={'code':'INVALID_REQUEST','message':'Paginação inválida.'}),400
+        suffix=f'?offset={offset}&limit={limit}'
+    return jsonify(client().call('GET',f'/jobs/{job_id}/{part}{suffix}'))
 
 
 @bridge.post('/jobs/<uuid:job_id>/cancel')
