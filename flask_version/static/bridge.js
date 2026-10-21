@@ -6,6 +6,10 @@ async function bindBridge() {
     let csrf='',active=null,polling=false,stopped=false;
     const terminal=new Set(['completed','failed','cancelled']);
     const field=name=>card.querySelector(`[name="bridge-${name}"]`);
+    const runButton=card.querySelector('[data-bridge-run]');
+    function updateRunLabel(){runButton.textContent=field('operation').value==='optimize'
+        ? 'Executar otimização de combinações' : 'Executar backtest (valores fixos)';}
+    field('operation').addEventListener('change',updateRunLabel);updateRunLabel();
     const request=async(path,options={})=>{
         const response=await fetch('/bridge'+path,{...options,headers:{'Content-Type':'application/json','X-GeraSet-CSRF':csrf,...options.headers}});
         if(!response.headers.get('content-type')?.includes('application/json')){
@@ -123,7 +127,7 @@ async function bindBridge() {
         try{await request(`/jobs/${active}/cancel`,{method:'POST'});poll();}catch(error){status.textContent=error.message;}
     });
     card.querySelector('[data-bridge-form]').addEventListener('submit',async event=>{
-        event.preventDefault();const buttons=[card.querySelector('[data-bridge-run]'),card.querySelector('[data-bridge-visual]')];
+        event.preventDefault();const buttons=[runButton,card.querySelector('[data-bridge-visual]'),card.querySelector('[data-bridge-optimize]')];
         buttons.forEach(button=>button.disabled=true);
         try{
             if(!csrf)csrf=(await request('/session')).csrf;
@@ -133,7 +137,9 @@ async function bindBridge() {
             })));
             const file=serializeSetupSet(roots);
             let binary='';for(const byte of file.contents)binary+=String.fromCharCode(byte);
-            const operation=event.submitter?.hasAttribute('data-bridge-visual')?'visual':field('operation').value;
+            const operation=event.submitter?.hasAttribute('data-bridge-visual')?'visual'
+                :event.submitter?.hasAttribute('data-bridge-optimize')?'optimize':field('operation').value;
+            if(operation==='optimize'){field('operation').value='optimize';updateRunLabel();}
             const payload={operation,setup_id:file.filename.replace(/\.set$/i,''),set_name:file.filename,set_base64:btoa(binary),
                 symbol:field('symbol').value,timeframe:field('timeframe').value,date_from:field('from').value,date_to:field('to').value,
                 tick_model:Number(field('model').value),deposit:field('deposit').value,currency:field('currency').value,
@@ -143,7 +149,9 @@ async function bindBridge() {
             if(payload.forward_mode===4)payload.forward_date=field('forward-date').value;
             const job=await request('/jobs',{method:'POST',body:JSON.stringify(payload)});
             active=job.id;results.replaceChildren();status.textContent=operation==='visual'
-                ? 'Sessão visual solicitada. Aguarde a janela do MT5.' : `Tarefa recebida: ${active}`;poll();
+                ? 'Sessão visual solicitada. Aguarde a janela do MT5.'
+                : operation==='optimize' ? `Otimização recebida: ${active}. O MT5 testará os intervalos configurados.`
+                : `Backtest recebido: ${active}. Executa somente os valores fixos.`;poll();
         }catch(error){status.textContent=error.message;}
         finally{buttons.forEach(button=>button.disabled=false);}
     });
