@@ -14,6 +14,7 @@ from .models import JobRequest
 from .monitor import LogMonitor
 from .presets import execution_set
 from .reports import read_report
+from .visual import VisualPause
 
 
 @contextmanager
@@ -108,7 +109,7 @@ class MT5Runner:
             (s.data_dir/'MQL5/Profiles/Charts/GeraSetTester').mkdir(parents=True,exist_ok=True)
             command.append('/profile:GeraSetTester')
             startup=None
-            if os.name=='nt':
+            if os.name=='nt' and job['kind'] != 'visual':
                 startup=subprocess.STARTUPINFO();startup.dwFlags|=subprocess.STARTF_USESHOWWINDOW;startup.wShowWindow=0
             process=None;owner=None
             try:
@@ -121,12 +122,21 @@ class MT5Runner:
                     if process.poll() is None:raise BridgeError('PROCESS_IDENTITY','Não foi possível confirmar o processo iniciado.')
                 callback('running',owner=owner)
                 start=time.monotonic()
+                visual = job['kind'] == 'visual'
+                pause = VisualPause(process.pid, s.terminal) if visual else None
+                pause_state = None
                 while process.poll() is None:
                     if cancelled():raise BridgeError('CANCELLED','Cancelamento solicitado; encerrando somente o terminal desta tarefa.')
-                    if time.monotonic()-start>s.timeout_seconds:raise BridgeError('TIMEOUT','Tempo limite excedido.')
+                    if not visual and time.monotonic()-start>s.timeout_seconds:raise BridgeError('TIMEOUT','Tempo limite excedido.')
                     messages=monitor.poll()
-                    callback('running',messages=messages,completed_passes=len(monitor.passes) or None)
-                    time.sleep(s.poll_seconds)
+                    if visual and pause_state not in ('paused','pause_unconfirmed','unsupported'):
+                        if time.monotonic()-start < 60:
+                            try:pause_state=pause.poll()
+                            except (OSError,psutil.Error):pause_state='pause_unconfirmed'
+                        else:pause_state='pause_unconfirmed'
+                    callback('running',messages=messages,completed_passes=len(monitor.passes) or None,
+                             visual_pause=pause_state)
+                    time.sleep(.1 if visual and pause_state in ('waiting_window','pause_requested') else s.poll_seconds)
                 monitor.poll()
                 if cancelled():raise BridgeError('CANCELLED','Cancelada antes da coleta.')
                 callback('collecting_results',messages=monitor.messages)
@@ -134,6 +144,11 @@ class MT5Runner:
                 for source in sorted(report_dir.iterdir()):
                     if source.is_file() and source.suffix.lower() in ('.htm','.html','.xml','.png','.gif'):
                         target=work/source.name;shutil.copy2(source,target);files.append(target.name)
+                if visual:
+                    if process.returncode != 0:
+                        raise BridgeError('TERMINAL_EXIT','A sessão visual encerrou com código de erro. Confira o journal.')
+                    return {'session':'visual','closed_by_user':True,'report_available':report.is_file(),
+                            'terminal_exit_code':process.returncode}, files
                 if not report.is_file():
                     if monitor.error:raise BridgeError(monitor.error['code'],monitor.error['message'])
                     raise BridgeError('REPORT_MISSING','Terminal encerrou sem o relatório esperado. Confira journal da tarefa.')

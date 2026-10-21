@@ -34,6 +34,37 @@ No processo Flask, configure `GERASET_BRIDGE_URL=http://127.0.0.1:8765`, `GERASE
 
 ## API
 
+### Sessão visual
+
+Em **Revisão**, preencha símbolo, timeframe, datas e condições do teste e clique em
+**Abrir teste visual**. O botão usa o set atual, desativa otimização e forward e
+abre o MT5 visível (`Visual=1`, `ShutdownTerminal=0`). A API correspondente é
+`POST /api/v1/jobs/visual`, com o mesmo corpo do backtest.
+
+No Windows, o Bridge procura a janela visual de um agente descendente do terminal
+que ele iniciou e solicita a pausa pelo menu nativo. Confirma a pausa quando
+**Iniciar** e **Parar** estão habilitados. O comando é enviado uma única vez;
+o usuário retoma pelo **Iniciar** do MT5. A mensagem no GeraSet registra a
+confirmação da pausa inicial, não acompanha pausas e retomadas posteriores.
+
+A pausa ocorre assim que o controle fica disponível: não existe garantia de zero
+ticks antes dela. Menus em português e inglês são reconhecidos. Após 60 segundos
+sem confirmação, o GeraSet informa que a pausa não foi confirmada, mantendo a
+sessão aberta para controle manual. A sessão requer uma área de trabalho Windows
+interativa; não deve ser executada como serviço sem desktop.
+
+Não há timeout da sessão visual. A instalação fica ocupada até fechar o terminal
+ou cancelar a tarefa no GeraSet. Fechar só a janela de visualização não libera a
+fila. A conclusão significa encerramento da sessão e não exige relatório nem
+presume sucesso financeiro. Relatórios existentes são preservados como artefatos.
+
+Validação local em 21/10/2026, MT5 build 6276: EURUSD/M5, 15 a 20/10/2026,
+todos os ticks. A pausa foi confirmada na tela às 00:00 de 15/10, com Iniciar
+habilitado, Pausar desabilitado e nenhuma posição aberta. A retomada executou
+o teste e o fechamento do terminal concluiu a sessão com relatório preservado.
+As evidências locais estão em `data/visual-acceptance/`, tarefa
+`25bc25e2-a1f2-4ce7-99a3-deb10c838977`.
+
 Documentação interativa: `http://127.0.0.1:8765/docs`; use Authorize. Todas as rotas `/api/v1` exigem Bearer, inclusive health.
 
 | Método | Rota | Uso |

@@ -30,6 +30,8 @@ class Manager:
         if self.leader and (self.thread is None or not self.thread.is_alive()):self.leader.__exit__(None,None,None)
 
     def submit(self,kind,request:JobRequest):
+        if kind == 'visual':
+            request = request.model_copy(update={'forward_mode':0, 'forward_date':None})
         if request.symbol not in self.settings.symbols or request.currency not in self.settings.currencies:
             raise BridgeError('NOT_AUTHORIZED','Símbolo ou moeda não autorizados no servidor.')
         raw,values,ranges,digest=parse_set(request.set_base64,self.settings.max_set_bytes)
@@ -83,6 +85,8 @@ class Manager:
         def callback(stage,**updates):
             latest=self.store.get(job['id']);progress=dict(latest['progress'],stage=stage)
             count=updates.pop('completed_passes',None)
+            visual_pause=updates.pop('visual_pause',None)
+            if visual_pause is not None:progress['visual_pause']=visual_pause
             if count is not None:
                 progress['completed_passes']=count
                 total=progress['total_passes'];progress['percent']=round(100*count/total,2) if total and count<=total else None

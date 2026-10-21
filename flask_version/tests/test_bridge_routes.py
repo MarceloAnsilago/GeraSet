@@ -41,6 +41,8 @@ def test_csrf_proxy_and_no_token_in_browser(client):
     response=client.post('/bridge/jobs',json=body,headers=headers)
     assert response.status_code==202
     assert transport.calls[-1]==('POST','/jobs/backtest',{'symbol':'EURUSD'})
+    assert client.post('/bridge/jobs',json=body|{'operation':'visual'},headers=headers).status_code==202
+    assert transport.calls[-1]==('POST','/jobs/visual',{'symbol':'EURUSD'})
     assert client.post('/bridge/jobs',json=body|{'operation':'shell'},headers=headers).status_code==400
     assert client.get('/bridge/status').status_code==200
     assert 'token' not in str(client.get('/bridge/session').json).lower()

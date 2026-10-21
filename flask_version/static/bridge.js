@@ -22,7 +22,9 @@ async function bindBridge() {
     function message(text){const p=document.createElement('p');p.textContent=text;return p;}
     async function showResult(id){
         const [value,artifacts]=await Promise.all([request(`/jobs/${id}/results`),request(`/jobs/${id}/artifacts`)]);
-        results.replaceChildren(message('Resultados disponíveis. Valores ausentes não foram estimados.'));
+        results.replaceChildren(message(value.session==='visual'
+            ? 'Sessão visual encerrada. Os arquivos disponíveis estão abaixo.'
+            : 'Resultados disponíveis. Valores ausentes não foram estimados.'));
         const pre=document.createElement('pre');pre.textContent=JSON.stringify(value,null,2);results.appendChild(pre);
         artifacts.forEach(artifact=>{
             const link=document.createElement('a');link.textContent=`Baixar ${artifact.name}`;
@@ -45,6 +47,14 @@ async function bindBridge() {
         try{
             const progress=await request(`/jobs/${active}/progress`);
             current.replaceChildren(message(`${progress.state} · ${progress.elapsed_seconds}s · etapa: ${progress.stage}`));
+            if(progress.visual_pause){
+                const labels={waiting_window:'Aguardando a janela visual do MT5...',pause_requested:'Pausa inicial solicitada; aguardando confirmação.',
+                    paused:'Pausa inicial confirmada. Vá ao MT5 e clique em Iniciar para acompanhar a estratégia.',
+                    pause_unconfirmed:'Não foi possível confirmar a pausa inicial. Confira os controles na janela do MT5.',
+                    unsupported:'Pausa automática indisponível neste sistema. Use os controles do MT5.',
+                    window_closed:'A janela visual foi fechada. Feche o terminal para liberar a próxima tarefa.'};
+                current.appendChild(message(labels[progress.visual_pause]||progress.visual_pause));
+            }
             if(progress.completed_passes!=null)current.appendChild(message(`Passes observados: ${progress.completed_passes}${progress.total_passes!=null?' / '+progress.total_passes:''}`));
             if(progress.percent!=null)current.appendChild(message(`Progresso observado: ${progress.percent}%`));
             progress.messages.slice(-5).forEach(text=>current.appendChild(message(text)));
@@ -70,7 +80,8 @@ async function bindBridge() {
         try{await request(`/jobs/${active}/cancel`,{method:'POST'});poll();}catch(error){status.textContent=error.message;}
     });
     card.querySelector('[data-bridge-form]').addEventListener('submit',async event=>{
-        event.preventDefault();const button=card.querySelector('[data-bridge-run]');button.disabled=true;
+        event.preventDefault();const buttons=[card.querySelector('[data-bridge-run]'),card.querySelector('[data-bridge-visual]')];
+        buttons.forEach(button=>button.disabled=true);
         try{
             if(!csrf)csrf=(await request('/session')).csrf;
             const roots=new Map(await Promise.all(['inicio','indicadores','gestao','configuracoes'].map(async page=>{
@@ -79,18 +90,19 @@ async function bindBridge() {
             })));
             const file=serializeSetupSet(roots);
             let binary='';for(const byte of file.contents)binary+=String.fromCharCode(byte);
-            const operation=field('operation').value;
+            const operation=event.submitter?.hasAttribute('data-bridge-visual')?'visual':field('operation').value;
             const payload={operation,setup_id:file.filename.replace(/\.set$/i,''),set_name:file.filename,set_base64:btoa(binary),
                 symbol:field('symbol').value,timeframe:field('timeframe').value,date_from:field('from').value,date_to:field('to').value,
                 tick_model:Number(field('model').value),deposit:field('deposit').value,currency:field('currency').value,
                 leverage:Number(field('leverage').value),execution_delay_ms:Number(field('delay').value),
                 optimization:Number(field('optimization').value),optimization_criterion:Number(field('criterion').value),
-                forward_mode:Number(field('forward').value),enable_test_entries:field('entries').checked};
+                forward_mode:operation==='visual'?0:Number(field('forward').value),enable_test_entries:field('entries').checked};
             if(payload.forward_mode===4)payload.forward_date=field('forward-date').value;
             const job=await request('/jobs',{method:'POST',body:JSON.stringify(payload)});
-            active=job.id;results.replaceChildren();status.textContent=`Tarefa recebida: ${active}`;poll();
+            active=job.id;results.replaceChildren();status.textContent=operation==='visual'
+                ? 'Sessão visual solicitada. Aguarde a janela do MT5.' : `Tarefa recebida: ${active}`;poll();
         }catch(error){status.textContent=error.message;}
-        finally{button.disabled=false;}
+        finally{buttons.forEach(button=>button.disabled=false);}
     });
     window.addEventListener('pagehide',()=>{stopped=true;});
     connect();

@@ -85,6 +85,16 @@ def test_full_api_backtest_and_artifacts(settings,payload,headers):
     assert Store(settings.work_dir/'jobs.sqlite3').get(job_id)['state']=='completed'
 
 
+def test_visual_api_preserves_payload_and_disables_forward(settings,payload,headers):
+    app=create_app(settings,FakeMT5(settings),start_worker=False)
+    with TestClient(app) as client:
+        response=client.post('/api/v1/jobs/visual',headers=headers,json=payload|{'forward_mode':1})
+        assert response.status_code==202
+        job=response.json()['data']
+        assert job['kind']=='visual' and job['config']['forward_mode']==0
+        assert (settings.work_dir/job['id']/'original.set').read_bytes()==base64.b64decode(payload['set_base64'])
+
+
 def test_optimization_ranges_and_real_result_shape(settings,payload,preset,headers):
     body=payload|{'set_base64':base64.b64encode(preset.replace('0.03||N','0.03||Y').encode()).decode()}
     with TestClient(create_app(settings,FakeMT5(settings))) as client:

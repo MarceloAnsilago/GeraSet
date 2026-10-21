@@ -49,3 +49,56 @@ def test_real_executor_with_fake_os_process(settings,payload,monkeypatch,mode,ex
     if mode=='timeout':assert handles[0].returncode==-15
     assert not (settings.terminal.parent/'geraset_reports').exists()
     assert not (settings.terminal.parent/'.geraset-tester.lock').exists()
+
+
+@pytest.mark.parametrize('cancel',[False,True])
+def test_visual_stays_open_without_timeout_and_report(settings,payload,monkeypatch,cancel):
+    settings=replace(settings,timeout_seconds=.001)
+    monkeypatch.setattr('mt5_bridge.runner.psutil.process_iter',lambda *args:[])
+    events=[];handles=[]
+    class Identity:
+        def create_time(self):return 123.
+        def exe(self):return str(settings.terminal)
+        def terminate(self):handles[0].returncode=-15
+    monkeypatch.setattr('mt5_bridge.runner.psutil.Process',lambda pid:Identity())
+    class Process:
+        pid=123
+        returncode=None
+        polls=0
+        def __init__(self,command,**kwargs):
+            handles.append(self)
+            assert kwargs['startupinfo'] is None
+            config=configparser.ConfigParser()
+            config.read(next(arg.split(':',1)[1] for arg in command if arg.startswith('/config:')),encoding='utf-16')
+            assert config['Tester']['Visual']=='1'
+            assert config['Tester']['ShutdownTerminal']=='0'
+            assert config['Tester']['Optimization']=='0'
+            assert config['Tester']['ForwardMode']=='0'
+        def poll(self):
+            self.polls+=1
+            if self.polls>6 and not cancel:self.returncode=0
+            return self.returncode
+        def wait(self,timeout=None):return self.returncode
+    class Pause:
+        def __init__(self,*args):pass
+        def poll(self):return 'paused'
+    monkeypatch.setattr('mt5_bridge.runner.subprocess.Popen',Process)
+    monkeypatch.setattr('mt5_bridge.runner.VisualPause',Pause)
+    runner=MT5Runner(settings);manager=Manager(settings,runner)
+    request=JobRequest(**(payload|{'forward_mode':1}))
+    job=manager.submit('visual',request)
+    assert job['config']['forward_mode']==0
+    def callback(stage,**updates):events.append(updates)
+    def cancelled():return cancel and handles and handles[0].polls>4
+    if cancel:
+        from mt5_bridge.errors import BridgeError
+        with pytest.raises(BridgeError) as exc:
+            runner.execute(job,{'InpName':'test'},callback,cancelled)
+        assert exc.value.code=='CANCELLED'
+        assert handles[0].returncode==-15
+    else:
+        result,files=runner.execute(job,{'InpName':'test'},callback,cancelled)
+        assert result=={'session':'visual','closed_by_user':True,'report_available':False,'terminal_exit_code':0}
+        assert files==[]
+    assert any(event.get('visual_pause')=='paused' for event in events)
+    assert not list((settings.data_dir/'MQL5/Profiles/Tester').glob('geraset_*.set'))

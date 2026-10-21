@@ -49,7 +49,7 @@ def jobs():
     body=request.get_json(silent=True)
     if not isinstance(body,dict):return jsonify(error={'code':'INVALID_REQUEST','message':'Envie JSON válido.'}),400
     operation=body.pop('operation',None)
-    if operation not in ('backtest','optimize'):return jsonify(error={'code':'INVALID_REQUEST','message':'Operação inválida.'}),400
+    if operation not in ('backtest','optimize','visual'):return jsonify(error={'code':'INVALID_REQUEST','message':'Operação inválida.'}),400
     return jsonify(client().call('POST','/jobs/'+operation,body)),202
 
 
