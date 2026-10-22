@@ -640,7 +640,8 @@
                         <div><label>Operação</label><select name="bridge-operation"><option value="backtest">Backtest</option><option value="optimize">Otimização</option></select></div>
                         <div><label>Símbolo autorizado no Bridge</label><input name="bridge-symbol" value="EURUSD" required maxlength="40"></div>
                         <div><label>Timeframe do teste</label><select name="bridge-timeframe">{% for frame in timeframes if frame != 'Tempo corrente' %}<option {{ 'selected' if frame == 'M5' else '' }}>{{ frame }}</option>{% endfor %}</select></div>
-                        <div><label>Data inicial</label><input name="bridge-from" type="date" required></div>
+                        <div><label>Período</label><select name="bridge-period"><option value="all">Histórico completo</option><option value="1">Último mês</option><option value="3" selected>Últimos 3 meses</option><option value="6">Últimos 6 meses</option><option value="12">Último ano</option><option value="custom">Período personalizado</option></select></div>
+                        <div><label>Data inicial</label><input name="bridge-from" type="date" min="1970-01-01" required></div>
                         <div><label>Data final exclusiva</label><input name="bridge-to" type="date" required></div>
                         <div><label>Modelo de ticks</label><select name="bridge-model"><option value="1">OHLC por minuto</option><option value="0">Todos os ticks</option><option value="2">Somente abertura</option><option value="4">Ticks reais</option></select></div>
                         <div><label>Depósito</label><input name="bridge-deposit" type="number" min="0.01" step="any" value="10000" required></div>
@@ -661,6 +662,7 @@
                     <p class="muted">O teste visual usa os valores atuais, sem otimização ou forward. O MT5 fica aberto até você fechar a sessão. Cancelar tarefa encerra o terminal desta sessão.</p>
                     <button type="button" class="btn" data-bridge-cancel disabled>Cancelar tarefa</button>
                 </form>
+                <p class="muted">O período preenche as datas automaticamente. Você pode editá-las para personalizar. Histórico completo solicita os dados disponíveis do símbolo no MT5; a disponibilidade depende da corretora. A data final é exclusiva.</p>
                 <div data-bridge-current aria-live="polite"></div>
                 <div data-bridge-curves></div>
                 <div data-bridge-results></div>
@@ -729,6 +731,7 @@
     <script src="{{ url_for('static', filename='export.js') }}"></script>
     <script src="{{ url_for('static', filename='import.js') }}"></script>
     <script src="{{ url_for('static', filename='curves.js') }}"></script>
+    <script src="{{ url_for('static', filename='bridge-period.js') }}"></script>
     <script src="{{ url_for('static', filename='bridge.js') }}"></script>
 </body>
 </html>

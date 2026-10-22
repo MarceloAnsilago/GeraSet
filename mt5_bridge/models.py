@@ -41,8 +41,8 @@ class JobRequest(BaseModel):
 
     @model_validator(mode='after')
     def dates(self):
-        if self.date_to <= self.date_from or (self.date_to-self.date_from).days > 3660:
-            raise ValueError('Use datas crescentes, com intervalo máximo de dez anos.')
+        if self.date_to <= self.date_from or self.date_from < date(1970,1,1) or (self.date_to-self.date_from).days > 36600:
+            raise ValueError('Use datas crescentes a partir de 1970, com intervalo máximo de cem anos.')
         if self.forward_mode == 4 and (self.forward_date is None or not self.date_from < self.forward_date < self.date_to):
             raise ValueError('Forward personalizado exige data dentro do intervalo.')
         if self.forward_mode != 4 and self.forward_date is not None:
