@@ -109,11 +109,25 @@ e preserva o TP. Nenhuma opção ou input especulativo foi adicionado agora.
 
 ## Limites desta etapa
 
-Verificação de escalares não substitui relações entre campos (RSI inferior <
-médio < superior, take dependente de stop, janela com limites diferentes,
-breakeven habilitado com valores positivos), semântica completa dos sinais,
-limites do ativo ou testes de execução na corretora. Essas validações continuam
-no Uni e parcialmente no navegador, com consolidação no servidor pendente.
+O exportador verifica relações entre campos antes de salvar: inferior < médio <
+superior no RSI, take em múltiplos dependente de stop, horários diferentes e
+proteção de breakeven abaixo da ativação, inclusive nos valores alcançados pela
+otimização. Condições exigem agrupamento Se/E/Ou válido, fontes disponíveis e
+no máximo dez linhas ativas. A referência Valor fixo não pode ser o operando A.
+
+O Bridge repete a conferência determinística antes de iniciar o terminal em
+`configuration_validation.py`, usando padrões do contrato para inputs omitidos.
+Também verifica buffers, escalas, finalidade, candles fechados em cruzar e
+fechar e compatibilidade de indicadores em todas as combinações possíveis.
+Casos de teste compartilhados em `tests/fixtures/uni_relations.json` conferem
+a concordância de relações entre o navegador e o Bridge. Colunas N não são
+valores ativos; o último valor alcançado pelo passo pode ser menor que Terminar.
+
+Limites de volume e tick, margem, distância mínima de stops, histórico disponível
+e aceitação da corretora continuam dependendo do contexto real do ativo. Não
+podem ser certificados pela exportação estática; o Uni mantém suas validações.
+As implementações JavaScript, Python e MQL5 ainda são separadas; estes testes
+não substituem uma futura camada central de domínio nem validação operacional.
 
 Não foram alterados o motor MQL5, o formato dos sinais, os valores dos enums
 nem o metadado de importação versão 2. O `.ex5` não precisa
