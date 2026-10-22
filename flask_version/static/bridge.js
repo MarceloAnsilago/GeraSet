@@ -14,6 +14,8 @@ function renderBridgeProgress(progress,documentRef=document) {
     if(progress.state==='failed'||progress.state==='cancelled')block.className+=' bridge-progress-stopped';
     const hint=documentRef.createElement('p');hint.className='muted';
     hint.textContent=progress.state==='completed'?'Execução concluída.'
+        :progress.state==='failed'?(progress.error?.message||'A execução falhou. Confira o erro da tarefa.')
+        :progress.state==='cancelled'?'Execução cancelada.'
         :ended?(percent===null?'Execução encerrada sem porcentagem informada.':`Execução encerrada em ${percent.toLocaleString('pt-BR')}%.`)
         :percent===null?'Aguardando o MT5 informar o progresso...':'Progresso informado pelo testador.';
     block.append(label,bar,hint);

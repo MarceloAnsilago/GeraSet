@@ -16,7 +16,7 @@ test('unknown progress is indeterminate, zero is determinate, failure preserves 
     assert.equal(view({percent:0}).children[1].value,0);
     const failed=view({state:'failed',percent:14});
     assert.equal(failed.children[1].value,14);
-    assert.match(failed.children[2].textContent,/encerrada em 14%/);
+    assert.match(failed.children[2].textContent,/execução falhou/);
     assert.equal(view({state:'failed',percent:null}).children[1].value,0);
     assert.equal(view({state:'completed',percent:14}).children[1].value,100);
     assert.equal('value' in view({percent:150}).children[1],false);

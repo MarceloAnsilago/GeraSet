@@ -1,8 +1,8 @@
 :root {
     --bg: #ffffff;
     --surface: #ffffff;
-    --card-gradient: linear-gradient(145deg, #ffffff 0%, #fbfcff 56%, #fff8f1 100%);
-    --summary-gradient: linear-gradient(145deg, #ffffff 0%, #f8fbff 100%);
+    --card-gradient: linear-gradient(145deg, #ffffff 0%, #edf2ff 56%, #ffe8d2 100%);
+    --summary-gradient: linear-gradient(145deg, #ffffff 0%, #e3efff 100%);
     --soft: #f4f4f5;
     --line: #d8d8d8;
     --line-dark: #c8c8c8;
