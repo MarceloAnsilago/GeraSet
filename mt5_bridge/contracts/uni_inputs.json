@@ -1,345 +1,1074 @@
 {
+  "InpCurveSession": {
+    "kind": "string",
+    "source_type": "string",
+    "default": "",
+    "optimizable": false,
+    "internal": true
+  },
   "InpName": {
-    "kind": "string"
+    "kind": "string",
+    "source_type": "string",
+    "default": "Meu setup",
+    "optimizable": false,
+    "min_length": 1,
+    "max_length": 48
   },
   "InpMagic": {
-    "kind": "long"
+    "kind": "long",
+    "source_type": "long",
+    "default": 1,
+    "optimizable": true,
+    "min": 1,
+    "max": 2147483647
   },
   "InpMarket": {
-    "kind": "enum"
+    "kind": "enum",
+    "source_type": "ENUM_GUI_SETUP_MARKET",
+    "default": 0,
+    "optimizable": true,
+    "enum_values": {
+      "GUI_SETUP_FOREX": 0,
+      "GUI_SETUP_B3": 1
+    }
   },
   "InpTradeMode": {
-    "kind": "enum"
+    "kind": "enum",
+    "source_type": "ENUM_GUI_SETUP_TRADE_MODE",
+    "default": 0,
+    "optimizable": true,
+    "enum_values": {
+      "GUI_SETUP_DAY_TRADE": 0,
+      "GUI_SETUP_SWING_TRADE": 1
+    }
   },
   "InpLot": {
-    "kind": "double"
+    "kind": "double",
+    "source_type": "double",
+    "default": 0.01,
+    "optimizable": true,
+    "exclusive_min": 0,
+    "unit": "lots",
+    "dynamic_limits": "symbol volume min/max/step"
   },
   "InpDirection": {
-    "kind": "enum"
+    "kind": "enum",
+    "source_type": "ENUM_GUI_SETUP_DIRECTION",
+    "default": 0,
+    "optimizable": true,
+    "enum_values": {
+      "GUI_SETUP_BUY_SELL": 0,
+      "GUI_SETUP_BUY_ONLY": 1,
+      "GUI_SETUP_SELL_ONLY": 2
+    }
   },
   "InpEntryStart": {
-    "kind": "int"
+    "kind": "int",
+    "source_type": "int",
+    "default": 0,
+    "optimizable": true,
+    "min": 0,
+    "max": 1435,
+    "multiple_of": 5,
+    "unit": "server_minutes_since_midnight"
   },
   "InpEntryEnd": {
-    "kind": "int"
+    "kind": "int",
+    "source_type": "int",
+    "default": 1435,
+    "optimizable": true,
+    "min": 0,
+    "max": 1435,
+    "multiple_of": 5,
+    "unit": "server_minutes_since_midnight"
   },
   "InpOrderMode": {
-    "kind": "enum"
+    "kind": "enum",
+    "source_type": "ENUM_GUI_ORDER_MODE",
+    "default": 0,
+    "optimizable": true,
+    "enum_values": {
+      "GUI_ORDER_MARKET": 0,
+      "GUI_ORDER_PENDING": 1
+    }
   },
   "InpPendingReference": {
-    "kind": "enum"
+    "kind": "enum",
+    "source_type": "ENUM_UNI_PENDING_REFERENCE",
+    "default": 0,
+    "optimizable": true,
+    "enum_values": {
+      "UNI_PENDING_HIGH": 0,
+      "UNI_PENDING_LOW": 1,
+      "UNI_PENDING_OPEN": 2,
+      "UNI_PENDING_CLOSE": 3
+    }
   },
   "InpPendingCandle": {
-    "kind": "int"
+    "kind": "int",
+    "source_type": "int",
+    "default": 1,
+    "optimizable": true,
+    "min": 1,
+    "max": 100000,
+    "unit": "closed_bars"
   },
   "InpPendingMirrorSell": {
-    "kind": "bool"
+    "kind": "bool",
+    "source_type": "bool",
+    "default": false,
+    "optimizable": true,
+    "values": [
+      0,
+      1
+    ]
   },
   "InpCandleFilter": {
-    "kind": "enum"
+    "kind": "enum",
+    "source_type": "ENUM_GUI_CANDLE_FILTER",
+    "default": 0,
+    "optimizable": true,
+    "enum_values": {
+      "GUI_CANDLE_DISABLED": 0,
+      "GUI_CANDLE_SIZE": 1,
+      "GUI_CANDLE_WICKS": 2
+    }
   },
   "InpTargetUnit": {
-    "kind": "enum"
+    "kind": "enum",
+    "source_type": "ENUM_GUI_TARGET_UNIT",
+    "default": 0,
+    "optimizable": true,
+    "enum_values": {
+      "GUI_TARGET_POINTS": 0,
+      "GUI_TARGET_PERCENT": 1
+    }
   },
   "InpStopMode": {
-    "kind": "enum"
+    "kind": "enum",
+    "source_type": "ENUM_UNI_STOP_MODE",
+    "default": 0,
+    "optimizable": true,
+    "enum_values": {
+      "UNI_STOP_DISTANCE_CANDLE": 0,
+      "UNI_STOP_FIXED": 1
+    }
   },
   "InpStopLoss": {
-    "kind": "double"
+    "kind": "double",
+    "source_type": "double",
+    "default": 0.0,
+    "optimizable": true,
+    "min": 0,
+    "max": 100000000,
+    "unit": "InpTargetUnit: points or percent_of_entry_price"
   },
   "InpTakeMode": {
-    "kind": "enum"
+    "kind": "enum",
+    "source_type": "ENUM_UNI_TAKE_MODE",
+    "default": -1,
+    "optimizable": true,
+    "enum_values": {
+      "UNI_TAKE_AUTO": -1,
+      "UNI_TAKE_STOP": 0,
+      "UNI_TAKE_FIXED": 1
+    }
   },
   "InpTakeProfit": {
-    "kind": "double"
+    "kind": "double",
+    "source_type": "double",
+    "default": 0.0,
+    "optimizable": true,
+    "min": 0,
+    "max": 100000000,
+    "unit": "InpTargetUnit: points or percent_of_entry_price"
   },
   "InpStopCandleMultiplier": {
-    "kind": "double"
+    "kind": "double",
+    "source_type": "double",
+    "default": 1.0,
+    "optimizable": true,
+    "min": 0,
+    "max": 100000000,
+    "unit": "multiplier"
   },
   "InpStopCandle": {
-    "kind": "int"
+    "kind": "int",
+    "source_type": "int",
+    "default": 1,
+    "optimizable": true,
+    "min": 1,
+    "max": 3,
+    "unit": "closed_bars"
   },
   "InpStopBody": {
-    "kind": "bool"
+    "kind": "bool",
+    "source_type": "bool",
+    "default": false,
+    "optimizable": true,
+    "values": [
+      0,
+      1
+    ]
   },
   "InpTakeStopMultiplier": {
-    "kind": "double"
+    "kind": "double",
+    "source_type": "double",
+    "default": 2.0,
+    "optimizable": true,
+    "min": 0,
+    "max": 100000000,
+    "unit": "multiplier"
   },
   "InpBreakevenMode": {
-    "kind": "enum"
+    "kind": "enum",
+    "source_type": "ENUM_UNI_MANAGEMENT_MODE",
+    "default": 0,
+    "optimizable": true,
+    "enum_values": {
+      "UNI_MANAGEMENT_DISABLED": 0,
+      "UNI_MANAGEMENT_POINTS": 1,
+      "UNI_MANAGEMENT_PERCENT": 2
+    }
   },
   "InpBreakevenTrigger": {
-    "kind": "double"
+    "kind": "double",
+    "source_type": "double",
+    "default": 0.0,
+    "optimizable": true,
+    "min": 0,
+    "max": 100000000,
+    "unit": "InpBreakevenMode: points or percent_of_entry_price"
   },
   "InpBreakevenOffset": {
-    "kind": "double"
+    "kind": "double",
+    "source_type": "double",
+    "default": 0.0,
+    "optimizable": true,
+    "min": 0,
+    "max": 100000000,
+    "unit": "InpBreakevenMode: points or percent_of_entry_price"
   },
   "InpTrailingMode": {
-    "kind": "enum"
+    "kind": "enum",
+    "source_type": "ENUM_UNI_MANAGEMENT_MODE",
+    "default": 0,
+    "optimizable": true,
+    "enum_values": {
+      "UNI_MANAGEMENT_DISABLED": 0,
+      "UNI_MANAGEMENT_POINTS": 1,
+      "UNI_MANAGEMENT_PERCENT": 2
+    }
   },
   "InpTrailingTrigger": {
-    "kind": "double"
+    "kind": "double",
+    "source_type": "double",
+    "default": 0.0,
+    "optimizable": true,
+    "min": 0,
+    "max": 100000000,
+    "unit": "InpTrailingMode: points or percent_of_entry_price"
   },
   "InpTrailingDistance": {
-    "kind": "double"
+    "kind": "double",
+    "source_type": "double",
+    "default": 0.0,
+    "optimizable": true,
+    "min": 0,
+    "max": 100000000,
+    "unit": "InpTrailingMode: points or percent_of_entry_price"
   },
   "InpTrailingStep": {
-    "kind": "double"
+    "kind": "double",
+    "source_type": "double",
+    "default": 0.0,
+    "optimizable": true,
+    "min": 0,
+    "max": 100000000,
+    "unit": "InpTrailingMode: points or percent_of_entry_price"
   },
   "InpMovingStopMode": {
-    "kind": "enum"
+    "kind": "enum",
+    "source_type": "ENUM_UNI_MANAGEMENT_MODE",
+    "default": 0,
+    "optimizable": true,
+    "enum_values": {
+      "UNI_MANAGEMENT_DISABLED": 0,
+      "UNI_MANAGEMENT_POINTS": 1,
+      "UNI_MANAGEMENT_PERCENT": 2
+    }
   },
   "InpMovingStopTrigger": {
-    "kind": "double"
+    "kind": "double",
+    "source_type": "double",
+    "default": 0.0,
+    "optimizable": true,
+    "min": 0,
+    "max": 100000000,
+    "unit": "InpMovingStopMode: points or percent_of_entry_price"
   },
   "InpMovingStopDistance": {
-    "kind": "double"
+    "kind": "double",
+    "source_type": "double",
+    "default": 0.0,
+    "optimizable": true,
+    "min": 0,
+    "max": 100000000,
+    "unit": "InpMovingStopMode: points or percent_of_entry_price"
   },
   "InpMovingStopStep": {
-    "kind": "double"
+    "kind": "double",
+    "source_type": "double",
+    "default": 0.0,
+    "optimizable": true,
+    "min": 0,
+    "max": 100000000,
+    "unit": "InpMovingStopMode: points or percent_of_entry_price"
   },
   "InpAutoStart": {
-    "kind": "bool"
+    "kind": "bool",
+    "source_type": "bool",
+    "default": false,
+    "optimizable": true,
+    "values": [
+      0,
+      1
+    ]
   },
   "InpTesterAutoStart": {
-    "kind": "bool"
+    "kind": "bool",
+    "source_type": "bool",
+    "default": false,
+    "optimizable": true,
+    "values": [
+      0,
+      1
+    ]
   },
   "InpIndicator1Type": {
-    "kind": "enum"
+    "kind": "enum",
+    "source_type": "ENUM_GUI_INDICATOR_TYPE",
+    "default": -1,
+    "optimizable": true,
+    "enum_values": {
+      "GUI_INDICATOR_NONE": -1,
+      "GUI_INDICATOR_MA": 0,
+      "GUI_INDICATOR_RSI": 1,
+      "GUI_INDICATOR_ADX": 2
+    }
   },
   "InpIndicator1Timeframe": {
-    "kind": "enum"
+    "kind": "enum",
+    "source_type": "ENUM_UNI_SLOT_TIMEFRAME",
+    "default": 0,
+    "optimizable": true,
+    "enum_values": {
+      "UNI_SLOT_CURRENT": 0,
+      "UNI_SLOT_M1": 1,
+      "UNI_SLOT_M2": 2,
+      "UNI_SLOT_M3": 3,
+      "UNI_SLOT_M4": 4,
+      "UNI_SLOT_M5": 5,
+      "UNI_SLOT_M6": 6,
+      "UNI_SLOT_M10": 7,
+      "UNI_SLOT_M12": 8,
+      "UNI_SLOT_M15": 9,
+      "UNI_SLOT_M20": 10,
+      "UNI_SLOT_M30": 11,
+      "UNI_SLOT_H1": 12,
+      "UNI_SLOT_H2": 13,
+      "UNI_SLOT_H3": 14,
+      "UNI_SLOT_H4": 15,
+      "UNI_SLOT_H6": 16,
+      "UNI_SLOT_H8": 17,
+      "UNI_SLOT_H12": 18,
+      "UNI_SLOT_D1": 19,
+      "UNI_SLOT_W1": 20,
+      "UNI_SLOT_MN1": 21
+    }
   },
   "InpIndicator1Exit": {
-    "kind": "enum"
+    "kind": "enum",
+    "source_type": "ENUM_UNI_YES_NO",
+    "default": 0,
+    "optimizable": true,
+    "enum_values": {
+      "UNI_NO": 0,
+      "UNI_YES": 1
+    }
   },
   "InpIndicator2Type": {
-    "kind": "enum"
+    "kind": "enum",
+    "source_type": "ENUM_GUI_INDICATOR_TYPE",
+    "default": -1,
+    "optimizable": true,
+    "enum_values": {
+      "GUI_INDICATOR_NONE": -1,
+      "GUI_INDICATOR_MA": 0,
+      "GUI_INDICATOR_RSI": 1,
+      "GUI_INDICATOR_ADX": 2
+    }
   },
   "InpIndicator2Timeframe": {
-    "kind": "enum"
+    "kind": "enum",
+    "source_type": "ENUM_UNI_SLOT_TIMEFRAME",
+    "default": 0,
+    "optimizable": true,
+    "enum_values": {
+      "UNI_SLOT_CURRENT": 0,
+      "UNI_SLOT_M1": 1,
+      "UNI_SLOT_M2": 2,
+      "UNI_SLOT_M3": 3,
+      "UNI_SLOT_M4": 4,
+      "UNI_SLOT_M5": 5,
+      "UNI_SLOT_M6": 6,
+      "UNI_SLOT_M10": 7,
+      "UNI_SLOT_M12": 8,
+      "UNI_SLOT_M15": 9,
+      "UNI_SLOT_M20": 10,
+      "UNI_SLOT_M30": 11,
+      "UNI_SLOT_H1": 12,
+      "UNI_SLOT_H2": 13,
+      "UNI_SLOT_H3": 14,
+      "UNI_SLOT_H4": 15,
+      "UNI_SLOT_H6": 16,
+      "UNI_SLOT_H8": 17,
+      "UNI_SLOT_H12": 18,
+      "UNI_SLOT_D1": 19,
+      "UNI_SLOT_W1": 20,
+      "UNI_SLOT_MN1": 21
+    }
   },
   "InpIndicator2Exit": {
-    "kind": "enum"
+    "kind": "enum",
+    "source_type": "ENUM_UNI_YES_NO",
+    "default": 0,
+    "optimizable": true,
+    "enum_values": {
+      "UNI_NO": 0,
+      "UNI_YES": 1
+    }
   },
   "InpIndicator3Type": {
-    "kind": "enum"
+    "kind": "enum",
+    "source_type": "ENUM_GUI_INDICATOR_TYPE",
+    "default": -1,
+    "optimizable": true,
+    "enum_values": {
+      "GUI_INDICATOR_NONE": -1,
+      "GUI_INDICATOR_MA": 0,
+      "GUI_INDICATOR_RSI": 1,
+      "GUI_INDICATOR_ADX": 2
+    }
   },
   "InpIndicator3Timeframe": {
-    "kind": "enum"
+    "kind": "enum",
+    "source_type": "ENUM_UNI_SLOT_TIMEFRAME",
+    "default": 0,
+    "optimizable": true,
+    "enum_values": {
+      "UNI_SLOT_CURRENT": 0,
+      "UNI_SLOT_M1": 1,
+      "UNI_SLOT_M2": 2,
+      "UNI_SLOT_M3": 3,
+      "UNI_SLOT_M4": 4,
+      "UNI_SLOT_M5": 5,
+      "UNI_SLOT_M6": 6,
+      "UNI_SLOT_M10": 7,
+      "UNI_SLOT_M12": 8,
+      "UNI_SLOT_M15": 9,
+      "UNI_SLOT_M20": 10,
+      "UNI_SLOT_M30": 11,
+      "UNI_SLOT_H1": 12,
+      "UNI_SLOT_H2": 13,
+      "UNI_SLOT_H3": 14,
+      "UNI_SLOT_H4": 15,
+      "UNI_SLOT_H6": 16,
+      "UNI_SLOT_H8": 17,
+      "UNI_SLOT_H12": 18,
+      "UNI_SLOT_D1": 19,
+      "UNI_SLOT_W1": 20,
+      "UNI_SLOT_MN1": 21
+    }
   },
   "InpIndicator3Exit": {
-    "kind": "enum"
+    "kind": "enum",
+    "source_type": "ENUM_UNI_YES_NO",
+    "default": 0,
+    "optimizable": true,
+    "enum_values": {
+      "UNI_NO": 0,
+      "UNI_YES": 1
+    }
   },
   "InpIndicator4Type": {
-    "kind": "enum"
+    "kind": "enum",
+    "source_type": "ENUM_GUI_INDICATOR_TYPE",
+    "default": -1,
+    "optimizable": true,
+    "enum_values": {
+      "GUI_INDICATOR_NONE": -1,
+      "GUI_INDICATOR_MA": 0,
+      "GUI_INDICATOR_RSI": 1,
+      "GUI_INDICATOR_ADX": 2
+    }
   },
   "InpIndicator4Timeframe": {
-    "kind": "enum"
+    "kind": "enum",
+    "source_type": "ENUM_UNI_SLOT_TIMEFRAME",
+    "default": 0,
+    "optimizable": true,
+    "enum_values": {
+      "UNI_SLOT_CURRENT": 0,
+      "UNI_SLOT_M1": 1,
+      "UNI_SLOT_M2": 2,
+      "UNI_SLOT_M3": 3,
+      "UNI_SLOT_M4": 4,
+      "UNI_SLOT_M5": 5,
+      "UNI_SLOT_M6": 6,
+      "UNI_SLOT_M10": 7,
+      "UNI_SLOT_M12": 8,
+      "UNI_SLOT_M15": 9,
+      "UNI_SLOT_M20": 10,
+      "UNI_SLOT_M30": 11,
+      "UNI_SLOT_H1": 12,
+      "UNI_SLOT_H2": 13,
+      "UNI_SLOT_H3": 14,
+      "UNI_SLOT_H4": 15,
+      "UNI_SLOT_H6": 16,
+      "UNI_SLOT_H8": 17,
+      "UNI_SLOT_H12": 18,
+      "UNI_SLOT_D1": 19,
+      "UNI_SLOT_W1": 20,
+      "UNI_SLOT_MN1": 21
+    }
   },
   "InpIndicator4Exit": {
-    "kind": "enum"
-  },
-  "InpRsiEntryPeriod": {
-    "kind": "int"
-  },
-  "InpRsiEntryPrice": {
-    "kind": "enum"
-  },
-  "InpRsiEntryUpper": {
-    "kind": "double"
-  },
-  "InpRsiEntryMiddle": {
-    "kind": "double"
-  },
-  "InpRsiEntryLower": {
-    "kind": "double"
-  },
-  "InpRsiExitPeriod": {
-    "kind": "int"
-  },
-  "InpRsiExitPrice": {
-    "kind": "enum"
-  },
-  "InpRsiExitUpper": {
-    "kind": "double"
-  },
-  "InpRsiExitMiddle": {
-    "kind": "double"
-  },
-  "InpRsiExitLower": {
-    "kind": "double"
-  },
-  "InpAdxEntryPeriod": {
-    "kind": "int"
-  },
-  "InpAdxExitPeriod": {
-    "kind": "int"
-  },
-  "InpIndicator1MaPeriod": {
-    "kind": "int"
-  },
-  "InpIndicator1MaMethod": {
-    "kind": "enum"
-  },
-  "InpIndicator1MaPrice": {
-    "kind": "enum"
-  },
-  "InpIndicator1MaShift": {
-    "kind": "int"
-  },
-  "InpIndicator2MaPeriod": {
-    "kind": "int"
-  },
-  "InpIndicator2MaMethod": {
-    "kind": "enum"
-  },
-  "InpIndicator2MaPrice": {
-    "kind": "enum"
-  },
-  "InpIndicator2MaShift": {
-    "kind": "int"
-  },
-  "InpIndicator3MaPeriod": {
-    "kind": "int"
-  },
-  "InpIndicator3MaMethod": {
-    "kind": "enum"
-  },
-  "InpIndicator3MaPrice": {
-    "kind": "enum"
-  },
-  "InpIndicator3MaShift": {
-    "kind": "int"
-  },
-  "InpIndicator4MaPeriod": {
-    "kind": "int"
-  },
-  "InpIndicator4MaMethod": {
-    "kind": "enum"
-  },
-  "InpIndicator4MaPrice": {
-    "kind": "enum"
-  },
-  "InpIndicator4MaShift": {
-    "kind": "int"
-  },
-  "InpSignal1": {
-    "kind": "string"
-  },
-  "InpSignal2": {
-    "kind": "string"
-  },
-  "InpSignal3": {
-    "kind": "string"
-  },
-  "InpSignal4": {
-    "kind": "string"
-  },
-  "InpSignal5": {
-    "kind": "string"
-  },
-  "InpSignal6": {
-    "kind": "string"
-  },
-  "InpSignal7": {
-    "kind": "string"
-  },
-  "InpSignal8": {
-    "kind": "string"
-  },
-  "InpSignal9": {
-    "kind": "string"
-  },
-  "InpSignal10": {
-    "kind": "string"
+    "kind": "enum",
+    "source_type": "ENUM_UNI_YES_NO",
+    "default": 0,
+    "optimizable": true,
+    "enum_values": {
+      "UNI_NO": 0,
+      "UNI_YES": 1
+    }
   },
   "InpSeparatorRsiEntry": {
     "kind": "string",
+    "source_type": "string",
+    "default": "▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪",
     "optimizable": false
+  },
+  "InpRsiEntryPeriod": {
+    "kind": "int",
+    "source_type": "int",
+    "default": 14,
+    "optimizable": true,
+    "min": 1,
+    "max": 100000,
+    "unit": "bars"
+  },
+  "InpRsiEntryPrice": {
+    "kind": "enum",
+    "source_type": "ENUM_UNI_APPLIED_PRICE",
+    "default": 1,
+    "optimizable": true,
+    "enum_values": {
+      "UNI_PRICE_CLOSE": 1,
+      "UNI_PRICE_OPEN": 2,
+      "UNI_PRICE_HIGH": 3,
+      "UNI_PRICE_LOW": 4,
+      "UNI_PRICE_MEDIAN": 5,
+      "UNI_PRICE_TYPICAL": 6,
+      "UNI_PRICE_WEIGHTED": 7
+    }
+  },
+  "InpRsiEntryUpper": {
+    "kind": "double",
+    "source_type": "double",
+    "default": 70.0,
+    "optimizable": true,
+    "min": 0,
+    "max": 100,
+    "unit": "oscillator_level"
+  },
+  "InpRsiEntryMiddle": {
+    "kind": "double",
+    "source_type": "double",
+    "default": 50.0,
+    "optimizable": true,
+    "min": 0,
+    "max": 100,
+    "unit": "oscillator_level"
+  },
+  "InpRsiEntryLower": {
+    "kind": "double",
+    "source_type": "double",
+    "default": 30.0,
+    "optimizable": true,
+    "min": 0,
+    "max": 100,
+    "unit": "oscillator_level"
   },
   "InpSeparatorRsiExit": {
     "kind": "string",
+    "source_type": "string",
+    "default": "▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪",
     "optimizable": false
+  },
+  "InpRsiExitPeriod": {
+    "kind": "int",
+    "source_type": "int",
+    "default": 14,
+    "optimizable": true,
+    "min": 1,
+    "max": 100000,
+    "unit": "bars"
+  },
+  "InpRsiExitPrice": {
+    "kind": "enum",
+    "source_type": "ENUM_UNI_APPLIED_PRICE",
+    "default": 1,
+    "optimizable": true,
+    "enum_values": {
+      "UNI_PRICE_CLOSE": 1,
+      "UNI_PRICE_OPEN": 2,
+      "UNI_PRICE_HIGH": 3,
+      "UNI_PRICE_LOW": 4,
+      "UNI_PRICE_MEDIAN": 5,
+      "UNI_PRICE_TYPICAL": 6,
+      "UNI_PRICE_WEIGHTED": 7
+    }
+  },
+  "InpRsiExitUpper": {
+    "kind": "double",
+    "source_type": "double",
+    "default": 70.0,
+    "optimizable": true,
+    "min": 0,
+    "max": 100,
+    "unit": "oscillator_level"
+  },
+  "InpRsiExitMiddle": {
+    "kind": "double",
+    "source_type": "double",
+    "default": 50.0,
+    "optimizable": true,
+    "min": 0,
+    "max": 100,
+    "unit": "oscillator_level"
+  },
+  "InpRsiExitLower": {
+    "kind": "double",
+    "source_type": "double",
+    "default": 30.0,
+    "optimizable": true,
+    "min": 0,
+    "max": 100,
+    "unit": "oscillator_level"
   },
   "InpSeparatorAdxEntry": {
     "kind": "string",
+    "source_type": "string",
+    "default": "▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪",
     "optimizable": false
+  },
+  "InpAdxEntryPeriod": {
+    "kind": "int",
+    "source_type": "int",
+    "default": 14,
+    "optimizable": true,
+    "min": 1,
+    "max": 100000,
+    "unit": "bars"
   },
   "InpSeparatorAdxExit": {
     "kind": "string",
+    "source_type": "string",
+    "default": "▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪",
     "optimizable": false
+  },
+  "InpAdxExitPeriod": {
+    "kind": "int",
+    "source_type": "int",
+    "default": 14,
+    "optimizable": true,
+    "min": 1,
+    "max": 100000,
+    "unit": "bars"
   },
   "InpSeparatorMa1": {
     "kind": "string",
+    "source_type": "string",
+    "default": "▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪",
     "optimizable": false
+  },
+  "InpIndicator1MaPeriod": {
+    "kind": "int",
+    "source_type": "int",
+    "default": 20,
+    "optimizable": true,
+    "min": 1,
+    "max": 100000,
+    "unit": "bars"
+  },
+  "InpIndicator1MaMethod": {
+    "kind": "enum",
+    "source_type": "ENUM_UNI_MA_METHOD",
+    "default": 1,
+    "optimizable": true,
+    "enum_values": {
+      "UNI_MA_SMA": 0,
+      "UNI_MA_EMA": 1,
+      "UNI_MA_SMMA": 2,
+      "UNI_MA_LWMA": 3
+    }
+  },
+  "InpIndicator1MaPrice": {
+    "kind": "enum",
+    "source_type": "ENUM_UNI_APPLIED_PRICE",
+    "default": 1,
+    "optimizable": true,
+    "enum_values": {
+      "UNI_PRICE_CLOSE": 1,
+      "UNI_PRICE_OPEN": 2,
+      "UNI_PRICE_HIGH": 3,
+      "UNI_PRICE_LOW": 4,
+      "UNI_PRICE_MEDIAN": 5,
+      "UNI_PRICE_TYPICAL": 6,
+      "UNI_PRICE_WEIGHTED": 7
+    }
+  },
+  "InpIndicator1MaShift": {
+    "kind": "int",
+    "source_type": "int",
+    "default": 0,
+    "optimizable": true,
+    "min": -100000,
+    "max": 100000,
+    "unit": "bars"
   },
   "InpSeparatorMa2": {
     "kind": "string",
+    "source_type": "string",
+    "default": "▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪",
     "optimizable": false
+  },
+  "InpIndicator2MaPeriod": {
+    "kind": "int",
+    "source_type": "int",
+    "default": 20,
+    "optimizable": true,
+    "min": 1,
+    "max": 100000,
+    "unit": "bars"
+  },
+  "InpIndicator2MaMethod": {
+    "kind": "enum",
+    "source_type": "ENUM_UNI_MA_METHOD",
+    "default": 1,
+    "optimizable": true,
+    "enum_values": {
+      "UNI_MA_SMA": 0,
+      "UNI_MA_EMA": 1,
+      "UNI_MA_SMMA": 2,
+      "UNI_MA_LWMA": 3
+    }
+  },
+  "InpIndicator2MaPrice": {
+    "kind": "enum",
+    "source_type": "ENUM_UNI_APPLIED_PRICE",
+    "default": 1,
+    "optimizable": true,
+    "enum_values": {
+      "UNI_PRICE_CLOSE": 1,
+      "UNI_PRICE_OPEN": 2,
+      "UNI_PRICE_HIGH": 3,
+      "UNI_PRICE_LOW": 4,
+      "UNI_PRICE_MEDIAN": 5,
+      "UNI_PRICE_TYPICAL": 6,
+      "UNI_PRICE_WEIGHTED": 7
+    }
+  },
+  "InpIndicator2MaShift": {
+    "kind": "int",
+    "source_type": "int",
+    "default": 0,
+    "optimizable": true,
+    "min": -100000,
+    "max": 100000,
+    "unit": "bars"
   },
   "InpSeparatorMa3": {
     "kind": "string",
+    "source_type": "string",
+    "default": "▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪",
     "optimizable": false
+  },
+  "InpIndicator3MaPeriod": {
+    "kind": "int",
+    "source_type": "int",
+    "default": 20,
+    "optimizable": true,
+    "min": 1,
+    "max": 100000,
+    "unit": "bars"
+  },
+  "InpIndicator3MaMethod": {
+    "kind": "enum",
+    "source_type": "ENUM_UNI_MA_METHOD",
+    "default": 1,
+    "optimizable": true,
+    "enum_values": {
+      "UNI_MA_SMA": 0,
+      "UNI_MA_EMA": 1,
+      "UNI_MA_SMMA": 2,
+      "UNI_MA_LWMA": 3
+    }
+  },
+  "InpIndicator3MaPrice": {
+    "kind": "enum",
+    "source_type": "ENUM_UNI_APPLIED_PRICE",
+    "default": 1,
+    "optimizable": true,
+    "enum_values": {
+      "UNI_PRICE_CLOSE": 1,
+      "UNI_PRICE_OPEN": 2,
+      "UNI_PRICE_HIGH": 3,
+      "UNI_PRICE_LOW": 4,
+      "UNI_PRICE_MEDIAN": 5,
+      "UNI_PRICE_TYPICAL": 6,
+      "UNI_PRICE_WEIGHTED": 7
+    }
+  },
+  "InpIndicator3MaShift": {
+    "kind": "int",
+    "source_type": "int",
+    "default": 0,
+    "optimizable": true,
+    "min": -100000,
+    "max": 100000,
+    "unit": "bars"
   },
   "InpSeparatorMa4": {
     "kind": "string",
+    "source_type": "string",
+    "default": "▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪",
+    "optimizable": false
+  },
+  "InpIndicator4MaPeriod": {
+    "kind": "int",
+    "source_type": "int",
+    "default": 20,
+    "optimizable": true,
+    "min": 1,
+    "max": 100000,
+    "unit": "bars"
+  },
+  "InpIndicator4MaMethod": {
+    "kind": "enum",
+    "source_type": "ENUM_UNI_MA_METHOD",
+    "default": 1,
+    "optimizable": true,
+    "enum_values": {
+      "UNI_MA_SMA": 0,
+      "UNI_MA_EMA": 1,
+      "UNI_MA_SMMA": 2,
+      "UNI_MA_LWMA": 3
+    }
+  },
+  "InpIndicator4MaPrice": {
+    "kind": "enum",
+    "source_type": "ENUM_UNI_APPLIED_PRICE",
+    "default": 1,
+    "optimizable": true,
+    "enum_values": {
+      "UNI_PRICE_CLOSE": 1,
+      "UNI_PRICE_OPEN": 2,
+      "UNI_PRICE_HIGH": 3,
+      "UNI_PRICE_LOW": 4,
+      "UNI_PRICE_MEDIAN": 5,
+      "UNI_PRICE_TYPICAL": 6,
+      "UNI_PRICE_WEIGHTED": 7
+    }
+  },
+  "InpIndicator4MaShift": {
+    "kind": "int",
+    "source_type": "int",
+    "default": 0,
+    "optimizable": true,
+    "min": -100000,
+    "max": 100000,
+    "unit": "bars"
+  },
+  "InpSignal1": {
+    "kind": "string",
+    "source_type": "string",
+    "default": "",
+    "optimizable": false
+  },
+  "InpSignal2": {
+    "kind": "string",
+    "source_type": "string",
+    "default": "",
+    "optimizable": false
+  },
+  "InpSignal3": {
+    "kind": "string",
+    "source_type": "string",
+    "default": "",
+    "optimizable": false
+  },
+  "InpSignal4": {
+    "kind": "string",
+    "source_type": "string",
+    "default": "",
+    "optimizable": false
+  },
+  "InpSignal5": {
+    "kind": "string",
+    "source_type": "string",
+    "default": "",
+    "optimizable": false
+  },
+  "InpSignal6": {
+    "kind": "string",
+    "source_type": "string",
+    "default": "",
+    "optimizable": false
+  },
+  "InpSignal7": {
+    "kind": "string",
+    "source_type": "string",
+    "default": "",
+    "optimizable": false
+  },
+  "InpSignal8": {
+    "kind": "string",
+    "source_type": "string",
+    "default": "",
+    "optimizable": false
+  },
+  "InpSignal9": {
+    "kind": "string",
+    "source_type": "string",
+    "default": "",
+    "optimizable": false
+  },
+  "InpSignal10": {
+    "kind": "string",
+    "source_type": "string",
+    "default": "",
     "optimizable": false
   },
   "InpExibirPainel": {
     "kind": "bool",
-    "optimizable": false
+    "source_type": "bool",
+    "default": true,
+    "optimizable": false,
+    "values": [
+      0,
+      1
+    ]
   },
   "InpExibirHistogramas": {
     "kind": "bool",
-    "optimizable": false
+    "source_type": "bool",
+    "default": true,
+    "optimizable": false,
+    "values": [
+      0,
+      1
+    ]
   },
   "InpHistogramasBarras": {
     "kind": "int",
-    "optimizable": false
+    "source_type": "int",
+    "default": 300,
+    "optimizable": false,
+    "min": 1,
+    "max": 5000,
+    "unit": "bars"
   },
   "InpShowPriceMarkers": {
     "kind": "bool",
-    "optimizable": false
+    "source_type": "bool",
+    "default": true,
+    "optimizable": false,
+    "values": [
+      0,
+      1
+    ]
   },
   "InpMarkerShowProfit": {
     "kind": "bool",
-    "optimizable": false
+    "source_type": "bool",
+    "default": true,
+    "optimizable": false,
+    "values": [
+      0,
+      1
+    ]
   },
   "InpMarkerEntryColor": {
     "kind": "color",
+    "source_type": "color",
+    "default": 15426341,
     "optimizable": false
   },
   "InpMarkerStopColor": {
     "kind": "color",
+    "source_type": "color",
+    "default": 4274140,
     "optimizable": false
   },
   "InpMarkerTakeColor": {
     "kind": "color",
+    "source_type": "color",
+    "default": 7246080,
     "optimizable": false
   },
   "InpMarkerPendingColor": {
     "kind": "color",
+    "source_type": "color",
+    "default": 683700,
     "optimizable": false
   },
   "InpMarkerBreakevenColor": {
     "kind": "color",
+    "source_type": "color",
+    "default": 15348627,
     "optimizable": false
   },
   "InpMarkerTextColor": {
     "kind": "color",
+    "source_type": "color",
+    "default": 16777215,
     "optimizable": false
   },
   "InpMarkerProfitColor": {
     "kind": "color",
+    "source_type": "color",
+    "default": 7246080,
     "optimizable": false
   },
   "InpMarkerLossColor": {
     "kind": "color",
+    "source_type": "color",
+    "default": 4274140,
     "optimizable": false
   },
   "InpMarkerFontSize": {
     "kind": "int",
-    "optimizable": false
+    "source_type": "int",
+    "default": 13,
+    "optimizable": false,
+    "min": -2147483648,
+    "max": 2147483647,
+    "unit": "font_size",
+    "runtime_clamp": [
+      10,
+      20
+    ]
   }
 }

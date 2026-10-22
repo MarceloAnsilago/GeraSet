@@ -6,7 +6,7 @@ from decimal import Decimal, InvalidOperation, ROUND_FLOOR
 from pathlib import Path
 from .errors import BridgeError
 
-CONTRACT = json.loads((Path(__file__).parent/'contracts/uni_inputs.json').read_text())
+CONTRACT = json.loads((Path(__file__).parent/'contracts/uni_inputs.json').read_text(encoding='utf-8'))
 
 
 def parse_set(encoded: str, limit: int):
@@ -32,12 +32,16 @@ def parse_set(encoded: str, limit: int):
         if match[1] in values:
             raise BridgeError('INVALID_SET', f'Input duplicado no .set: {match[1]}.')
         key, value = match.groups()
+        spec = CONTRACT[key]
+        if spec.get('internal'):
+            raise BridgeError('INVALID_SET', f'O input {key} é reservado ao executor do Bridge.')
         parts = value.split('||')
         if len(parts) not in (1,5):
             raise BridgeError('INVALID_SET', f'Intervalo inválido em {key}.')
         kind = CONTRACT[key]['kind']
         if kind == 'string':
-            if len(parts) != 1 or len(parts[0]) > 256:
+            if (len(parts) != 1 or not spec.get('min_length', 0) <= len(parts[0]) <= spec.get('max_length', 256)
+                    or key == 'InpName' and (not parts[0].strip() or re.search(r'[\x00-\x1f\x7f|]', parts[0]))):
                 raise BridgeError('INVALID_SET', f'Texto inválido em {key}.')
             if key.startswith('InpSignal') and parts[0]:
                 fields = parts[0].split(',')
@@ -47,7 +51,7 @@ def parse_set(encoded: str, limit: int):
             if parts[0].lower() not in ('true','false','0','1'):
                 raise BridgeError('INVALID_SET', f'Booleano inválido em {key}.')
         else:
-            number(parts[0], key, kind)
+            validate_value(number(parts[0], key, kind), key)
         if len(parts) == 5:
             if parts[4] not in ('Y','N') or kind == 'string':
                 raise BridgeError('INVALID_SET', f'Otimização inválida em {key}.')
@@ -55,8 +59,16 @@ def parse_set(encoded: str, limit: int):
                 if not CONTRACT[key].get('optimizable',True):
                     raise BridgeError('INVALID_SET', f'O input estático {key} não permite otimização.')
                 start, step, stop = [number(p,key,kind) for p in parts[1:4]]
+                validate_value(start, key)
+                validate_value(stop, key)
                 if step <= 0 or stop < start:
                     raise BridgeError('INVALID_SET', f'Intervalo crescente e passo positivo exigidos em {key}.')
+                if spec.get('multiple_of') and step % Decimal(str(spec['multiple_of'])):
+                    raise BridgeError('INVALID_SET', f'Passo incompatível com a unidade de {key}.')
+                allowed = spec.get('enum_values', {}).values() or spec.get('values')
+                if allowed and any(start <= n <= stop and n not in allowed
+                                   for n in range(int(start), int(stop)+1, int(step))):
+                    raise BridgeError('INVALID_SET', f'Intervalo contém opção inválida em {key}.')
                 ranges[key] = int(((stop-start)/step).to_integral_value(rounding=ROUND_FLOOR))+1
         values[key] = value
     if not {'InpName','InpMagic','InpLot'} <= values.keys():
@@ -74,6 +86,19 @@ def number(value, key, kind):
         return result
     except (InvalidOperation, ValueError) as exc:
         raise BridgeError('INVALID_SET', f'Número inválido em {key}.') from exc
+
+
+def validate_value(value, key):
+    """Scalar input limits. Symbol-dependent and cross-field rules remain in Uni."""
+    spec = CONTRACT[key]
+    allowed = spec.get('enum_values', {}).values() or spec.get('values')
+    invalid = (allowed and value not in allowed or
+               'min' in spec and value < Decimal(str(spec['min'])) or
+               'max' in spec and value > Decimal(str(spec['max'])) or
+               'exclusive_min' in spec and value <= Decimal(str(spec['exclusive_min'])) or
+               'multiple_of' in spec and value % Decimal(str(spec['multiple_of'])) != 0)
+    if invalid:
+        raise BridgeError('INVALID_SET', f'Valor fora das opções ou limites permitidos em {key}.')
 
 
 def execution_set(values, enable_entries):

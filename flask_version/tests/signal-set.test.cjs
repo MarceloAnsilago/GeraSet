@@ -29,6 +29,26 @@ function fixture(rules = [], types = ['Média Móvel', 'RSI', 'ADX', 'Média Mó
 }
 const rule = {operator: 'Se', usage: 'Entrada', normalSide: 'Compra', sense: 'Normal', target: 'Indicador 1: Média Móvel', targetCandle: 'Vela atual', comparison: 'Toque', reference: 'Fechamento da vela', referenceCandle: 'Vela atual', fixed: '0', distance: '0'};
 
+test('every indicator export uses contract names, enum values and scalar limits', () => {
+    const contract = JSON.parse(fs.readFileSync(path.join(__dirname, '../../mt5_bridge/contracts/uni_inputs.json'), 'utf8'));
+    const frames = Object.keys(contract.InpIndicator1Timeframe.enum_values).map(key =>
+        key === 'UNI_SLOT_CURRENT' ? 'Tempo corrente' : key.replace('UNI_SLOT_', ''));
+    for (const frame of frames) {
+        const root = fixture([rule]);
+        root.fields.set('[name="indicator-timeframe-1"]', frame);
+        for (const line of context.indicatorSignalSetLines(root)) {
+            const [key, raw] = line.split('=');
+            const spec = contract[key];
+            assert.ok(spec, `Input desconhecido: ${key}`);
+            if (spec.kind === 'string') continue;
+            const value = Number(raw.split('||')[0]);
+            if (spec.enum_values) assert.ok(Object.values(spec.enum_values).includes(value), line);
+            if (spec.min !== undefined) assert.ok(value >= spec.min, line);
+            if (spec.max !== undefined) assert.ok(value <= spec.max, line);
+        }
+    }
+});
+
 test('exports independent indicator parameters and entry/exit condition payloads', () => {
     const root = fixture([rule, {...rule, usage: 'Saída', target: 'Indicador 2: RSI', reference: 'Valor fixo', fixed: '70', sense: 'Inverter'}]);
     const lines = Array.from(context.indicatorSignalSetLines(root));
