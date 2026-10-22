@@ -49,6 +49,14 @@ test('invalid active distances, modes and ranges block export', () => {
         assert.throws(() => lines(values), {name: 'TargetValidationError'});
 });
 
+test('stop multiples cannot export a disabled stop in fixed values or optimization', () => {
+    for (const extra of [
+        {target_stop: '0'},
+        {target_stop: '10', 'target-stop-start': '0', 'target-stop-step': '5', 'target-stop-end': '20'},
+    ]) assert.throws(() => lines({target_stop_mode: 'Distância fixa', target_take_mode: 'Vezes o stop', ...extra}), {name: 'TargetValidationError'});
+    assert.doesNotThrow(() => lines({target_stop_mode: 'Distância fixa', target_take_mode: 'Vezes o stop', target_stop: '0', target_take_multiplier: '0'}));
+});
+
 test('fixed stop exports distance and clears all inactive candle parameters and ranges', () => {
     const result = lines({target_stop_mode: 'Distância fixa', target_stop: '80',
         target_stop_multiplier: 'bad', target_candle: 'bad', target_size: 'bad',

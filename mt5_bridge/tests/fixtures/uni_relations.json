@@ -1,0 +1,19 @@
+[
+  {"name":"horários fixos iguais", "valid":false, "inputs":{"InpEntryStart":"600", "InpEntryEnd":"600"}},
+  {"name":"janela atravessando meia-noite", "valid":true, "inputs":{"InpEntryStart":"1320", "InpEntryEnd":"120"}},
+  {"name":"horários otimizados com interseção", "valid":false, "inputs":{"InpEntryStart":"540||540||5||600||Y", "InpEntryEnd":"1080||600||5||1080||Y"}},
+  {"name":"horários com passos sem interseção", "valid":true, "inputs":{"InpEntryStart":"0||0||10||20||Y", "InpEntryEnd":"5||5||10||25||Y"}},
+  {"name":"colunas inativas de horários", "valid":true, "inputs":{"InpEntryStart":"540||600||5||600||N", "InpEntryEnd":"1080||600||5||600||N"}},
+  {"name":"take múltiplo sem stop", "valid":false, "inputs":{"InpStopMode":"1", "InpStopLoss":"0", "InpStopCandleMultiplier":"0", "InpTakeMode":"0", "InpTakeProfit":"0", "InpTakeStopMultiplier":"2"}},
+  {"name":"take múltiplo e stop otimizado até zero", "valid":false, "inputs":{"InpStopMode":"1", "InpStopLoss":"10||0||5||20||Y", "InpStopCandleMultiplier":"0", "InpTakeMode":"0", "InpTakeProfit":"0", "InpTakeStopMultiplier":"2"}},
+  {"name":"take e stop desativados", "valid":true, "inputs":{"InpStopMode":"1", "InpStopLoss":"0", "InpStopCandleMultiplier":"0", "InpTakeMode":"0", "InpTakeProfit":"0", "InpTakeStopMultiplier":"0"}},
+  {"name":"stop por candle com distância zero", "valid":true, "inputs":{"InpStopMode":"0", "InpStopLoss":"0", "InpStopCandleMultiplier":"1", "InpTakeMode":"0", "InpTakeProfit":"0", "InpTakeStopMultiplier":"2"}},
+  {"name":"RSI fixo fora de ordem", "valid":false, "inputs":{"InpIndicator1Type":"1", "InpRsiEntryLower":"60", "InpRsiEntryMiddle":"50", "InpRsiEntryUpper":"70"}},
+  {"name":"RSI otimizado cruza nível médio", "valid":false, "inputs":{"InpIndicator1Type":"1", "InpRsiEntryLower":"30||20||5||55||Y", "InpRsiEntryMiddle":"50", "InpRsiEntryUpper":"70"}},
+  {"name":"RSI limites iguais entre níveis", "valid":false, "inputs":{"InpIndicator1Type":"1", "InpRsiEntryLower":"30", "InpRsiEntryMiddle":"50||40||5||70||Y", "InpRsiEntryUpper":"70"}},
+  {"name":"RSI considera apenas valores alcançáveis", "valid":true, "inputs":{"InpIndicator1Type":"1", "InpRsiEntryLower":"30||10||60||55||Y", "InpRsiEntryMiddle":"50", "InpRsiEntryUpper":"70"}},
+  {"name":"RSI colunas N não são valores ativos", "valid":true, "inputs":{"InpIndicator1Type":"1", "InpRsiEntryLower":"30||70||1||90||N", "InpRsiEntryMiddle":"50", "InpRsiEntryUpper":"70"}},
+  {"name":"BE proteção acima da ativação otimizada", "valid":false, "inputs":{"InpBreakevenMode":"1", "InpBreakevenTrigger":"100||50||10||100||Y", "InpBreakevenOffset":"20||10||10||60||Y"}},
+  {"name":"BE respeita valores alcançáveis", "valid":true, "inputs":{"InpBreakevenMode":"1", "InpBreakevenTrigger":"100", "InpBreakevenOffset":"20||10||100||110||N"}},
+  {"name":"BE passo que não alcança limite final", "valid":true, "inputs":{"InpBreakevenMode":"1", "InpBreakevenTrigger":"100", "InpBreakevenOffset":"20||10||100||105||Y"}}
+]

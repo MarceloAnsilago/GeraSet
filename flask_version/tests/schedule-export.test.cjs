@@ -27,8 +27,9 @@ test('equal bounds disable optimization without replacing the fixed value', () =
 test('reversed optimization bounds are normalized but overnight trading values are preserved', () => {
     assert.deepEqual(lines({
         setup_entry_start: '22:00', setup_entry_end: '02:00',
-        'schedule-entry-start-start': '23:55', 'schedule-entry-start-end': '00:00',
-    }), ['InpEntryStart=1320||0||5||1435||Y', 'InpEntryEnd=120||960||5||1080||Y']);
+        'schedule-entry-start-start': '23:55', 'schedule-entry-start-end': '22:00',
+        'schedule-entry-end-start': '02:00', 'schedule-entry-end-end': '02:00',
+    }), ['InpEntryStart=1320||1320||5||1435||Y', 'InpEntryEnd=120||120||5||120||N']);
 });
 
 test('malformed times and equal fixed entry times fail validation', () => {
@@ -38,6 +39,11 @@ test('malformed times and equal fixed entry times fail validation', () => {
     }
     assert.throws(() => lines({setup_entry_end: '09:30'}), {name: 'ScheduleValidationError'});
     assert.throws(() => context.scheduleSetLines([]), {name: 'ScheduleValidationError'});
+});
+
+test('valid fixed hours cannot hide an invalid equal-hour optimization pass', () => {
+    assert.throws(() => lines({'schedule-entry-end-start': '10:00'}), {name: 'ScheduleValidationError'});
+    assert.throws(() => lines({'schedule-entry-start-start': '23:55', 'schedule-entry-start-end': '00:00'}), {name: 'ScheduleValidationError'});
 });
 
 test('every five-minute option maps to the corresponding Uni minute value', () => {

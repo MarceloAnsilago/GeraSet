@@ -76,6 +76,7 @@ function signalRuleErrors(rule, unit) {
     if (!["Normal", "Inverter"].includes(rule.sense)) errors.push("selecione Normal ou Inverter em Sentido");
     const finite = value => value.trim() !== "" && Number.isFinite(Number(value));
     if (rule.usage === "Conflito de finalidade") errors.push("os indicadores selecionados têm finalidades diferentes; ajuste Usar como nos indicadores");
+    if (rule.target === 'Valor fixo') errors.push('Valor fixo só pode ser usado como referência, não como A');
     if (![rule.operator, rule.target, rule.comparison, rule.reference].every(signalChosen)) errors.push("preencha condição, A, comparação e Da (DE)");
     if (!signalConstantSource(rule.target) && !signalChosen(rule.targetCandle)) errors.push("selecione o candle de A");
     if (!signalConstantSource(rule.reference) && !signalChosen(rule.referenceCandle)) errors.push("selecione o candle de Da (DE)");

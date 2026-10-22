@@ -42,7 +42,7 @@ def test_rejects_out_of_contract_scalar_values_and_active_bounds(line):
     'InpIndicator1MaShift=-100000', 'InpMagic=2147483647',
     'InpEntryEnd=1435', 'InpRsiEntryLower=0', 'InpRsiEntryUpper=100',
     'InpStopBody=true||0||1||1||Y', 'InpStopBody=1||0||1||1||Y',
-    'InpEntryStart=0||0||5||1435||Y',
+    'InpEntryStart=0||0||5||1430||Y',
     # Disabled optimization columns are not active values (native preset compatibility).
     'InpMagic=1||0||0||0||N',
 ])

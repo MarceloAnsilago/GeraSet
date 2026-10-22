@@ -96,6 +96,24 @@ test('RSI configurable decimal levels and optimization are exported and validate
     assert.throws(() => context.indicatorSignalSetLines(root), {name: 'SignalValidationError'});
 });
 
+test('RSI fixed ordering cannot hide levels crossing in an optimization', () => {
+    const root = fixture();
+    for (const [index, value] of [[1, '20'], [2, '5'], [3, '55']])
+        root.fields.set(`[id="opt-2-RSI-${index}-Sobrevenda"]`, value);
+    assert.throws(() => context.indicatorSignalSetLines(root), {name: 'SignalValidationError'});
+    // The end limit is not reached when the increment is larger than the interval.
+    for (const [index, value] of [[1, '10'], [2, '60'], [3, '55']])
+        root.fields.set(`[id="opt-2-RSI-${index}-Sobrevenda"]`, value);
+    assert.doesNotThrow(() => context.indicatorSignalSetLines(root));
+});
+
+test('native condition grouping, supported A operands and the ten-row limit block export', () => {
+    for (const rules of [[{...rule, operator: 'E'}], [rule, rule],
+        [{...rule, target: 'Valor fixo'}],
+        Array.from({length: 11}, (_, i) => ({...rule, operator: i ? 'E' : 'Se'}))])
+        assert.throws(() => context.indicatorSignalSetLines(fixture(rules)), {name: 'SignalValidationError'});
+});
+
 
 test('only MA may repeat with the same purpose; other types allow one entry and one exit', () => {
     assert.doesNotThrow(() => context.indicatorSignalSetLines(fixture([], Array(4).fill('Média Móvel'))));

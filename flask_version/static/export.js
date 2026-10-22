@@ -33,6 +33,50 @@ const operationEnums = {
     },
 };
 
+// Cross-field checks operate on the native lines shared by export, import and
+// Bridge submission, not on visibility or the order of HTML controls.
+function nativeInputDomain(values, key) {
+    const parts = values.get(key).split('||');
+    const value = Number(parts[0]);
+    if (parts[4] !== 'Y') return {value, min: value, max: value, step: 1};
+    const [start, step, stop] = parts.slice(1, 4).map(Number);
+    const count = Math.floor((stop - start) / step + 1e-9);
+    return {value, min: start, max: Math.min(stop, start + count * step), step};
+}
+
+function validateUniInputRelations(lines) {
+    const values = new Map(lines.map(line => line.split('=')));
+    const domain = key => nativeInputDomain(values, key);
+    const fail = (name, message) => { const error = new Error(message); error.name = name; throw error; };
+    if (values.has('InpEntryStart') && values.has('InpEntryEnd')) {
+        const start = domain('InpEntryStart'), end = domain('InpEntryEnd');
+        if (start.value === end.value) fail('ScheduleValidationError', 'Início e encerramento das entradas devem ser diferentes.');
+        for (let n = start.min; n <= start.max; n += start.step) {
+            if (n >= end.min && n <= end.max && Number.isInteger((n - end.min) / end.step))
+                fail('ScheduleValidationError', 'A otimização de horários contém início igual ao encerramento. Use intervalos sem horários em comum.');
+        }
+    }
+    if (values.has('InpTakeStopMultiplier')) {
+        const stop = domain('InpStopLoss'), multiplier = domain('InpTakeStopMultiplier');
+        const candle = Number(values.get('InpStopCandleMultiplier').split('||')[0]);
+        const mode = Number(values.get('InpTakeMode').split('||')[0]);
+        if (mode === 0 && candle === 0 && ((stop.value === 0 && multiplier.value > 0) || (stop.min === 0 && multiplier.max > 0)))
+            fail('TargetValidationError', 'Take Profit em vezes o stop exige Stop Loss maior que zero, inclusive em todas as combinações de otimização.');
+    }
+    for (const instance of ['Entry', 'Exit']) {
+        const prefix = `InpRsi${instance}`;
+        if (!values.has(prefix+'Lower')) continue;
+        const lower = domain(prefix+'Lower'), middle = domain(prefix+'Middle'), upper = domain(prefix+'Upper');
+        if (!(lower.value < middle.value && middle.value < upper.value) || !(lower.max < middle.min && middle.max < upper.min))
+            fail('SignalValidationError', 'RSI: use inferior < médio < superior nos valores fixos e em todas as combinações de otimização.');
+    }
+    if (values.has('InpBreakevenMode') && Number(values.get('InpBreakevenMode').split('||')[0]) !== 0) {
+        const trigger = domain('InpBreakevenTrigger'), offset = domain('InpBreakevenOffset');
+        if (trigger.value <= 0 || offset.value >= trigger.value || trigger.min <= 0 || offset.max >= trigger.min)
+            fail('BreakevenValidationError', 'Breakeven: toda proteção deve ser menor que a ativação, inclusive na otimização.');
+    }
+}
+
 function operationSetLines(controls) {
     const values = Object.fromEntries(controls.map(control => [control.key, control.value]));
     const fail = message => {
@@ -86,11 +130,13 @@ function scheduleSetLines(controls) {
     const start = minutes("setup_entry_start");
     const end = minutes("setup_entry_end");
     if (start === end) fail("Início e encerramento das entradas devem ser diferentes.");
-    return [["InpEntryStart", start, "entry-start"], ["InpEntryEnd", end, "entry-end"]].map(([input, value, key]) => {
+    const lines = [["InpEntryStart", start, "entry-start"], ["InpEntryEnd", end, "entry-end"]].map(([input, value, key]) => {
         const a = minutes(`schedule-${key}-start`);
         const b = minutes(`schedule-${key}-end`);
         return `${input}=${value}||${Math.min(a, b)}||5||${Math.max(a, b)}||${a === b ? "N" : "Y"}`;
     });
+    validateUniInputRelations(lines);
+    return lines;
 }
 
 function orderSetLines(controls) {
@@ -153,7 +199,7 @@ function targetSetLines(controls) {
     // Cached templates without the selector retain the former distance + candle behavior.
     const stopMode = values.target_stop_mode === undefined ? 0 : choice('target_stop_mode', ['Distância + candle', 'Distância fixa']);
     const candles = ['último', 'Penúltimo', 'Antepenúltimo'], sizes = ['Total com pavios', 'Corpo'];
-    return [fixed('InpTargetUnit', choice('target_unit', ['Pontos', 'Porcentagem'])),
+    const lines = [fixed('InpTargetUnit', choice('target_unit', ['Pontos', 'Porcentagem'])),
         fixed('InpStopMode', stopMode),
         numeric('InpStopLoss', number(values.target_stop), 'stop'),
         fixed('InpStopCandleMultiplier', stopMode === 1 ? 0 : number(values.target_stop_multiplier)),
@@ -162,6 +208,8 @@ function targetSetLines(controls) {
         fixed('InpTakeMode', mode),
         mode === 1 ? numeric('InpTakeProfit', number(values.target_take_distance), 'take-distance') : fixed('InpTakeProfit', 0),
         mode === 0 ? numeric('InpTakeStopMultiplier', number(values.target_take_multiplier), 'take-multiplier') : fixed('InpTakeStopMultiplier', 0)];
+    validateUniInputRelations(lines);
+    return lines;
 }
 
 function breakevenSetLines(controls) {
@@ -181,7 +229,6 @@ function breakevenSetLines(controls) {
     };
     const trigger = number(values['breakeven-trigger'], true), offset = number(values['breakeven-offset']);
     if (offset >= trigger) fail('Breakeven: proteção deve ser menor que a ativação.');
-    const ranges = [];
     for (const [input, value, key] of [['InpBreakevenTrigger', trigger, 'activate'], ['InpBreakevenOffset', offset, 'distance']]) {
         const raw = ['start', 'step', 'end'].map(b => values[`breakeven-${key}-${b}`]);
         let start = value, step = 0.01, end = value;
@@ -189,10 +236,9 @@ function breakevenSetLines(controls) {
             start = number(raw[0], key === 'activate'); step = number(raw[1], true); end = number(raw[2], key === 'activate');
             if (end < start) fail('Breakeven: fim da otimização menor que o início.');
         }
-        ranges.push([start, end]);
         lines.push(`${input}=${value}||${start}||${step}||${end}||${start === end ? 'N' : 'Y'}`);
     }
-    if (ranges[1][1] >= ranges[0][0]) fail('Breakeven: toda proteção otimizada deve ser menor que a menor ativação.');
+    validateUniInputRelations(lines);
     return lines;
 }
 
@@ -306,6 +352,9 @@ function indicatorSignalSetLines(root) {
     };
     const card = root.querySelector('[data-conditions]');
     const rows = Array.from(card.querySelectorAll('.condition-row'));
+    if (rows.slice(10).some(row => signalRowActive(readSignalRow(row)))) fail('O Uni aceita no máximo dez condições ativas.');
+    const cardErrors = validateSignalCard(card);
+    if (cardErrors.length) fail(cardErrors.join(' '));
     const unit = choices(card.querySelector('[data-unit-selector]').value, ['N.usar', 'Pontos', 'Porcentagem']);
     const candles = ['Vela atual', 'Anterior', 'Penúltima', 'Antepenúltima'];
     const comparisons = ['Maior que', 'Menor que', 'Maior ou igual que', 'Menor ou igual que', 'Igual que', 'Diferente de', 'Toque', 'Cruzar p/ cima de', 'Cruzar p/ baixo de', 'Cruzar&fechar acima de', 'Cruzar&fechar abaixo de'];
@@ -322,6 +371,7 @@ function indicatorSignalSetLines(root) {
         }
         lines.push(`InpSignal${i + 1}=${payload}`);
     }
+    validateUniInputRelations(lines);
     return lines;
 }
 
