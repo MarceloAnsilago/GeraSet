@@ -6,7 +6,7 @@ const vm = require('node:vm');
 
 const source = fs.readFileSync(path.join(__dirname, '../static/export.js'), 'utf8');
 
-function environment({picker, fetchFails = false, signalErrors = []} = {}) {
+function environment({picker, fetchFails = false, signalErrors = [], management = {}} = {}) {
     const status = {textContent: ''};
     const button = {disabled: true, addEventListener(_, callback) { this.click = callback; }};
     const stored = {name: 'Estratégia / teste', lot: '0.25', end: '25'};
@@ -33,7 +33,7 @@ function environment({picker, fetchFails = false, signalErrors = []} = {}) {
     const usage = {name: 'usage', value: 'Saída', checked: true};
     const roots = new Map(['inicio', 'indicadores', 'gestao', 'configuracoes'].map(page => [page, {
         page,
-        controls: page === 'configuracoes' ? [] : page === 'inicio' ? [name, magic, lot, ...operation] : page === 'gestao' ? [end, usage, {name: 'order_mode', value: 'A mercado'}, ...targets] : [end, usage],
+        controls: page === 'configuracoes' ? [] : page === 'inicio' ? [name, magic, lot, ...operation] : page === 'gestao' ? [end, usage, {name: 'order_mode', value: 'A mercado'}, ...targets, ...Object.entries(management).map(([name, value]) => ({name, value}))] : [end, usage],
         querySelector(selector) {
             if (selector.startsWith('[data-page=')) return this;
             if (page === 'indicadores') {
@@ -112,6 +112,8 @@ test('exports the latest configuration and confirms only after closing the file'
         'InpStopCandle=1||1||1||1||N', 'InpStopBody=0||0||1||0||N', 'InpTakeMode=1||1||1||1||N',
         'InpTakeProfit=150||150||0.01||150||N', 'InpTakeStopMultiplier=0||0||1||0||N',
         'InpBreakevenMode=0||0||1||0||N', 'InpBreakevenTrigger=0||0||0.01||0||N', 'InpBreakevenOffset=0||0||0.01||0||N',
+        ...['InpTrailing', 'InpMovingStop'].flatMap(prefix => [`${prefix}Mode=0||0||1||0||N`,
+            ...['Trigger', 'Distance', 'Step'].map(suffix => `${prefix}${suffix}=0||0||0.01||0||N`)]),
         ...[1, 2, 3, 4].flatMap(i => [`InpIndicator${i}Timeframe=0||0||1||0||N`, `InpIndicator${i}Type=-1||-1||1||-1||N`, `InpIndicator${i}Exit=0||0||1||0||N`]),
         ...Array.from({length: 10}, (_, i) => `InpSignal${i + 1}=`),
         'InpExibirHistogramas=true', 'InpHistogramasBarras=300', 'InpExibirPainel=true',
@@ -124,6 +126,27 @@ test('exports the latest configuration and confirms only after closing the file'
     assert.equal(closed, true);
     assert.equal(env.status.textContent, 'Set salvo: chosen.set');
     assert.equal(env.button.disabled, false);
+});
+
+test('full export includes enabled management and blocks invalid settings before saving', async () => {
+    const management = Object.fromEntries(['trailing', 'moving-stop'].flatMap(key => [
+        [`${key}-mode`, 'Pontos'], [`${key}-trigger`, '100'], [`${key}-distance`, '30'], [`${key}-step`, '5'],
+        ...['activate', 'distance', 'step'].flatMap(field => ['start', 'step', 'end'].map(bound => [`${key}-${field}-${bound}`, '0'])),
+    ]));
+    let preset;
+    const env = environment({management, picker: async () => ({createWritable: async () => ({
+        write: async contents => {preset = Buffer.from(contents).subarray(2).toString('utf16le');}, close: async () => {},
+    })})});
+    await env.context.bindSetExport();
+    await env.button.click();
+    assert.match(preset, /InpTrailingMode=1\|\|1\|\|1\|\|1\|\|N/);
+    assert.match(preset, /InpMovingStopDistance=30\|\|30\|\|0.01\|\|30\|\|N/);
+    let opened = false;
+    const invalid = environment({management: {...management, 'trailing-step': '0'}, picker: async () => {opened = true;}});
+    await invalid.context.bindSetExport();
+    await invalid.button.click();
+    assert.equal(opened, false);
+    assert.match(invalid.status.textContent, /Corrija a gestão dos stops: Trailing stop/);
 });
 
 test('canceling does not download a replacement or report success', async () => {

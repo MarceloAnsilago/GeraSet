@@ -194,6 +194,48 @@ function breakevenSetLines(controls) {
     return lines;
 }
 
+// Distance policy is isolated from native serialization. Indicator-following
+// policies will require their own validated configuration and Uni input contract;
+// they must not be encoded as another points/percentage mode.
+const standardManagedStops = Object.freeze([
+    Object.freeze({key: 'trailing', label: 'Trailing stop', input: 'InpTrailing'}),
+    Object.freeze({key: 'moving-stop', label: 'Stop móvel', input: 'InpMovingStop'}),
+]);
+
+function standardManagedStopSetLines(controls, definition) {
+    const {key, label, input} = definition;
+    const values = Object.fromEntries(controls.map(c => [c.key, c.value]));
+    const fail = message => { const error = new Error(`${label}: ${message}`); error.name = 'ManagementValidationError'; throw error; };
+    const mode = ['Desativado', 'Pontos', 'Porcentagem'].indexOf(values[`${key}-mode`] ?? 'Desativado');
+    if (mode < 0) fail('selecione um modo válido.');
+    const lines = [`${input}Mode=${mode}||${mode}||1||${mode}||N`];
+    const fixed = (name, value) => `${name}=${value}||${value}||0.01||${value}||N`;
+    const fields = [['Trigger', 'trigger', 'activate'], ['Distance', 'distance', 'distance'], ['Step', 'step', 'step']];
+    if (!mode) return [...lines, ...fields.map(([suffix]) => fixed(input+suffix, 0))];
+    const positive = raw => {
+        const text = String(raw ?? '').trim().replace(',', '.');
+        if (!/^(?:\d+(?:\.\d{0,2})?|\.\d{1,2})$/.test(text) || !Number.isFinite(Number(text)) || Number(text) <= 0 || Number(text) > 100000000)
+            fail('use valores maiores que zero, até 100000000, com até duas casas decimais.');
+        return Number(text);
+    };
+    for (const [suffix, field, range] of fields) {
+        const value = positive(values[`${key}-${field}`]);
+        const raw = ['start', 'step', 'end'].map(bound => values[`${key}-${range}-${bound}`]);
+        const inactive = raw.every(v => String(v ?? '').trim() !== '' && Number(String(v).replace(',', '.')) === 0);
+        let start = value, step = 0.01, end = value;
+        if (!inactive) {
+            [start, step, end] = raw.map(positive);
+            if (end < start) fail('o fim da otimização deve ser maior ou igual ao início.');
+        }
+        lines.push(`${input}${suffix}=${value}||${start}||${step}||${end}||${start === end ? 'N' : 'Y'}`);
+    }
+    return lines;
+}
+
+function managedStopSetLines(controls) {
+    return standardManagedStops.flatMap(definition => standardManagedStopSetLines(controls, definition));
+}
+
 function indicatorSignalSetLines(root) {
     if (!root) throw new Error("Página de indicadores ausente.");
     const lines = [], types = [];
@@ -325,6 +367,7 @@ function serializeSetupSet(roots, state = typeof readSetupState === "function" ?
         ...orderSetLines(pages.gestao || []),
         ...targetSetLines(pages.gestao || []),
         ...breakevenSetLines(pages.gestao || []),
+        ...managedStopSetLines(pages.gestao || []),
         ...indicatorSignalSetLines(roots.get('indicadores')),
         `InpExibirHistogramas=${pages.configuracoes?.find(control => control.key === 'show_signal_histograms')?.checked ?? true}`,
         'InpHistogramasBarras=300',
@@ -433,6 +476,8 @@ async function bindSetExport() {
                 ? `Corrija Ordem em Gestão: ${error.message}`
                 : error.name === "TargetValidationError"
                 ? `Corrija Alvos em Gestão: ${error.message}`
+                : ['BreakevenValidationError', 'ManagementValidationError'].includes(error.name)
+                ? `Corrija a gestão dos stops: ${error.message}`
                 : error.name === "SignalValidationError"
                 ? `Corrija o Sinal em Indicadores antes de exportar: ${error.message}`
                 : error.name === "AbortError"

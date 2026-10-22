@@ -566,11 +566,11 @@
             <h2>Gestão dos stops</h2>
             <section class="grid-3">
                 {% for title in ['Breakeven', 'Trailing stop', 'Stop móvel'] %}
-                    <div class="card">
+                    {% set management_key = {'Breakeven': 'breakeven', 'Trailing stop': 'trailing', 'Stop móvel': 'moving-stop'}[title] %}
+                    <div class="card" data-management="{{ management_key }}">
                         <h2>{{ {'Sobrevenda': 'Nível inferior', 'Sobrecompra': 'Nível superior'}.get(title, title) }}</h2>
                         <label>Modo</label>
-                        <select {% if title == "Breakeven" %}name="breakeven-mode"{% endif %} data-unit-selector>{% for item in management_modes %}<option>{{ item }}</option>{% endfor %}</select>
-                        {% set management_key = {'Breakeven': 'breakeven', 'Trailing stop': 'trailing', 'Stop móvel': 'moving-stop'}[title] %}
+                        <select name="{{ management_key }}-mode" data-unit-selector>{% for item in management_modes %}<option>{{ item }}</option>{% endfor %}</select>
                         <div class="tabs">
                             <input class="tab-radio" id="{{ management_key }}-params" name="{{ management_key }}-tabs" type="radio" checked>
                             <input class="tab-radio" id="{{ management_key }}-optimize" name="{{ management_key }}-tabs" type="radio">
@@ -580,14 +580,15 @@
                             </div>
                             <div class="tab-panel tab-panel-params">
                         <label data-unit-label="Ativar após">Ativar após (pontos)</label>
-                        <input {% if title == "Breakeven" %}name="breakeven-trigger"{% endif %} value="0.00">
+                        <input name="{{ management_key }}-trigger" inputmode="decimal" value="0.00">
                         <label data-unit-label="{{ 'Proteção a partir da entrada' if title == 'Breakeven' else 'Distância do preço' }}">{{ 'Proteção a partir da entrada' if title == 'Breakeven' else 'Distância do preço' }} (pontos)</label>
-                        <input {% if title == "Breakeven" %}name="breakeven-offset"{% endif %} value="0.00">
+                        <input name="{{ management_key }}-{{ 'offset' if title == 'Breakeven' else 'distance' }}" inputmode="decimal" value="0.00">
                         <div {% if title == 'Breakeven' %}hidden{% endif %}>
                         <label data-unit-label="Passo de ajuste">Passo de ajuste (pontos)</label>
-                        <input value="0.00">
+                        <input {% if title != 'Breakeven' %}name="{{ management_key }}-step"{% endif %} inputmode="decimal" value="0.00">
                         </div>
                         {% if title == 'Breakeven' %}<p class="muted">Ativação maior que zero. Proteção menor que a ativação; zero move o stop para a entrada, sem compensar custos.</p>{% endif %}
+                        {% if title != 'Breakeven' %}<p class="muted">Ativação, distância e passo devem ser maiores que zero. O stop só avança a favor da posição. {% if title == 'Trailing stop' %}Ajusta a cada tick.{% else %}Ajusta na primeira atualização de cada nova vela do período base.{% endif %}</p>{% endif %}
                             </div>
                             <div class="tab-panel tab-panel-optimize">
                                 {% for key, label in [('activate', 'Ativar após'), ('distance', 'Distância do preço'), ('step', 'Passo de ajuste')] %}
@@ -610,11 +611,11 @@
                     </div>
                 {% endfor %}
             </section>
-            <h2>Resumo do stop móvel</h2>
+            <h2>Resumo da gestão dos stops</h2>
             <div class="card">
-                <p>Breakeven: Desativado</p>
-                <p>Trailing stop: Desativado</p>
-                <p>Stop móvel: Desativado</p>
+                <p data-management-summary="breakeven">Breakeven: Desativado</p>
+                <p data-management-summary="trailing">Trailing stop: Desativado</p>
+                <p data-management-summary="moving-stop">Stop móvel: Desativado</p>
             </div>
             <div class="button-row">
                 <a class="btn" href="{{ url_for('page', page='indicadores') }}">Indicadores</a>

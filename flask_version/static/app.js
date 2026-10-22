@@ -306,7 +306,9 @@ function bindUnitLabels() {
                 label.textContent = `${label.dataset.unitLabel} ${suffix}`;
             });
             const help = card.querySelector("[data-unit-help]");
-            if (help) help.textContent = percentage ? "Valores em porcentagem." : "Valores em pontos.";
+            if (help) help.textContent = percentage
+                ? (card.dataset?.management ? "Percentuais calculados sobre o preço de abertura da posição." : "Valores em porcentagem.")
+                : "Valores em pontos.";
         };
         select.addEventListener("change", update);
         update();
@@ -348,6 +350,35 @@ function bindRulesSummary() {
 
 document.addEventListener("DOMContentLoaded", bindRulesSummary);
 
+function managementSummaryText(key, values) {
+    const label = {breakeven: 'Breakeven', trailing: 'Trailing stop', 'moving-stop': 'Stop móvel'}[key];
+    const mode = values[`${key}-mode`];
+    if (mode === 'Desativado') return `${label}: Desativado`;
+    if (!['Pontos', 'Porcentagem'].includes(mode)) return `${label}: confira o modo`;
+    const unit = mode === 'Porcentagem' ? '%' : 'pontos';
+    const show = field => values[`${key}-${field}`] || '—';
+    const details = key === 'breakeven' ? `proteção ${show('offset')} ${unit}`
+        : `distância ${show('distance')} ${unit}; passo ${show('step')} ${unit}`;
+    return `${label}: ativação ${show('trigger')} ${unit}; ${details}`;
+}
+
+function bindManagementSummary() {
+    document.querySelectorAll('[data-management]').forEach(card => {
+        const key = card.dataset.management;
+        const output = document.querySelector(`[data-management-summary="${key}"]`);
+        if (!output) return;
+        const update = () => {
+            const values = Object.fromEntries(Array.from(card.querySelectorAll('input[name], select[name]'), control => [control.name, control.value]));
+            output.textContent = managementSummaryText(key, values);
+        };
+        card.addEventListener('input', update);
+        card.addEventListener('change', update);
+        update();
+    });
+}
+
+document.addEventListener('DOMContentLoaded', bindManagementSummary);
+
 function relevantReviewControl(control, card) {
     if (control.hasAttribute?.("data-source-ui")) return false;
     if (control.closest("[data-retired-signal], [data-retired-timeframe]")) return false;
@@ -359,6 +390,10 @@ function relevantReviewControl(control, card) {
         if (control.name?.endsWith("-reference-candle") && readSignalRow(row).reference === "Valor fixo") return false;
     }
     if (control.type === "radio" && !control.checked) return false;
+    if (card.dataset?.management) {
+        const mode = card.querySelector('[data-unit-selector]');
+        if ((mode?.value === 'Desativado' && control !== mode) || control.closest('[hidden]')) return false;
+    }
     const kind = control.closest("[data-indicator-kind]");
     const indicator = card.querySelector("[data-indicator-type]") || (card.dataset.parameterSlot ? card.closest("[data-page]").querySelector(`[data-indicator-type="${card.dataset.parameterSlot}"]`) : null);
     if (kind && kind.dataset.indicatorKind !== indicator.value) return false;

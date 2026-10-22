@@ -75,6 +75,7 @@ def parse_set(encoded: str, limit: int):
         raise BridgeError('INVALID_SET', 'Identificação e lote do Uni ausentes.')
     if not any(values.get(f'InpSignal{i}', '').strip() for i in range(1,11)):
         raise BridgeError('INVALID_SET', 'Configure ao menos uma condição do Uni.')
+    validate_managed_stops(values)
     return raw, values, ranges, hashlib.sha256(raw).hexdigest()
 
 
@@ -99,6 +100,29 @@ def validate_value(value, key):
                'multiple_of' in spec and value % Decimal(str(spec['multiple_of'])) != 0)
     if invalid:
         raise BridgeError('INVALID_SET', f'Valor fora das opções ou limites permitidos em {key}.')
+
+
+def validate_managed_stops(values):
+    """Standard distance policy only; indicator-following will need a new contract.
+
+    Validate fixed inputs as well as every potentially enabled optimization
+    combination. Do not impose distance < trigger: Uni permits that combination.
+    """
+    for prefix, label in (('InpTrailing', 'Trailing stop'), ('InpMovingStop', 'Stop móvel')):
+        def parts(suffix):
+            key = prefix+suffix
+            return values.get(key, str(CONTRACT[key]['default'])).split('||')
+
+        mode = parts('Mode')
+        enabled = Decimal(mode[0]) != 0
+        optimized_enabled = Decimal(mode[3]) > 0 if len(mode) == 5 and mode[4] == 'Y' else enabled
+        for suffix in ('Trigger', 'Distance', 'Step'):
+            field = parts(suffix)
+            if enabled and Decimal(field[0]) <= 0:
+                raise BridgeError('INVALID_SET', f'{label}: ativação, distância e passo devem ser maiores que zero.')
+            minimum = field[1] if len(field) == 5 and field[4] == 'Y' else field[0]
+            if optimized_enabled and Decimal(minimum) <= 0:
+                raise BridgeError('INVALID_SET', f'{label}: toda combinação habilitada deve ter ativação, distância e passo positivos.')
 
 
 def execution_set(values, enable_entries):

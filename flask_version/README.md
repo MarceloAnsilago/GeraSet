@@ -298,8 +298,15 @@ Stop/Limit. Desmarcada, a opcao usa a mesma referencia nos dois lados.
 Stop por candle no motor utiliza o tamanho do candle como distancia, nao a
 minima/maxima como ancora. Stop/take, breakeven, trailing e stop movel calculam
 os precos pelo lado da posicao; nao se invertem sinais dos numeros digitados.
-A exportacao de trailing/stop movel pelo GeraSet continua uma etapa futura;
-essa alteracao nao a implementa nem inventa novas regras de gestao.
+A exportacao padrao de trailing/stop movel foi integrada: pontos ou percentual
+do preco de abertura, com ativacao, distancia e passo de ajuste positivos.
+Cada campo permite intervalo de otimizacao; 0/0/0 desativa esse intervalo.
+O resumo acompanha os parametros e a revisao ignora gestoes desativadas.
+Arquivos antigos sem esses inputs sao importados com os modos desativados,
+preservando a execucao anterior, com aviso para revisao antes de habilitar.
+O Bridge tambem rejeita combinacoes habilitadas com valores zero.
+Distancia por indicador permanece futura; o serializador da politica padrao
+foi isolado para extensao sem mudar o significado dos inputs existentes.
 
 Validacao: 72 testes JavaScript, 55 verificacoes matematicas de ordens/gestao e
 28 de requisicoes com transporte simulado, sem falhas. Compilacoes sem erros
