@@ -30,6 +30,29 @@ function renderBridgeProgress(progress,documentRef=document) {
 async function bindBridge() {
     const card=document.querySelector('[data-bridge]');
     if(!card)return;
+    const testForm=card.querySelector('[data-bridge-form]');
+    const settingsKey='geraset.bridge.test-settings.v1';
+    let savedTestSettings=null,visualShortcut=false;
+    try{
+        savedTestSettings=JSON.parse(localStorage.getItem(settingsKey)||'null');
+        visualShortcut=sessionStorage.getItem('geraset.bridge.visual-intent')==='1';
+        sessionStorage.removeItem('geraset.bridge.visual-intent');
+    }catch{}
+    if(savedTestSettings&&typeof savedTestSettings==='object'){
+        for(const control of testForm.querySelectorAll('[name^="bridge-"]')){
+            const value=savedTestSettings[control.name];
+            if(control.type==='checkbox'&&typeof value==='boolean')control.checked=value;
+            else if(typeof value==='string')control.value=value;
+        }
+        const period=testForm.querySelector('[name="bridge-period"]');
+        if(period&&period.value!=='custom')period.dispatchEvent(new Event('change'));
+    }
+    const saveTestSettings=()=>{
+        const values={};
+        for(const control of testForm.querySelectorAll('[name^="bridge-"]'))values[control.name]=control.type==='checkbox'?control.checked:control.value;
+        try{localStorage.setItem(settingsKey,JSON.stringify(values));}catch{}
+    };
+    testForm.addEventListener('change',saveTestSettings);
     const status=card.querySelector('[data-bridge-status]'), current=card.querySelector('[data-bridge-current]');
     const results=card.querySelector('[data-bridge-results]'), history=card.querySelector('[data-bridge-history]');
     let csrf='',active=null,polling=false,stopped=false;
@@ -185,6 +208,7 @@ async function bindBridge() {
         try{await request(`/jobs/${active}/cancel`,{method:'POST'});poll();}catch(error){status.textContent=error.message;}
     });
     card.querySelector('[data-bridge-form]').addEventListener('submit',async event=>{
+        saveTestSettings();
         event.preventDefault();const buttons=[runButton,card.querySelector('[data-bridge-visual]'),card.querySelector('[data-bridge-optimize]')];
         buttons.forEach(button=>button.disabled=true);
         try{
@@ -214,6 +238,14 @@ async function bindBridge() {
         finally{buttons.forEach(button=>button.disabled=false);}
     });
     window.addEventListener('pagehide',()=>{stopped=true;curvePlot?.destroy();});
-    connect();
+    await connect();
+    if(visualShortcut){
+        if(savedTestSettings&&testForm.checkValidity()){
+            testForm.requestSubmit(card.querySelector('[data-bridge-visual]'));
+        }else{
+            status.textContent='Defina o ativo, período e demais configurações e clique em Abrir teste visual. Os próximos atalhos usarão essas configurações.';
+            testForm.querySelector('[name="bridge-symbol"]').focus();
+        }
+    }
 }
 document.addEventListener('DOMContentLoaded',bindBridge);

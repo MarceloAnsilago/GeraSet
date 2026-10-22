@@ -630,7 +630,7 @@
                 <input type="file" accept=".set" data-import-file hidden>
             </div>
             <p data-import-status role="status" aria-live="polite"></p>
-            <section class="card" data-bridge>
+            <section class="card" data-bridge id="teste-mt5">
                 <h2>Testes e otimização no MT5</h2>
                 <p class="muted">Executa o set atual no Testador por um Bridge local. A exportação manual continua disponível quando ele está desligado.</p>
                 <button type="button" class="btn" data-bridge-connect>Verificar conexão</button>
@@ -732,6 +732,7 @@
     <script src="{{ url_for('static', filename='import.js') }}"></script>
     <script src="{{ url_for('static', filename='curves.js') }}"></script>
     <script src="{{ url_for('static', filename='bridge-period.js') }}"></script>
+    <script src="{{ url_for('static', filename='visual-shortcuts.js') }}"></script>
     <script src="{{ url_for('static', filename='bridge.js') }}"></script>
 </body>
 </html>

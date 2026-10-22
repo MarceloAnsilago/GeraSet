@@ -234,6 +234,11 @@ h3 {
     grid-template-columns: repeat(4, minmax(290px, 1fr));
 }
 
+.card-visual-actions { display:flex; justify-content:flex-end; margin-top:14px; }
+.card-visual-shortcut { background:transparent; border:0; border-bottom:1px solid #bd9652; color:#71551e; padding:5px 0; font:inherit; font-size:12px; cursor:pointer; }
+.card-visual-shortcut:hover { color:#35270b; border-bottom-color:currentColor; }
+.card-visual-shortcut:focus-visible { outline:2px solid #a47720; outline-offset:4px; }
+
 .card {
     background: var(--card-gradient);
     border: 1px solid var(--line);
