@@ -18,7 +18,9 @@ function setFileName(name) {
     return `${/^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(base) ? `_${base}` : base}.set`;
 }
 
-// Numeric values must match UniTypes.mqh and ENUM_UNI_TIMEFRAME in UniInputOptions.mqh.
+// Operation values match UniTypes.mqh. setup_timeframe retains native codes
+// only for legacy UI compatibility; it is never emitted as a strategy input.
+// Indicator slots below use the ordered labels' indexes (ENUM_UNI_SLOT_TIMEFRAME).
 const operationEnums = {
     setup_market: {Forex: 0, B3: 1},
     setup_mode: {"Day trade": 0, "Swing trade": 1},

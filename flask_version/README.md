@@ -2,6 +2,39 @@
 
 Aplicação Flask do GeraSet.
 
+## Ativo, timeframe e intervalo de datas
+
+| Configuração | Origem e efeito |
+|---|---|
+| Mercado Forex/B3 | Parâmetro do setup; não seleciona o símbolo |
+| Ativo | Símbolo do gráfico onde o Uni foi aplicado, ou `symbol` do job do Testador |
+| Timeframe base | Período do gráfico, ou `timeframe` do job, enviado como `Period` no INI |
+| Timeframe do indicador | Parâmetro da estratégia exportado em `InpIndicatorNTimeframe`; explícito ou corrente |
+| Tempo corrente | Herda o timeframe base daquela execução; todos os indicadores usam o ativo da execução |
+| Intervalo de datas | Datas do job; a data final é exclusiva; não é timeframe |
+
+Exemplo: com base M5 e MA explícita em M15, a MA permanece em M15. Ao executar
+o mesmo set na base H1, essa MA continua M15; slots em Tempo corrente passam
+a H1. Condições apenas de preços e candles de gestão seguem a base; operandos
+de indicador seguem o slot, conforme o motor MQL5 existente.
+
+O preset não seleciona o símbolo nem o timeframe base. Ao carregar o `.set`
+manualmente, configure o gráfico/testador. Os campos legados ocultos
+`setup_timeframe` e `operation-timeframe-*` ficam preservados por compatibilidade
+de armazenamento, mas não são exportados como inputs nem usados para preencher
+o teste. Comentários de rascunho não alteram o contexto de execução.
+
+No Bridge, `JobRequest.symbol/timeframe` são registrados no job e enviados ao
+INI, independentemente do preset. As últimas configurações de teste são salvas
+em `geraset.bridge.test-settings.v1`, separadas do rascunho da estratégia.
+Atalhos visuais reutilizam esse contexto. Importar um set não troca o ativo ou
+o timeframe base salvo. A interface mostra o próximo contexto e o contexto
+registrado de cada tarefa no progresso/histórico, sem relabelar testes antigos.
+
+O formulário novo começa com EURUSD/M5; isso é um padrão de teste, não uma
+restrição ou identidade da estratégia. O Bridge autoriza símbolos por sua lista
+local e exige um timeframe explícito válido na execução (M5 é o default da API).
+
 ## Rodar
 
 ```powershell

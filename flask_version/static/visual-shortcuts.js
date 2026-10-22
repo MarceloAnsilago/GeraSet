@@ -11,7 +11,7 @@ function bindVisualShortcuts(){
         const actions=document.createElement('div');actions.className='card-visual-actions';
         const button=document.createElement('button');button.type='button';button.className='card-visual-shortcut';
         button.textContent='Abrir teste visual';
-        button.title='Testar o setup completo com as últimas configurações de teste salvas';
+        button.title='Testar o setup completo com o ativo e timeframe base das últimas configurações de teste salvas';
         button.addEventListener('click',()=>{
             try{sessionStorage.setItem(bridgeVisualIntentKey,'1');}
             catch{window.location.assign('/revisao#teste-mt5');return;}

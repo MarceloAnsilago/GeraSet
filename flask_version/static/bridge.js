@@ -27,6 +27,11 @@ function renderBridgeProgress(progress,documentRef=document) {
     return block;
 }
 
+function bridgeExecutionContextText(config) {
+    const value = key => String(config?.[key] ?? '').trim() || 'não informado';
+    return `Ativo: ${value('symbol')} · timeframe base: ${value('timeframe')} · datas: ${value('date_from')} a ${value('date_to')} (fim exclusivo)`;
+}
+
 async function bindBridge() {
     const card=document.querySelector('[data-bridge]');
     if(!card)return;
@@ -55,7 +60,7 @@ async function bindBridge() {
     testForm.addEventListener('change',saveTestSettings);
     const status=card.querySelector('[data-bridge-status]'), current=card.querySelector('[data-bridge-current]');
     const results=card.querySelector('[data-bridge-results]'), history=card.querySelector('[data-bridge-history]');
-    let csrf='',active=null,polling=false,stopped=false;
+    let csrf='',active=null,activeConfig=null,polling=false,stopped=false;
     let curveJob=null,curveOffset=0,curvePlot=null;
     const curveRoot=card.querySelector('[data-bridge-curves]');
     async function updateCurves(id,progress){
@@ -84,6 +89,16 @@ async function bindBridge() {
     }
     const terminal=new Set(['completed','failed','cancelled']);
     const field=name=>card.querySelector(`[name="bridge-${name}"]`);
+    const executionContext=card.querySelector('[data-bridge-execution-context]');
+    const updateExecutionContext=()=>{
+        if(executionContext)executionContext.textContent='Próximo teste — '+bridgeExecutionContextText({
+            symbol:field('symbol').value,timeframe:field('timeframe').value,
+            date_from:field('from').value,date_to:field('to').value,
+        });
+    };
+    testForm.addEventListener('input',updateExecutionContext);
+    testForm.addEventListener('change',updateExecutionContext);
+    updateExecutionContext();
     const runButton=card.querySelector('[data-bridge-run]');
     function updateRunLabel(){runButton.textContent=field('operation').value==='optimize'
         ? 'Executar otimização de combinações' : 'Executar backtest (valores fixos)';}
@@ -159,12 +174,12 @@ async function bindBridge() {
     async function refreshHistory(){
         const jobs=await request('/jobs');history.replaceChildren();
         jobs.forEach(job=>{
-            const row=message(`${job.config.setup_id} · ${job.kind} · ${job.state}`);
+            const row=message(`${job.config.setup_id} · ${job.kind} · ${job.state} · ${bridgeExecutionContextText(job.config)}`);
             const button=document.createElement('button');button.type='button';button.className='btn';button.textContent='Consultar';
-            button.addEventListener('click',()=>{active=job.id;results.replaceChildren();poll();});row.appendChild(button);history.appendChild(row);
+            button.addEventListener('click',()=>{active=job.id;activeConfig=job.config;results.replaceChildren();poll();});row.appendChild(button);history.appendChild(row);
         });
         const running=jobs.find(job=>!terminal.has(job.state));
-        if(!active&&running){active=running.id;poll();}
+        if(!active&&running){active=running.id;activeConfig=running.config;poll();}
     }
     async function poll(){
         if(polling||!active||stopped)return;
@@ -172,6 +187,7 @@ async function bindBridge() {
         try{
             const progress=await request(`/jobs/${active}/progress`);
             current.replaceChildren(renderBridgeProgress(progress));
+            if(activeConfig)current.appendChild(message('Contexto registrado da tarefa — '+bridgeExecutionContextText(activeConfig)));
             if(progress.visual_pause){
                 const labels={waiting_window:'Aguardando a janela visual do MT5...',pause_requested:'Pausa inicial solicitada; aguardando confirmação.',
                     paused:'Pausa inicial confirmada. Vá ao MT5 e clique em Iniciar para acompanhar a estratégia.',
@@ -230,7 +246,7 @@ async function bindBridge() {
                 forward_mode:operation==='visual'?0:Number(field('forward').value),enable_test_entries:field('entries').checked};
             if(payload.forward_mode===4)payload.forward_date=field('forward-date').value;
             const job=await request('/jobs',{method:'POST',body:JSON.stringify(payload)});
-            active=job.id;results.replaceChildren();status.textContent=operation==='visual'
+            active=job.id;activeConfig=job.config;results.replaceChildren();status.textContent=operation==='visual'
                 ? 'Sessão visual solicitada. Aguarde a janela do MT5.'
                 : operation==='optimize' ? `Otimização recebida: ${active}. O MT5 testará os intervalos configurados.`
                 : `Backtest recebido: ${active}. Executa somente os valores fixos.`;poll();
@@ -243,7 +259,7 @@ async function bindBridge() {
         if(savedTestSettings&&testForm.checkValidity()){
             testForm.requestSubmit(card.querySelector('[data-bridge-visual]'));
         }else{
-            status.textContent='Defina o ativo, período e demais configurações e clique em Abrir teste visual. Os próximos atalhos usarão essas configurações.';
+            status.textContent='Defina o ativo, timeframe base, intervalo de datas e demais configurações e clique em Abrir teste visual. Os próximos atalhos usarão essas configurações.';
             testForm.querySelector('[name="bridge-symbol"]').focus();
         }
     }

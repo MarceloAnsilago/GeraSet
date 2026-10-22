@@ -33,6 +33,7 @@
         {% if active_page == 'inicio' %}
             <h1>GeraSet</h1>
             <p class="caption">Primeira etapa do Canvas UniversalEa, recriada em Flask.</p>
+            <p class="muted" data-strategy-context>O setup define as regras e os parâmetros. O ativo e o timeframe base vêm do gráfico onde o Uni é aplicado ou das configurações do Testador. Selecionar Forex ou B3 não escolhe um ativo.</p>
             <section class="grid-3">
                 <div class="card">
                     <h2>Identificação</h2>
@@ -185,7 +186,7 @@
                                         {% for bound in ['start', 'end'] %}<select id="indicator-timeframe-{{ index }}-{{ bound }}" name="indicator-timeframe-{{ index }}-{{ bound }}" data-slot-timeframe-extra>{% for item in ['Tempo corrente'] + timeframes[:-1] %}<option>{{ item }}</option>{% endfor %}</select>{% endfor %}
                                     </div>
                                 </div>
-                                <p class="muted">Início e fim iguais deixam o timeframe fixo. Tempo corrente usa o período do gráfico/testador.</p>
+                                <p class="muted">Início e fim iguais deixam o timeframe fixo. Tempo corrente herda o timeframe base do gráfico/testador. Um período explícito, como M15, permanece M15 mesmo ao mudar o timeframe base. Todos os slots usam o mesmo ativo da execução.</p>
                             </div>
                         </div>
                         <div class="tabs is-hidden" data-indicator-fields>
@@ -625,6 +626,7 @@
         {% elif active_page == 'revisao' %}
             <h1>Revisão e Sets</h1>
             <p class="caption">Confira a configuração antes de salvar ou ativar o set.</p>
+            <p class="muted" data-set-execution-help>O arquivo .set contém os parâmetros e timeframes dos indicadores. Ele não define o ativo nem o timeframe base: ao carregar manualmente, escolha-os no gráfico ou no Testador. Os campos de teste abaixo valem para a execução pelo Bridge.</p>
             <div class="top-action">
                 <div class="info">Carregue um set salvo ou confira a configuração atual.</div>
                 <button class="btn btn-primary" type="button" data-import-set>Carregar set</button>
@@ -637,11 +639,13 @@
                 <button type="button" class="btn" data-bridge-connect>Verificar conexão</button>
                 <p data-bridge-status role="status" aria-live="polite">Verificando Bridge...</p>
                 <form data-bridge-form>
+                    <h3>Contexto da execução</h3>
+                    <p class="muted">Ativo, timeframe base e intervalo de datas pertencem ao teste. Alterá-los não muda os períodos explícitos dos indicadores nem os parâmetros exportados no .set. As últimas configurações de teste ficam salvas neste navegador e são reutilizadas pelos atalhos de teste visual.</p>
                     <div class="grid-3">
                         <div><label>Operação</label><select name="bridge-operation"><option value="backtest">Backtest</option><option value="optimize">Otimização</option></select></div>
-                        <div><label>Símbolo autorizado no Bridge</label><input name="bridge-symbol" value="EURUSD" required maxlength="40"></div>
-                        <div><label>Timeframe do teste</label><select name="bridge-timeframe">{% for frame in timeframes if frame != 'Tempo corrente' %}<option {{ 'selected' if frame == 'M5' else '' }}>{{ frame }}</option>{% endfor %}</select></div>
-                        <div><label>Período</label><select name="bridge-period"><option value="all">Histórico completo</option><option value="1">Último mês</option><option value="3" selected>Últimos 3 meses</option><option value="6">Últimos 6 meses</option><option value="12">Último ano</option><option value="custom">Período personalizado</option></select></div>
+                        <div><label>Ativo do teste (símbolo autorizado no Bridge)</label><input name="bridge-symbol" value="EURUSD" required maxlength="40"></div>
+                        <div><label>Timeframe base do teste</label><select name="bridge-timeframe">{% for frame in timeframes if frame != 'Tempo corrente' %}<option {{ 'selected' if frame == 'M5' else '' }}>{{ frame }}</option>{% endfor %}</select></div>
+                        <div><label>Intervalo de datas</label><select name="bridge-period"><option value="all">Histórico completo</option><option value="1">Último mês</option><option value="3" selected>Últimos 3 meses</option><option value="6">Últimos 6 meses</option><option value="12">Último ano</option><option value="custom">Período personalizado</option></select></div>
                         <div><label>Data inicial</label><input name="bridge-from" type="date" min="1970-01-01" required></div>
                         <div><label>Data final exclusiva</label><input name="bridge-to" type="date" required></div>
                         <div><label>Modelo de ticks</label><select name="bridge-model"><option value="1">OHLC por minuto</option><option value="0">Todos os ticks</option><option value="2">Somente abertura</option><option value="4">Ticks reais</option></select></div>
@@ -654,6 +658,7 @@
                         <div><label>Forward</label><select name="bridge-forward"><option value="0">Desativado</option><option value="1">Metade</option><option value="2">Um terço</option><option value="3">Um quarto</option><option value="4">Personalizado</option></select></div>
                         <div><label>Data forward personalizada</label><input name="bridge-forward-date" type="date"></div>
                     </div>
+                    <p data-bridge-execution-context role="status" aria-live="polite"></p>
                     <label><input type="checkbox" name="bridge-entries" checked style="width:auto; min-height:0;"> Habilitar entradas exclusivamente no Testador</label>
                     <p class="muted">A otimização usa os intervalos marcados em Otimizar. Horários, pontos e histórico pertencem ao símbolo e servidor configurados; confira os dados de B3 ou Forex.</p>
                     <button type="submit" class="btn btn-primary" data-bridge-run>Executar backtest (valores fixos)</button>
@@ -663,7 +668,7 @@
                     <p class="muted">O teste visual usa os valores atuais, sem otimização ou forward. O MT5 fica aberto até você fechar a sessão. Cancelar tarefa encerra o terminal desta sessão.</p>
                     <button type="button" class="btn" data-bridge-cancel disabled>Cancelar tarefa</button>
                 </form>
-                <p class="muted">O período preenche as datas automaticamente. Você pode editá-las para personalizar. Histórico completo solicita os dados disponíveis do símbolo no MT5; a disponibilidade depende da corretora. A data final é exclusiva.</p>
+                <p class="muted">O intervalo escolhido preenche as datas automaticamente. Você pode editá-las para personalizar. Histórico completo solicita os dados disponíveis do símbolo no MT5; a disponibilidade depende da corretora. A data final é exclusiva.</p>
                 <div data-bridge-current aria-live="polite"></div>
                 <div data-bridge-curves></div>
                 <div data-bridge-results></div>
