@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0",
+  "strategy_id": "741d2f8f-9df2-40b1-8bc6-835532f832f9",
+  "revision": 1,
+  "name": "Exemplo técnico RSI",
+  "magic": 900001,
+  "metadata": {
+    "origin": "user",
+    "created_at": "2026-10-22T12:00:00Z",
+    "original_request": "Exemplo técnico do modelo, sem avaliação de desempenho."
+  },
+  "execution_hint": {"symbol": "EURUSD", "base_timeframe": "M5"},
+  "operation": {"market": "forex", "trade_mode": "day_trade", "direction": "both", "lot": "0.01"},
+  "session": {"entry_start": "09:00", "entry_end": "17:00", "clock_basis": "broker_server"},
+  "order": {"type": "market"},
+  "indicators": [
+    {"type": "rsi", "slot": 1, "purpose": "entry", "timeframe": "M15", "period": 14, "price": "close", "lower": "30", "middle": "50", "upper": "70"},
+    {"type": "rsi", "slot": 2, "purpose": "exit", "timeframe": "current", "period": 14, "price": "close", "lower": "30", "middle": "50", "upper": "70"}
+  ],
+  "entry_rules": [
+    {"side": "buy", "operator": "if", "left": {"kind": "indicator", "slot": 1, "line": "main", "candle": 1}, "comparison": "lt", "right": {"kind": "fixed", "value": "30"}}
+  ],
+  "exit_rules": [
+    {"side": "buy", "operator": "if", "left": {"kind": "indicator", "slot": 2, "line": "main", "candle": 1}, "comparison": "gt", "right": {"kind": "fixed", "value": "70"}}
+  ],
+  "risk": {
+    "target_unit": "points",
+    "stop_loss": {"type": "fixed", "distance": "150"},
+    "take_profit": {"type": "stop_multiple", "multiplier": "2"},
+    "breakeven": {"mode": "points", "trigger": "100", "offset": "0"},
+    "trailing": {"mode": "points", "distance_policy": "fixed", "trigger": "120", "distance": "60", "adjustment_step": "10"},
+    "moving_stop": {"mode": "disabled", "distance_policy": "fixed"}
+  },
+  "optimization": [
+    {"kind": "numeric", "parameter": "indicators.1.period", "start": "10", "step": "5", "end": "20"},
+    {"kind": "numeric", "parameter": "risk.stop_loss.distance", "start": "100", "step": "50", "end": "200"}
+  ]
+}

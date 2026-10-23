@@ -2,6 +2,13 @@
 
 Aplicação Flask do GeraSet.
 
+## Modelo estruturado de estratégias
+
+O schema 1.0 e o modelo Python estão em [geraset_domain](../geraset_domain/README.md),
+com exemplo JSON, validação determinística compartilhada com o Bridge e separação
+entre estratégia e contexto de execução. Essa base ainda não substitui os controles
+da interface nem o gerador JavaScript; não inclui agente, persistência ou aprovação.
+
 ## Ativo, timeframe e intervalo de datas
 
 | Configuração | Origem e efeito |

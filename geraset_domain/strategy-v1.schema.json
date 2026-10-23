@@ -1,0 +1,1346 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:geraset:strategy:1.0",
+  "$defs": {
+    "ADX": {
+      "additionalProperties": false,
+      "properties": {
+        "slot": {
+          "maximum": 4,
+          "minimum": 1,
+          "title": "Slot",
+          "type": "integer"
+        },
+        "purpose": {
+          "default": "entry",
+          "enum": [
+            "entry",
+            "exit"
+          ],
+          "title": "Purpose",
+          "type": "string"
+        },
+        "timeframe": {
+          "default": "current",
+          "enum": [
+            "current",
+            "M1",
+            "M2",
+            "M3",
+            "M4",
+            "M5",
+            "M6",
+            "M10",
+            "M12",
+            "M15",
+            "M20",
+            "M30",
+            "H1",
+            "H2",
+            "H3",
+            "H4",
+            "H6",
+            "H8",
+            "H12",
+            "D1",
+            "W1",
+            "MN1"
+          ],
+          "title": "Timeframe",
+          "type": "string"
+        },
+        "period": {
+          "default": 14,
+          "maximum": 100000,
+          "minimum": 1,
+          "title": "Period",
+          "type": "integer"
+        },
+        "type": {
+          "const": "adx",
+          "default": "adx",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "slot"
+      ],
+      "title": "ADX",
+      "type": "object"
+    },
+    "Breakeven": {
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "default": "disabled",
+          "enum": [
+            "disabled",
+            "points",
+            "percent"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "trigger": {
+          "anyOf": [
+            {
+              "maximum": 100000000.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "default": "0",
+          "title": "Trigger"
+        },
+        "offset": {
+          "anyOf": [
+            {
+              "maximum": 100000000.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "default": "0",
+          "title": "Offset"
+        }
+      },
+      "title": "Breakeven",
+      "type": "object"
+    },
+    "CandleStop": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "candle",
+          "default": "candle",
+          "title": "Type",
+          "type": "string"
+        },
+        "distance": {
+          "anyOf": [
+            {
+              "maximum": 100000000.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "default": "0",
+          "title": "Distance"
+        },
+        "multiplier": {
+          "anyOf": [
+            {
+              "maximum": 100000000.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "default": "1",
+          "title": "Multiplier"
+        },
+        "candle": {
+          "default": 1,
+          "maximum": 3,
+          "minimum": 1,
+          "title": "Candle",
+          "type": "integer"
+        },
+        "measure": {
+          "default": "total",
+          "enum": [
+            "total",
+            "body"
+          ],
+          "title": "Measure",
+          "type": "string"
+        }
+      },
+      "title": "CandleStop",
+      "type": "object"
+    },
+    "ChoiceRange": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "choice",
+          "default": "choice",
+          "title": "Kind",
+          "type": "string"
+        },
+        "parameter": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Parameter",
+          "type": "string"
+        },
+        "start": {
+          "title": "Start",
+          "type": "string"
+        },
+        "end": {
+          "title": "End",
+          "type": "string"
+        }
+      },
+      "required": [
+        "parameter",
+        "start",
+        "end"
+      ],
+      "title": "ChoiceRange",
+      "type": "object"
+    },
+    "CreationMetadata": {
+      "additionalProperties": false,
+      "properties": {
+        "origin": {
+          "default": "user",
+          "enum": [
+            "user",
+            "agent",
+            "import"
+          ],
+          "title": "Origin",
+          "type": "string"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "author": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Author"
+        },
+        "original_request": {
+          "anyOf": [
+            {
+              "maxLength": 10000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Original Request"
+        },
+        "model_reference": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Model Reference"
+        }
+      },
+      "title": "CreationMetadata",
+      "type": "object"
+    },
+    "ExecutionContext": {
+      "additionalProperties": false,
+      "description": "A resolved execution context, never emitted as an EA input.",
+      "properties": {
+        "symbol": {
+          "maxLength": 40,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_.@#$-]+$",
+          "title": "Symbol",
+          "type": "string"
+        },
+        "base_timeframe": {
+          "enum": [
+            "M1",
+            "M2",
+            "M3",
+            "M4",
+            "M5",
+            "M6",
+            "M10",
+            "M12",
+            "M15",
+            "M20",
+            "M30",
+            "H1",
+            "H2",
+            "H3",
+            "H4",
+            "H6",
+            "H8",
+            "H12",
+            "D1",
+            "W1",
+            "MN1"
+          ],
+          "title": "Base Timeframe",
+          "type": "string"
+        }
+      },
+      "required": [
+        "symbol",
+        "base_timeframe"
+      ],
+      "title": "ExecutionContext",
+      "type": "object"
+    },
+    "FixedOperand": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "fixed",
+          "default": "fixed",
+          "title": "Kind",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "maximum": 1e+20,
+              "minimum": -1e+20,
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "title": "Value"
+        }
+      },
+      "required": [
+        "value"
+      ],
+      "title": "FixedOperand",
+      "type": "object"
+    },
+    "FixedStop": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "fixed",
+          "default": "fixed",
+          "title": "Type",
+          "type": "string"
+        },
+        "distance": {
+          "anyOf": [
+            {
+              "maximum": 100000000.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "default": "0",
+          "title": "Distance"
+        }
+      },
+      "title": "FixedStop",
+      "type": "object"
+    },
+    "FixedTake": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "fixed",
+          "default": "fixed",
+          "title": "Type",
+          "type": "string"
+        },
+        "distance": {
+          "anyOf": [
+            {
+              "maximum": 100000000.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "default": "0",
+          "title": "Distance"
+        }
+      },
+      "title": "FixedTake",
+      "type": "object"
+    },
+    "IndicatorOperand": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "indicator",
+          "default": "indicator",
+          "title": "Kind",
+          "type": "string"
+        },
+        "slot": {
+          "maximum": 4,
+          "minimum": 1,
+          "title": "Slot",
+          "type": "integer"
+        },
+        "line": {
+          "default": "main",
+          "enum": [
+            "main",
+            "di_plus",
+            "di_minus",
+            "upper",
+            "middle",
+            "lower"
+          ],
+          "title": "Line",
+          "type": "string"
+        },
+        "candle": {
+          "default": 1,
+          "maximum": 3,
+          "minimum": 0,
+          "title": "Candle",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "slot"
+      ],
+      "title": "IndicatorOperand",
+      "type": "object"
+    },
+    "ManagedStop": {
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "default": "disabled",
+          "enum": [
+            "disabled",
+            "points",
+            "percent"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "distance_policy": {
+          "const": "fixed",
+          "default": "fixed",
+          "title": "Distance Policy",
+          "type": "string"
+        },
+        "trigger": {
+          "anyOf": [
+            {
+              "maximum": 100000000.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "default": "0",
+          "title": "Trigger"
+        },
+        "distance": {
+          "anyOf": [
+            {
+              "maximum": 100000000.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "default": "0",
+          "title": "Distance"
+        },
+        "adjustment_step": {
+          "anyOf": [
+            {
+              "maximum": 100000000.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "default": "0",
+          "title": "Adjustment Step"
+        }
+      },
+      "title": "ManagedStop",
+      "type": "object"
+    },
+    "MarketOrder": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "market",
+          "default": "market",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "title": "MarketOrder",
+      "type": "object"
+    },
+    "MovingAverage": {
+      "additionalProperties": false,
+      "properties": {
+        "slot": {
+          "maximum": 4,
+          "minimum": 1,
+          "title": "Slot",
+          "type": "integer"
+        },
+        "purpose": {
+          "default": "entry",
+          "enum": [
+            "entry",
+            "exit"
+          ],
+          "title": "Purpose",
+          "type": "string"
+        },
+        "timeframe": {
+          "default": "current",
+          "enum": [
+            "current",
+            "M1",
+            "M2",
+            "M3",
+            "M4",
+            "M5",
+            "M6",
+            "M10",
+            "M12",
+            "M15",
+            "M20",
+            "M30",
+            "H1",
+            "H2",
+            "H3",
+            "H4",
+            "H6",
+            "H8",
+            "H12",
+            "D1",
+            "W1",
+            "MN1"
+          ],
+          "title": "Timeframe",
+          "type": "string"
+        },
+        "period": {
+          "default": 20,
+          "maximum": 100000,
+          "minimum": 1,
+          "title": "Period",
+          "type": "integer"
+        },
+        "type": {
+          "const": "ma",
+          "default": "ma",
+          "title": "Type",
+          "type": "string"
+        },
+        "method": {
+          "default": "ema",
+          "enum": [
+            "sma",
+            "ema",
+            "smma",
+            "lwma"
+          ],
+          "title": "Method",
+          "type": "string"
+        },
+        "price": {
+          "default": "close",
+          "enum": [
+            "close",
+            "open",
+            "high",
+            "low",
+            "median",
+            "typical",
+            "weighted"
+          ],
+          "title": "Price",
+          "type": "string"
+        },
+        "shift": {
+          "default": 0,
+          "maximum": 100000,
+          "minimum": -100000,
+          "title": "Shift",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "slot"
+      ],
+      "title": "MovingAverage",
+      "type": "object"
+    },
+    "NumericRange": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "numeric",
+          "default": "numeric",
+          "title": "Kind",
+          "type": "string"
+        },
+        "parameter": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Parameter",
+          "type": "string"
+        },
+        "start": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "title": "Start"
+        },
+        "step": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "title": "Step"
+        },
+        "end": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "title": "End"
+        }
+      },
+      "required": [
+        "parameter",
+        "start",
+        "step",
+        "end"
+      ],
+      "title": "NumericRange",
+      "type": "object"
+    },
+    "Operation": {
+      "additionalProperties": false,
+      "properties": {
+        "market": {
+          "default": "forex",
+          "enum": [
+            "forex",
+            "b3"
+          ],
+          "title": "Market",
+          "type": "string"
+        },
+        "trade_mode": {
+          "default": "day_trade",
+          "enum": [
+            "day_trade",
+            "swing_trade"
+          ],
+          "title": "Trade Mode",
+          "type": "string"
+        },
+        "direction": {
+          "default": "both",
+          "enum": [
+            "both",
+            "buy",
+            "sell"
+          ],
+          "title": "Direction",
+          "type": "string"
+        },
+        "lot": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "default": "0.01",
+          "title": "Lot"
+        }
+      },
+      "title": "Operation",
+      "type": "object"
+    },
+    "PendingOrder": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "pending",
+          "default": "pending",
+          "title": "Type",
+          "type": "string"
+        },
+        "reference": {
+          "default": "high",
+          "enum": [
+            "high",
+            "low",
+            "open",
+            "close"
+          ],
+          "title": "Reference",
+          "type": "string"
+        },
+        "candle": {
+          "default": 1,
+          "maximum": 100000,
+          "minimum": 1,
+          "title": "Candle",
+          "type": "integer"
+        },
+        "mirror_sell": {
+          "default": false,
+          "title": "Mirror Sell",
+          "type": "boolean"
+        }
+      },
+      "title": "PendingOrder",
+      "type": "object"
+    },
+    "PriceOperand": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "price",
+          "default": "price",
+          "title": "Kind",
+          "type": "string"
+        },
+        "source": {
+          "enum": [
+            "close",
+            "open",
+            "high",
+            "low",
+            "day_open",
+            "day_high",
+            "day_low",
+            "previous_day_high",
+            "previous_day_low"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "candle": {
+          "default": 1,
+          "maximum": 3,
+          "minimum": 0,
+          "title": "Candle",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "source"
+      ],
+      "title": "PriceOperand",
+      "type": "object"
+    },
+    "RSI": {
+      "additionalProperties": false,
+      "properties": {
+        "slot": {
+          "maximum": 4,
+          "minimum": 1,
+          "title": "Slot",
+          "type": "integer"
+        },
+        "purpose": {
+          "default": "entry",
+          "enum": [
+            "entry",
+            "exit"
+          ],
+          "title": "Purpose",
+          "type": "string"
+        },
+        "timeframe": {
+          "default": "current",
+          "enum": [
+            "current",
+            "M1",
+            "M2",
+            "M3",
+            "M4",
+            "M5",
+            "M6",
+            "M10",
+            "M12",
+            "M15",
+            "M20",
+            "M30",
+            "H1",
+            "H2",
+            "H3",
+            "H4",
+            "H6",
+            "H8",
+            "H12",
+            "D1",
+            "W1",
+            "MN1"
+          ],
+          "title": "Timeframe",
+          "type": "string"
+        },
+        "period": {
+          "default": 14,
+          "maximum": 100000,
+          "minimum": 1,
+          "title": "Period",
+          "type": "integer"
+        },
+        "type": {
+          "const": "rsi",
+          "default": "rsi",
+          "title": "Type",
+          "type": "string"
+        },
+        "price": {
+          "default": "close",
+          "enum": [
+            "close",
+            "open",
+            "high",
+            "low",
+            "median",
+            "typical",
+            "weighted"
+          ],
+          "title": "Price",
+          "type": "string"
+        },
+        "lower": {
+          "anyOf": [
+            {
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "default": 30,
+          "title": "Lower"
+        },
+        "middle": {
+          "anyOf": [
+            {
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "default": 50,
+          "title": "Middle"
+        },
+        "upper": {
+          "anyOf": [
+            {
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "default": 70,
+          "title": "Upper"
+        }
+      },
+      "required": [
+        "slot"
+      ],
+      "title": "RSI",
+      "type": "object"
+    },
+    "Risk": {
+      "additionalProperties": false,
+      "properties": {
+        "target_unit": {
+          "default": "points",
+          "enum": [
+            "points",
+            "percent"
+          ],
+          "title": "Target Unit",
+          "type": "string"
+        },
+        "stop_loss": {
+          "discriminator": {
+            "mapping": {
+              "candle": "#/$defs/CandleStop",
+              "fixed": "#/$defs/FixedStop"
+            },
+            "propertyName": "type"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/FixedStop"
+            },
+            {
+              "$ref": "#/$defs/CandleStop"
+            }
+          ],
+          "title": "Stop Loss"
+        },
+        "take_profit": {
+          "discriminator": {
+            "mapping": {
+              "fixed": "#/$defs/FixedTake",
+              "stop_multiple": "#/$defs/StopMultipleTake"
+            },
+            "propertyName": "type"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/FixedTake"
+            },
+            {
+              "$ref": "#/$defs/StopMultipleTake"
+            }
+          ],
+          "title": "Take Profit"
+        },
+        "breakeven": {
+          "$ref": "#/$defs/Breakeven"
+        },
+        "trailing": {
+          "$ref": "#/$defs/ManagedStop"
+        },
+        "moving_stop": {
+          "$ref": "#/$defs/ManagedStop"
+        }
+      },
+      "title": "Risk",
+      "type": "object"
+    },
+    "Rule": {
+      "additionalProperties": false,
+      "properties": {
+        "operator": {
+          "default": "if",
+          "enum": [
+            "if",
+            "and",
+            "or"
+          ],
+          "title": "Operator",
+          "type": "string"
+        },
+        "side": {
+          "enum": [
+            "buy",
+            "sell"
+          ],
+          "title": "Side",
+          "type": "string"
+        },
+        "left": {
+          "discriminator": {
+            "mapping": {
+              "indicator": "#/$defs/IndicatorOperand",
+              "price": "#/$defs/PriceOperand"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/PriceOperand"
+            },
+            {
+              "$ref": "#/$defs/IndicatorOperand"
+            }
+          ],
+          "title": "Left"
+        },
+        "comparison": {
+          "enum": [
+            "gt",
+            "lt",
+            "gte",
+            "lte",
+            "eq",
+            "ne",
+            "touch",
+            "cross_up",
+            "cross_down",
+            "cross_close_up",
+            "cross_close_down"
+          ],
+          "title": "Comparison",
+          "type": "string"
+        },
+        "right": {
+          "discriminator": {
+            "mapping": {
+              "fixed": "#/$defs/FixedOperand",
+              "indicator": "#/$defs/IndicatorOperand",
+              "price": "#/$defs/PriceOperand"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/PriceOperand"
+            },
+            {
+              "$ref": "#/$defs/IndicatorOperand"
+            },
+            {
+              "$ref": "#/$defs/FixedOperand"
+            }
+          ],
+          "title": "Right"
+        },
+        "distance": {
+          "anyOf": [
+            {
+              "maximum": 100000000.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "default": "0",
+          "title": "Distance"
+        },
+        "distance_unit": {
+          "default": "none",
+          "enum": [
+            "none",
+            "points",
+            "percent"
+          ],
+          "title": "Distance Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "side",
+        "left",
+        "comparison",
+        "right"
+      ],
+      "title": "Rule",
+      "type": "object"
+    },
+    "Session": {
+      "additionalProperties": false,
+      "properties": {
+        "entry_start": {
+          "default": "00:00",
+          "pattern": "^(?:[01]\\d|2[0-3]):[0-5][05]$",
+          "title": "Entry Start",
+          "type": "string"
+        },
+        "entry_end": {
+          "default": "23:55",
+          "pattern": "^(?:[01]\\d|2[0-3]):[0-5][05]$",
+          "title": "Entry End",
+          "type": "string"
+        },
+        "clock_basis": {
+          "const": "broker_server",
+          "default": "broker_server",
+          "title": "Clock Basis",
+          "type": "string"
+        }
+      },
+      "title": "Session",
+      "type": "object"
+    },
+    "StopMultipleTake": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "stop_multiple",
+          "default": "stop_multiple",
+          "title": "Type",
+          "type": "string"
+        },
+        "multiplier": {
+          "anyOf": [
+            {
+              "maximum": 100000000.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "default": "2",
+          "title": "Multiplier"
+        }
+      },
+      "title": "StopMultipleTake",
+      "type": "object"
+    },
+    "TimeRange": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "time",
+          "default": "time",
+          "title": "Kind",
+          "type": "string"
+        },
+        "parameter": {
+          "enum": [
+            "session.entry_start",
+            "session.entry_end"
+          ],
+          "title": "Parameter",
+          "type": "string"
+        },
+        "start": {
+          "pattern": "^(?:[01]\\d|2[0-3]):[0-5][05]$",
+          "title": "Start",
+          "type": "string"
+        },
+        "end": {
+          "pattern": "^(?:[01]\\d|2[0-3]):[0-5][05]$",
+          "title": "End",
+          "type": "string"
+        }
+      },
+      "required": [
+        "parameter",
+        "start",
+        "end"
+      ],
+      "title": "TimeRange",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "1.0",
+      "default": "1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "strategy_id": {
+      "format": "uuid",
+      "title": "Strategy Id",
+      "type": "string"
+    },
+    "revision": {
+      "default": 1,
+      "minimum": 1,
+      "title": "Revision",
+      "type": "integer"
+    },
+    "parent_revision": {
+      "anyOf": [
+        {
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Parent Revision"
+    },
+    "name": {
+      "maxLength": 48,
+      "minLength": 1,
+      "pattern": "^[^\\x00-\\x1f\\x7f|]+$",
+      "title": "Name",
+      "type": "string"
+    },
+    "magic": {
+      "maximum": 2147483647,
+      "minimum": 1,
+      "title": "Magic",
+      "type": "integer"
+    },
+    "metadata": {
+      "$ref": "#/$defs/CreationMetadata"
+    },
+    "execution_hint": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExecutionContext"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "operation": {
+      "$ref": "#/$defs/Operation"
+    },
+    "session": {
+      "$ref": "#/$defs/Session"
+    },
+    "order": {
+      "discriminator": {
+        "mapping": {
+          "market": "#/$defs/MarketOrder",
+          "pending": "#/$defs/PendingOrder"
+        },
+        "propertyName": "type"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/MarketOrder"
+        },
+        {
+          "$ref": "#/$defs/PendingOrder"
+        }
+      ],
+      "title": "Order"
+    },
+    "indicators": {
+      "default": [],
+      "items": {
+        "discriminator": {
+          "mapping": {
+            "adx": "#/$defs/ADX",
+            "ma": "#/$defs/MovingAverage",
+            "rsi": "#/$defs/RSI"
+          },
+          "propertyName": "type"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/$defs/MovingAverage"
+          },
+          {
+            "$ref": "#/$defs/RSI"
+          },
+          {
+            "$ref": "#/$defs/ADX"
+          }
+        ]
+      },
+      "maxItems": 4,
+      "title": "Indicators",
+      "type": "array"
+    },
+    "entry_rules": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Rule"
+      },
+      "maxItems": 10,
+      "title": "Entry Rules",
+      "type": "array"
+    },
+    "exit_rules": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Rule"
+      },
+      "maxItems": 10,
+      "title": "Exit Rules",
+      "type": "array"
+    },
+    "risk": {
+      "$ref": "#/$defs/Risk"
+    },
+    "optimization": {
+      "default": [],
+      "items": {
+        "discriminator": {
+          "mapping": {
+            "choice": "#/$defs/ChoiceRange",
+            "numeric": "#/$defs/NumericRange",
+            "time": "#/$defs/TimeRange"
+          },
+          "propertyName": "kind"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/$defs/NumericRange"
+          },
+          {
+            "$ref": "#/$defs/ChoiceRange"
+          },
+          {
+            "$ref": "#/$defs/TimeRange"
+          }
+        ]
+      },
+      "maxItems": 100,
+      "title": "Optimization",
+      "type": "array"
+    }
+  },
+  "required": [
+    "name",
+    "magic"
+  ],
+  "title": "StrategySpec",
+  "type": "object"
+}

@@ -2,6 +2,13 @@
 !Dockerfile
 !flask_version
 !flask_version/**
+!geraset_domain
+!geraset_domain/**
+geraset_domain/**/__pycache__
+geraset_domain/tests
+!mt5_bridge
+!mt5_bridge/contracts
+!mt5_bridge/contracts/uni_inputs.json
 flask_version/**/__pycache__
 flask_version/tests
 flask_version/.env*

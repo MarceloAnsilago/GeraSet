@@ -3,6 +3,9 @@
 !/.gitignore
 !/flask_version/
 !/mt5_bridge/
+!/geraset_domain/
+/geraset_domain/**/__pycache__/
+/geraset_domain/**/*.py[cod]
 !/BRIDGE_ARCHITECTURE.md
 !/iniciar-flask.bat
 !/iniciar-servicos.py

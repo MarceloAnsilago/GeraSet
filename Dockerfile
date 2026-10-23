@@ -4,4 +4,6 @@ WORKDIR /app
 COPY flask_version/requirements-flask.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 COPY flask_version /app/flask_version
+COPY geraset_domain /app/geraset_domain
+COPY mt5_bridge/contracts/uni_inputs.json /app/mt5_bridge/contracts/uni_inputs.json
 CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "1", "--threads", "12", "--timeout", "90", "flask_version.app:app"]
