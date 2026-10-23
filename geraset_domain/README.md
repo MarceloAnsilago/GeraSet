@@ -2,8 +2,9 @@
 
 Este pacote define a estratégia sem depender de Flask, HTML, localStorage,
 provedor de IA, terminal ou conexão com o MT5. Não altera o setup do usuário,
-não cria endpoints, não salva estratégias e não executa testes/negociações.
-A interface e a exportação JavaScript atuais permanecem em uso.
+não salva estratégias e não executa testes/negociações. Os serviços de configuração
+e exportação e seus adaptadores Flask estão documentados em [SERVICES.md](SERVICES.md).
+A exportação JavaScript original permanece disponível durante a migração paralela.
 
 ## Uso
 
@@ -48,13 +49,14 @@ já disponível no ambiente local e declarada nas dependências Flask.
 | `indicators` | Até quatro slots identificados por número, com MA, RSI ou ADX e parâmetros próprios |
 | `entry_rules`, `exit_rules` | De uma a dez condições no total, preservando sua ordem por finalidade |
 | `risk` | SL/TP, unidade dos alvos, breakeven, trailing e stop móvel |
+| `display` | Painel, histogramas e quantidade de barras, com defaults compatíveis |
 | `optimization` | Intervalos numéricos, de escolhas ou horários, referenciados por caminhos semânticos |
 
 Objetos rejeitam campos desconhecidos. Tipos de indicador, operando, ordem e
 alvo são discriminados: por exemplo, um ADX não aceita parâmetros de MA. Slots,
 períodos, candles e versões inteiras não aceitam booleanos ou números fracionários.
 Números decimais aceitam strings para preservar precisão; a versão 1 limita a
-representação a 32 dígitos/12 casas, além dos limites técnicos do contrato.
+representação a 64 dígitos/32 casas, além dos limites técnicos do contrato.
 Objetos são imutáveis, coleções são tuplas e instâncias são revalidadas ao entrar
 em `validate_strategy()`. Metadados de origem/autoria são declarações do documento,
 não autenticação ou autorização.
@@ -75,6 +77,13 @@ arbitrários. A primeira regra de cada finalidade/lado deve usar `if`.
 `side` sempre representa a posição afetada: em entrada, `buy` abre compra;
 em saída, `buy` fecha compra. O adaptador converte a saída para o sinal nativo
 oposto; o documento semântico não exige que o agente conheça essa inversão.
+`Rule.slot` é opcional (1..10) e preserva a posição nativa da condição, inclusive
+lacunas e intercalamento entre entrada/saída. Sem esse campo, mantém-se a alocação
+sequencial anterior. Indicadores `disabled` preservam finalidade/timeframe de
+slots inativos; não oferecem parâmetros nem otimização de indicador habilitado.
+`order.mirror_sell` também pode ser guardado em modo mercado, como a preferência
+que já existia na interface. Esses campos são opcionais; documentos v1.0 anteriores
+continuam aceitos com seus defaults anteriores.
 
 ### Gestão e extensão futura
 
@@ -134,7 +143,8 @@ surgir outro schema, mantenha o leitor 1.0, preserve o original e registre uma
 migração explícita em nova revisão. O hash do contrato identifica os limites
 utilizados; ainda não é uma versão/hash do binário Uni executado.
 
-Faltam persistência de revisões, autoria autenticada, aprovação vinculada ao hash,
-adaptador da interface, gerador Python público e integração do agente. Essas
-camadas usarão este modelo; não foram introduzidas nesta etapa. A pendência de
-execução real no MT5 e o relatório existente da etapa 5 permanecem inalterados.
+Os serviços Python públicos e a ação opcional da interface agora usam este modelo
+para exportar e comparar. Ainda faltam persistência de revisões, autoria autenticada,
+aprovação vinculada ao hash e integração do agente. A substituição integral do
+exportador antigo não foi feita. A pendência de execução real no MT5 e o relatório
+existente da etapa 5 permanecem inalterados.

@@ -6,8 +6,10 @@ Aplicação Flask do GeraSet.
 
 O schema 1.0 e o modelo Python estão em [geraset_domain](../geraset_domain/README.md),
 com exemplo JSON, validação determinística compartilhada com o Bridge e separação
-entre estratégia e contexto de execução. Essa base ainda não substitui os controles
-da interface nem o gerador JavaScript; não inclui agente, persistência ou aprovação.
+entre estratégia e contexto de execução. Os [serviços Python](../geraset_domain/SERVICES.md)
+agora configuram, validam e exportam sem MT5. A ação opcional Exportar com Python
+(comparar) mantém o envelope anterior depois de comparar os dois caminhos; o botão
+Exportar set permanece independente. Não inclui agente, persistência ou aprovação.
 
 ## Ativo, timeframe e intervalo de datas
 

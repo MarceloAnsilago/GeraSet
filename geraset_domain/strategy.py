@@ -12,7 +12,7 @@ Timeframe = Literal['M1','M2','M3','M4','M5','M6','M10','M12','M15','M20','M30',
 SlotTimeframe = Literal['current','M1','M2','M3','M4','M5','M6','M10','M12','M15','M20','M30',
                         'H1','H2','H3','H4','H6','H8','H12','D1','W1','MN1']
 Price = Literal['close','open','high','low','median','typical','weighted']
-Number = Annotated[Decimal, Field(max_digits=32, decimal_places=12)]
+Number = Annotated[Decimal, Field(max_digits=64, decimal_places=32)]
 Amount = Annotated[Number, Field(ge=0, le=100000000)]
 Period = Annotated[int, Field(strict=True, ge=1, le=100000)]
 Clock = Annotated[str, Field(pattern=r'^(?:[01]\d|2[0-3]):[0-5][05]$')]
@@ -52,6 +52,7 @@ class Session(Model):
 
 class MarketOrder(Model):
     type: Literal['market'] = 'market'
+    mirror_sell: bool = Field(default=False, strict=True)
 
 
 class PendingOrder(Model):
@@ -88,6 +89,19 @@ class ADX(Indicator):
     type: Literal['adx'] = 'adx'
 
 
+class DisabledIndicator(Model):
+    type: Literal['disabled'] = 'disabled'
+    slot: int = Field(strict=True, ge=1, le=4)
+    purpose: Literal['entry','exit'] = 'entry'
+    timeframe: SlotTimeframe = 'current'
+
+
+class Display(Model):
+    show_panel: bool = Field(default=True, strict=True)
+    show_histograms: bool = Field(default=True, strict=True)
+    histogram_bars: int = Field(default=300, strict=True, ge=1, le=5000)
+
+
 class PriceOperand(Model):
     kind: Literal['price'] = 'price'
     source: Literal['close','open','high','low','day_open','day_high','day_low','previous_day_high','previous_day_low']
@@ -111,6 +125,7 @@ RightOperand = Annotated[PriceOperand | IndicatorOperand | FixedOperand, Field(d
 
 
 class Rule(Model):
+    slot: int | None = Field(default=None, strict=True, ge=1, le=10)
     operator: Literal['if','and','or'] = 'if'
     # Always the position acted on: exit/buy means close buys, unlike native side.
     side: Literal['buy','sell']
@@ -210,10 +225,11 @@ class StrategySpec(Model):
     operation: Operation = Field(default_factory=Operation)
     session: Session = Field(default_factory=Session)
     order: Annotated[MarketOrder | PendingOrder, Field(discriminator='type')] = Field(default_factory=MarketOrder)
-    indicators: tuple[Annotated[MovingAverage | RSI | ADX, Field(discriminator='type')], ...] = Field(default=(), max_length=4)
+    indicators: tuple[Annotated[MovingAverage | RSI | ADX | DisabledIndicator, Field(discriminator='type')], ...] = Field(default=(), max_length=4)
     entry_rules: tuple[Rule, ...] = Field(default=(), max_length=10)
     exit_rules: tuple[Rule, ...] = Field(default=(), max_length=10)
     risk: Risk = Field(default_factory=Risk)
+    display: Display = Field(default_factory=Display)
     optimization: tuple[Optimization, ...] = Field(default=(), max_length=100)
 
     @model_validator(mode='after')

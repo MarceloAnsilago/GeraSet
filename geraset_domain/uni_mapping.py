@@ -38,7 +38,7 @@ def minutes(clock):
     return hours*60+minute
 
 
-def compile_strategy(spec):
+def compile_strategy(spec, *, include_bindings=False):
     values, bindings = {}, {}
 
     def put(key, value, path=None, choices=None, kind='numeric'):
@@ -63,7 +63,7 @@ def compile_strategy(spec):
     put('InpPendingReference', references[spec.order.reference] if pending else 0,
         'order.reference' if pending else None, references, 'choice')
     put('InpPendingCandle', spec.order.candle if pending else 1, 'order.candle' if pending else None)
-    put('InpPendingMirrorSell', spec.order.mirror_sell if pending else False)
+    put('InpPendingMirrorSell', spec.order.mirror_sell)
     risk = spec.risk
     put('InpTargetUnit', {'points': 0, 'percent': 1}[risk.target_unit])
     candle = risk.stop_loss.type == 'candle'
@@ -92,11 +92,11 @@ def compile_strategy(spec):
     indicators = {i.slot: i for i in spec.indicators}
     for slot in range(1, 5):
         indicator = indicators.get(slot)
-        put(f'InpIndicator{slot}Type', {'ma': 0, 'rsi': 1, 'adx': 2}[indicator.type] if indicator else -1)
+        put(f'InpIndicator{slot}Type', {'disabled': -1, 'ma': 0, 'rsi': 1, 'adx': 2}[indicator.type] if indicator else -1)
         put(f'InpIndicator{slot}Exit', int(indicator.purpose == 'exit') if indicator else 0)
         put(f'InpIndicator{slot}Timeframe', TIMEFRAMES[indicator.timeframe] if indicator else 0,
-            f'indicators.{slot}.timeframe' if indicator else None, TIMEFRAMES, 'choice')
-        if indicator is None:
+            f'indicators.{slot}.timeframe' if indicator and indicator.type != 'disabled' else None, TIMEFRAMES, 'choice')
+        if indicator is None or indicator.type == 'disabled':
             continue
         path = f'indicators.{slot}'
         if indicator.type == 'ma':
@@ -124,7 +124,11 @@ def compile_strategy(spec):
             return 22+(item.slot-1)*3+('upper','middle','lower').index(item.line), 0
         return 10+(item.slot-1)*3+('main','di_plus','di_minus').index(item.line), item.candle
 
-    rules = []
+    rules = {}
+    reserved = [rule.slot for rule in (*spec.entry_rules, *spec.exit_rules) if rule.slot is not None]
+    if len(set(reserved)) != len(reserved):
+        raise UniValidationError('DUPLICATE_RULE_SLOT', 'Cada posição da grade aceita apenas uma condição.')
+    available = iter(slot for slot in range(1, 11) if slot not in reserved)
     for usage, items in enumerate((spec.entry_rules, spec.exit_rules)):
         for rule in items:
             a, bar = operand(rule.left)
@@ -136,9 +140,13 @@ def compile_strategy(spec):
                       a, bar, COMPARISONS[rule.comparison], b, refbar,
                       rule.right.value if rule.right.kind == 'fixed' else 0,
                       rule.distance, {'none': 0, 'points': 1, 'percent': 2}[rule.distance_unit])
-            rules.append(','.join(map(text, fields)))
+            slot = rule.slot if rule.slot is not None else next(available)
+            rules[slot] = ','.join(map(text, fields))
     for index in range(10):
-        put(f'InpSignal{index+1}', rules[index] if index < len(rules) else '')
+        put(f'InpSignal{index+1}', rules.get(index+1, ''))
+    put('InpExibirHistogramas', spec.display.show_histograms)
+    put('InpHistogramasBarras', spec.display.histogram_bars)
+    put('InpExibirPainel', spec.display.show_panel)
 
     seen = set()
     for item in spec.optimization:
@@ -165,4 +173,4 @@ def compile_strategy(spec):
     # This byte sequence exists only in memory; public .set export remains unchanged.
     payload = '\n'.join(f'{key}={value}' for key, value in values.items()).encode('utf-8')
     parse_set(base64.b64encode(payload).decode(), 1024*1024)
-    return values
+    return (values, bindings) if include_bindings else values

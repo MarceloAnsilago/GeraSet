@@ -689,13 +689,16 @@
                 <div class="card">
                     <h2>Set atual</h2>
                     <p data-review-setup-name>{{ data.setup_name }}</p>
-                    <p class="muted">O Uni carrega Identificação, Mercado e operação, Horários, Indicadores e Sinal. Gestão e demais regras ainda ficam como comentários; confira esses inputs no Uni.</p>
+                    <p class="muted">O Uni carrega os inputs de identificação, operação, horários, ordens, indicadores, sinais, alvos e gestão já integrados. Os comentários preservam também os campos inativos do rascunho.</p>
                 </div>
                 <div class="card">
                     <h2>Ações</h2>
                     <a class="btn btn-primary" href="#">Salvar set</a>
                     <button class="btn" type="button" data-export-set disabled>Exportar set</button>
                     <p class="muted" data-export-status role="status">Preparando exportação...</p>
+                    <button class="btn" type="button" data-python-export>Exportar com Python (comparar)</button>
+                    <p class="muted">Confere os dois caminhos antes de baixar o arquivo. Usa o download do navegador; não exige MT5 nem Bridge conectado.</p>
+                    <p class="muted" data-python-export-status role="status" aria-live="polite"></p>
                 </div>
             </section>
             <div class="button-row">
@@ -735,6 +738,7 @@
     <script src="{{ url_for('static', filename='signal-mirror.js') }}"></script>
     <script src="{{ url_for('static', filename='app.js') }}"></script>
     <script src="{{ url_for('static', filename='export.js') }}"></script>
+    <script src="{{ url_for('static', filename='python-export.js') }}"></script>
     <script src="{{ url_for('static', filename='import.js') }}"></script>
     <script src="{{ url_for('static', filename='curves.js') }}"></script>
     <script src="{{ url_for('static', filename='bridge-period.js') }}"></script>

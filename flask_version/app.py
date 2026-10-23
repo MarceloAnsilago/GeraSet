@@ -3,16 +3,23 @@ from __future__ import annotations
 from flask import Flask, redirect, render_template, request, url_for
 import os
 import secrets
+if not __package__:
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 if __package__:
     from .bridge_routes import bridge
+    from .strategy_routes import strategies
 else:
     from bridge_routes import bridge
+    from strategy_routes import strategies
 
 
 app = Flask(__name__)
 app.secret_key = os.getenv('GERASET_FLASK_SECRET') or secrets.token_hex(32)
 app.config.update(MAX_CONTENT_LENGTH=1500000, SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE='Lax')
 app.register_blueprint(bridge)
+app.register_blueprint(strategies)
 if __package__:
     from .remote import configure_remote
 else:

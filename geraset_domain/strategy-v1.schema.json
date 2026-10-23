@@ -264,6 +264,90 @@
       "title": "CreationMetadata",
       "type": "object"
     },
+    "DisabledIndicator": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "disabled",
+          "default": "disabled",
+          "title": "Type",
+          "type": "string"
+        },
+        "slot": {
+          "maximum": 4,
+          "minimum": 1,
+          "title": "Slot",
+          "type": "integer"
+        },
+        "purpose": {
+          "default": "entry",
+          "enum": [
+            "entry",
+            "exit"
+          ],
+          "title": "Purpose",
+          "type": "string"
+        },
+        "timeframe": {
+          "default": "current",
+          "enum": [
+            "current",
+            "M1",
+            "M2",
+            "M3",
+            "M4",
+            "M5",
+            "M6",
+            "M10",
+            "M12",
+            "M15",
+            "M20",
+            "M30",
+            "H1",
+            "H2",
+            "H3",
+            "H4",
+            "H6",
+            "H8",
+            "H12",
+            "D1",
+            "W1",
+            "MN1"
+          ],
+          "title": "Timeframe",
+          "type": "string"
+        }
+      },
+      "required": [
+        "slot"
+      ],
+      "title": "DisabledIndicator",
+      "type": "object"
+    },
+    "Display": {
+      "additionalProperties": false,
+      "properties": {
+        "show_panel": {
+          "default": true,
+          "title": "Show Panel",
+          "type": "boolean"
+        },
+        "show_histograms": {
+          "default": true,
+          "title": "Show Histograms",
+          "type": "boolean"
+        },
+        "histogram_bars": {
+          "default": 300,
+          "maximum": 5000,
+          "minimum": 1,
+          "title": "Histogram Bars",
+          "type": "integer"
+        }
+      },
+      "title": "Display",
+      "type": "object"
+    },
     "ExecutionContext": {
       "additionalProperties": false,
       "description": "A resolved execution context, never emitted as an EA input.",
@@ -508,6 +592,11 @@
           "default": "market",
           "title": "Type",
           "type": "string"
+        },
+        "mirror_sell": {
+          "default": false,
+          "title": "Mirror Sell",
+          "type": "boolean"
         }
       },
       "title": "MarketOrder",
@@ -980,6 +1069,20 @@
     "Rule": {
       "additionalProperties": false,
       "properties": {
+        "slot": {
+          "anyOf": [
+            {
+              "maximum": 10,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Slot"
+        },
         "operator": {
           "default": "if",
           "enum": [
@@ -1267,6 +1370,7 @@
         "discriminator": {
           "mapping": {
             "adx": "#/$defs/ADX",
+            "disabled": "#/$defs/DisabledIndicator",
             "ma": "#/$defs/MovingAverage",
             "rsi": "#/$defs/RSI"
           },
@@ -1281,6 +1385,9 @@
           },
           {
             "$ref": "#/$defs/ADX"
+          },
+          {
+            "$ref": "#/$defs/DisabledIndicator"
           }
         ]
       },
@@ -1308,6 +1415,9 @@
     },
     "risk": {
       "$ref": "#/$defs/Risk"
+    },
+    "display": {
+      "$ref": "#/$defs/Display"
     },
     "optimization": {
       "default": [],
